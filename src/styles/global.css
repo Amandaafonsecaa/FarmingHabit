@@ -145,11 +145,75 @@
  .game-nav-item { min-height: 82px; padding: 4px 0; gap: 6px; justify-content: flex-start; }
  .game-nav-icon { width: 34px; height: 34px; }
  .game-nav-icon svg { width: 22px; height: 22px; }
- .game-nav-label { min-height: 30px; font-size: 11px; }
+ .game-nav-label { min-height: 30px; font-size: 12px; }
  .world-info { grid-template-columns: minmax(0,1.2fr) minmax(0,1fr); }
  .level-card { padding: 14px 12px; }
  .farm-name-card { padding: 12px; }
  .calendar-day { font-size: 38px; }
  .world-panel { min-height: 0; }
  .panel-tag { font-size: 12px; }
+}
+
+.world-row { position: relative; }
+.navigation-toggle { position: absolute; top: 12px; left: 12px; z-index: 45; width: 44px; height: 44px; padding: 8px; }
+.navigation-open .navigation-toggle { left: calc((var(--game-navigation-width) - 44px) / 2); }
+.navigation-open .game-navigation { padding-top: 68px; }
+.navigation-closed .world-row { grid-template-columns: minmax(0,1fr); }
+.game-navigation[hidden] { display: none; }
+@media (max-width: 767px) {
+ .navigation-open .navigation-toggle { left: 12px; }
+ .navigation-open .game-navigation { padding-top: 4px; }
+ .navigation-closed { padding-bottom: 0; }
+ .world-header { padding-top: 70px; }
+}
+
+/* Sunlit farm palette and carved, original game interface. */
+body { background: #55351f; }
+.application-content { background: #e9ba73; background-image: repeating-linear-gradient(0deg, transparent 0 5px, #a5672810 5px 6px); }
+.game-world { background: #74c9ef; height: clamp(540px, 65svh, 760px); border-color: #52301f; box-shadow: inset 0 0 0 3px #efb96b; }
+.world-scenery { width: 100%; height: 100%; min-width: 0; left: 50%; overflow: visible; }
+.world-sun { top: 9%; left: 48%; background: #ffe38b; box-shadow: 8px 0 #ffe38b,-8px 0 #ffe38b,0 8px #ffe38b,0 -8px #ffe38b,0 0 0 14px #ffeaa426; }
+.world-cloud { background: #fff7df; filter: drop-shadow(0 4px 0 #4c9dc52b); }
+.world-header { padding: 18px; }
+.world-info { width: 330px; gap: 8px; grid-template-rows: minmax(94px, auto) minmax(52px, auto); }
+.level-card { padding: 12px 14px; }
+.calendar-day { font-size: 36px; }
+.calendar-heading { background: #bf5837; }
+.calendar-weekday { font-size: 10px; }
+.farm-name-card { font-size: 12px; }
+.farm-welcome { position: absolute; z-index: 2; top: 36px; left: 30px; color: #25452d; text-shadow: 1px 2px #d9f3be; }
+.farm-welcome p { font-size: 10px; font-weight: bold; letter-spacing: 2px; }
+.farm-welcome h1 { margin: 9px 0; font-size: clamp(20px, 2.3vw, 32px); font-weight: 900; letter-spacing: -1.5px; }
+.farm-welcome > span { font-size: 12px; }
+.pixel-frame { border: 3px solid #57311f; background-color: #ffe5ae; box-shadow: inset 0 0 0 2px #ffd98d, inset 0 0 0 5px #ae652f, inset 0 0 0 7px #f5c477, 3px 4px 0 #42291655; }
+.functional-panel { max-width: 1600px; margin: auto; padding: 18px 16px 12px; gap: 16px; }
+.world-panel { padding: 8px; min-height: 305px; background-image: repeating-linear-gradient(0deg, transparent 0 3px, #ad69240a 3px 4px); }
+.panel-heading { background: #e8ac59; border-bottom: 3px solid #9d5b2f; box-shadow: inset 0 2px #ffe1a1, 0 2px #fff1c3; }
+.panel-heading h2 { font-size: 18px; }
+.panel-tag { font-size: 10px; }
+.item-title { font-size: 13px; }
+.item-description { font-size: 12px; }
+.pixel-button { border-color: #693b21; background: #edbc72; box-shadow: inset 2px 2px #ffdfa0,inset -2px -2px #bb7739, 2px 3px #59341f; font-size: 12px; }
+.pixel-button:hover:not(:disabled) { background: #ffe0a1; }
+.pixel-progress { border: 2px solid #654021; background: #b88d51; }
+.pixel-progress-fill { background: repeating-linear-gradient(90deg,#72ad32 0 10px,#53922d 10px 12px); box-shadow: inset 0 2px #c0e36b; }
+.item-icon { background: #d1d278; border: 2px solid #7e702f; color: #397134; }
+.game-navigation { background: repeating-linear-gradient(0deg,#885027 0 43px,#6c3e22 43px 46px); box-shadow: inset 0 0 0 2px #e7ad62,inset 0 0 0 5px #ad6b36; }
+.game-nav-icon { background: #a86b35; border-color: #4d2e1c; color: #ffe2a3; box-shadow: inset 2px 2px #d29853,inset -2px -2px #754222,2px 3px #4d2e1c; }
+.game-nav-item.is-selected .game-nav-icon { background: #f2c453; color: #714127; }
+.game-nav-label { color: #ffe1a7; text-shadow: 1px 2px #4a2c1b; font-size: 11px; }
+.world-status { font-size: 11px; color: #643f24; }
+@media (max-width: 1050px) { .farm-welcome h1 { max-width: 260px; line-height: 1.2; } .farm-welcome > span { display: none; } }
+@media (max-width: 767px) {
+ .world-header { padding: 70px 12px 12px; }
+ .world-info { width: 275px; grid-template-rows: 88px 48px; }
+ .farm-welcome { top: 20px; left: 70px; }
+ .farm-welcome p { font-size: 8px; letter-spacing: 1px; }
+ .farm-welcome h1 { margin: 4px 0; max-width: none; font-size: 19px; }
+ .world-scenery { min-width: 0; left: 50%; height: 100%; }
+ .game-world { height: 620px; }
+ .functional-panel { padding: 14px 10px; gap: 14px; }
+ .world-sun { left: 16%; top: 29%; }
+ .location-sign { bottom: 12px; left: 12px; padding: 12px; }
+ .world-panel { min-height: 0; }
 }
