@@ -78,8 +78,8 @@ export function WorldScenery() {
     { id: "mailbox", depth: 406, node: (
 <g transform="translate(729 361)"><path d="M0 0h5v45H0Z" fill="#927453"/><path d="M-12-5h31v22h-31Z" fill="#b98662"/><path d="M-9-2h23v14H-9Z" fill="#d5ad7b"/><path d="M4 0h4v7H4Z" fill="#f0d59a"/></g>
     ) },
-    { id: "garden-sign", depth: 489, node: (
-<g transform="translate(798 453)"><path d="M0 0h5v36H0Zm51 0h5v36h-5Z" fill="#684c31"/><path d="M-7-8h70v26H-7Z" fill="#573e29"/><path d="M-4-5h64v20H-4Z" fill="#d8a76a"/><path d="M-2-3h59v3H-2Z" fill="#f1cd8c"/><text x="28" y="9" textAnchor="middle" fontFamily="monospace" fontSize="10" fill="#4c321f">Horta</text></g>
+    { id: "garden-sign", depth: 541, node: (
+<g transform="translate(690 505)"><path d="M0 0h5v36H0Zm51 0h5v36h-5Z" fill="#684c31"/><path d="M-7-8h70v26H-7Z" fill="#573e29"/><path d="M-4-5h64v20H-4Z" fill="#d8a76a"/><path d="M-2-3h59v3H-2Z" fill="#f1cd8c"/><text x="28" y="9" textAnchor="middle" fontFamily="monospace" fontSize="10" fill="#4c321f">Horta</text></g>
     ) },
     { id: "barrel", depth: 373, node: (
 <g transform="translate(396 343)"><path d="M-2 0h25v30H-2Z" fill="#624429"/><path d="M1 2h19v25H1Z" fill="#b27c42"/><path d="M1 8h19v3H1Zm0 13h19v3H1Z" fill="#604c36"/><path d="M6 3v23m8-23v23" stroke="#d2a05c" strokeWidth="2"/></g>
