@@ -78,13 +78,11 @@
 @keyframes wing-flap { 50% { transform: scaleX(.3); } }
 
 
-/* --- Riacho: correnteza descendo e peixes pulando --- */
-.river-current { opacity: .75; animation: river-flow 2.6s linear infinite; }
+/* --- Riacho: peixes pulando --- */
 /* O ciclo de cada pulo é longo: o peixe passa a maior parte do tempo escondido e salta por ~1s */
 .fish-jump, .fish-splash { transform-box: fill-box; transform-origin: center; }
 .fish-jump { opacity: 0; animation: fish-jump 11s cubic-bezier(.3, .7, .4, 1) infinite; }
 .fish-splash { opacity: 0; animation: fish-splash 11s steps(1) infinite; }
-@keyframes river-flow { to { stroke-dashoffset: var(--dash-cycle, -44px); } }
 @keyframes fish-jump {
  0%, 100% { transform: translate(-10px, 6px) rotate(-50deg); opacity: 0; }
  1% { transform: translate(-10px, 4px) rotate(-50deg); opacity: 1; }

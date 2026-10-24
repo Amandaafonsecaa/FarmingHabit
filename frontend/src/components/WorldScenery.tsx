@@ -1,4 +1,3 @@
-import type { CSSProperties } from 'react';
 import { FarmHouse } from './FarmHouse';
 import { CharacterScene } from './CharacterScene';
 function Tree({ x, y, scale = 1, delay = 0 }: { x: number; y: number; scale?: number; delay?: number }) {
@@ -25,10 +24,6 @@ function BedCrop({ stage, row, golden }: { stage: number; row: number; golden: b
     {stage === 3 && golden && <path className="crop-sparkle" d="M6 0h2v2H6Zm1-3h1v1H7Zm2 2h1v1H9Z" fill="#fff6c2"/>}
   </g>;
 }
-
-// Linha central do riacho, de montante (esquerda) para jusante (descendo): as correntezas seguem esse caminho
-const STREAM_CENTER = 'M-2000 361H-240L-170 364L-110 369L-60 375L-15 386L25 400L48 418L50 438L38 458L24 480L10 505L-6 530L-20 556L-28 582L-26 612L-38 645L-60 690';
-const CURRENTS = [{ offset: 0, dash: '14 30', speed: 2.4, width: 2 }, { offset: -5, dash: '8 40', speed: 3.1, width: 2 }, { offset: 5, dash: '20 46', speed: 2.8, width: 1 }];
 
 /** Peixinho que pula de vez em quando, com respingo na saída e na volta para a água */
 function JumpingFish({ x, y, color, delay, flip = false }: { x: number; y: number; color: string; delay: number; flip?: boolean }) {
@@ -178,12 +173,6 @@ export function WorldScenery({ dailyProgress, level }: { dailyProgress: number; 
         })}
         <path d="M-32 391h13v2h-13Zm55 24h12v2H23Zm-16 38h10v2H7Zm-41 37h14v2h-14Zm-36 49h10v2h-10Zm-10 43h13v2h-13Z"/>
       </g>
-    </g>
-    {/* Correntezas descendo o riacho (presas ao formato da água) */}
-    <g clipPath="url(#farm-stream-clip)" fill="none" strokeLinejoin="miter">
-      {CURRENTS.map((current, index) => <path key={index} className="river-current" d={STREAM_CENTER} transform={`translate(${current.offset * 0.6} ${current.offset})`}
-        stroke={index === 1 ? '#e6fbff' : '#b9f2ff'} strokeWidth={current.width} strokeDasharray={current.dash}
-        style={{ animationDuration: `${current.speed}s`, '--dash-cycle': `-${current.dash.split(' ').map(Number).reduce((a, b) => a + b, 0)}px` } as CSSProperties}/>)}
     </g>
     <JumpingFish x={-60} y={372} color="#f08a3c" delay={-1}/>
     <JumpingFish x={34} y={428} color="#e7e2c8" delay={-5} flip/>
