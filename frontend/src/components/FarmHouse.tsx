@@ -26,7 +26,8 @@ export function FarmHouse() {
     <path d="M156-20h19v42h-19Z" fill="#b96f4b"/>
     <path d="M156-10h19v3h-19Zm0 13h19v3h-19Zm8-23v10m-3 3V3m7 3v12" stroke="#774632" strokeWidth="2"/>
     <path d="M148-26h35v8h-35Z" fill="#594334"/><path d="M151-26h29v3h-29Z" fill="#d0bb8e"/>
-    <path d="M159-44h12v10h-12Zm7-18h15v10h-15Z" fill="#fff3ce" opacity=".75"/>
+    {/* Fumaça: três baforadas subindo e se desfazendo em sequência */}
+    <g className="chimney-smoke">{[0,1,2].map(puff=><rect key={puff} className="smoke-puff" x={159} y={-40} width={12} height={10} fill="#fff3ce" style={{ animationDelay: `${puff * 1.4}s` }}/>)}</g>
     {/* Two recessed windows with shutters and flower boxes. */}
     {[22,151].map(x=><g key={x} transform={`translate(${x} 100)`}>
       <path d="M-9-5h49v43H-9Z" fill="#6c3e26"/>

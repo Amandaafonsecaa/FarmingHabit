@@ -1,0 +1,108 @@
+/* ===== Aba Casa: cenário vivo, nível/XP interativo e atalhos ===== */
+/* Reaproveita as keyframes sprout-pop, plant-wiggle, sparkle-blink e burst-fly de goals.css */
+
+/* --- Céu --- */
+.sky-layer { position: absolute; inset: 0; pointer-events: none; }
+.world-sun.is-shining { animation: sun-glow 3.2s steps(3) infinite alternate; }
+.sun-rays { position: absolute; left: 50%; top: 50%; width: 6px; height: 6px; margin: -3px; animation: sun-rays 2.4s steps(2) infinite; }
+.world-cloud.is-passing { animation: cloud-pass var(--cloud-duration) linear var(--cloud-delay) infinite; transform: scale(var(--cloud-scale, 1)); transform-origin: left center; }
+.sky-birds { position: absolute; top: 17%; left: -10%; animation: birds-fly 42s linear infinite; }
+.sky-bird { position: absolute; width: 3px; height: 3px; animation: bird-flap .5s steps(1) infinite; }
+.sky-bird.is-second { left: 20px; top: 9px; animation-delay: -.2s; }
+.sky-bird.is-third { left: 36px; top: -5px; animation-delay: -.35s; }
+
+/* --- Placa de boas-vindas --- */
+.farm-welcome { animation: welcome-in .7s cubic-bezier(.34, 1.4, .64, 1) backwards; }
+.farm-welcome h1 { animation: welcome-float 4s ease-in-out infinite alternate; }
+.navigation-closed .farm-welcome { left: 74px; }
+
+/* --- Nível e XP --- */
+.level-card { position: relative; transition: transform .15s steps(2); }
+.level-card:hover { transform: translateY(-2px); }
+.level-title { display: flex; align-items: center; gap: 7px; }
+.level-star { width: 4px; height: 4px; margin: 4px; background: #f2c453; box-shadow: 0 -4px #f2c453, 0 4px #f2c453, -4px 0 #f2c453, 4px 0 #e8ac59; }
+.level-card:hover .level-star { animation: star-spin .8s steps(4) infinite; }
+.xp-bar-button { position: relative; display: block; width: 100%; margin-top: 12px; padding: 0; border: 0; background: none; cursor: pointer; }
+.xp-bar-button:focus-visible { outline: 3px solid #3f6b35; outline-offset: 3px; }
+.xp-track { display: block; height: 14px; }
+.pixel-progress-fill.xp-fill { position: relative; display: block; overflow: hidden; transition: width .9s cubic-bezier(.34, 1.2, .64, 1); }
+.xp-fill::after { content: ''; position: absolute; top: 0; bottom: 0; left: -14px; width: 8px; background: #fff6c2b3; }
+.xp-bar-button:hover .xp-fill::after { animation: xp-shimmer .9s steps(8); }
+.xp-tip { position: absolute; top: 50%; width: 0; height: 0; transition: left .9s cubic-bezier(.34, 1.2, .64, 1); }
+.xp-sparks { position: absolute; left: 0; top: 0; }
+.xp-float { position: absolute; left: 0; top: -30px; white-space: nowrap; font-size: 12px; font-weight: 900; color: #3f6b35; text-shadow: 1px 1px #fff1c7; animation: xp-float 1.3s ease-out both; }
+.xp-float.is-big { font-size: 15px; color: #bf5837; }
+.xp-hint { margin-top: 6px; padding: 6px 8px; font-size: 11px; line-height: 1.4; background: #fff1c7; border: 2px dashed #ae652f; animation: hint-unfold .25s cubic-bezier(.34, 1.4, .64, 1) backwards; transform-origin: top; }
+.level-card.is-level-up { animation: level-flash 1.8s steps(1); }
+.farm-name-card:hover .farm-leaf { animation: plant-wiggle .6s steps(6); }
+
+/* --- Atalhos: placas fincadas no chão --- */
+.quick-actions { position: absolute; left: 20px; bottom: 16px; z-index: 5; display: flex; align-items: flex-end; gap: 10px; }
+.quick-sign { position: relative; isolation: isolate; padding: 0 0 18px; border: 0; background: none; font: inherit; cursor: pointer; transform-origin: 50% 100%; animation: sign-plant .55s cubic-bezier(.34, 1.56, .64, 1) backwards; }
+.quick-sign::after { content: ''; position: absolute; left: 50%; bottom: 0; z-index: -1; width: 8px; height: 24px; margin-left: -4px; background: #8a5838; border: 2px solid #4d2e1c; box-shadow: inset 2px 0 #b07a4c; }
+.quick-sign-board {
+ display: flex; align-items: center; gap: 6px; padding: 7px 10px; font-size: 12px; font-weight: 900; color: #3b2418; white-space: nowrap;
+ background: #e8ac59 repeating-linear-gradient(0deg, transparent 0 6px, #ae652f33 6px 7px);
+ border: 3px solid #57311f; box-shadow: inset 2px 2px #ffd98d, inset -2px -2px #ae652f, 2px 3px 0 #42291666;
+ transform-origin: 50% 100%;
+}
+.quick-sign-icon { width: 14px; height: 14px; color: #6c3e22; }
+.quick-sign:hover .quick-sign-board { animation: sign-swing .7s ease-in-out; background-color: #f5c477; }
+.quick-sign:hover .quick-sign-icon { animation: coin-hop .5s steps(4) infinite; }
+.quick-sign:active .quick-sign-board { transform: translateY(2px) scaleY(.94); }
+.quick-sign.is-hopping { animation: sign-hop .42s cubic-bezier(.34, 1.56, .64, 1); }
+.quick-sign:focus-visible { outline: none; }
+.quick-sign:focus-visible .quick-sign-board { outline: 3px solid #fff1c7; outline-offset: 2px; }
+
+/* --- Elementos vivos dentro do SVG --- */
+.tree-canopy, .flower-sway, .crop-sway, .crop-stage, .smoke-puff, .butterfly-wings { transform-box: fill-box; }
+.tree-canopy { transform-origin: 50% 100%; animation: tree-sway 4.6s ease-in-out infinite alternate; }
+.flower-sway { transform-origin: 50% 100%; animation: flower-sway 2.8s ease-in-out infinite alternate; }
+.crop-sway { transform-origin: 50% 100%; animation: crop-sway 3.4s ease-in-out infinite alternate; }
+.crop-stage { transform-origin: 50% 100%; animation: sprout-pop .6s cubic-bezier(.34, 1.56, .64, 1) backwards; }
+.crop-sparkle { animation: sparkle-blink 1.4s steps(1) infinite; }
+.smoke-puff { transform-origin: center; animation: smoke-rise 4.2s linear infinite backwards; }
+.farmer-idle { animation: farmer-bob 1.3s steps(1) infinite; }
+.butterfly { animation: butterfly-path 16s ease-in-out infinite; }
+.butterfly-wings { transform-origin: center; animation: wing-flap .3s steps(1) infinite; }
+
+/* --- Animações --- */
+@keyframes sun-glow {
+ from { box-shadow: 8px 0 #ffe38b, -8px 0 #ffe38b, 0 8px #ffe38b, 0 -8px #ffe38b, 0 0 0 12px #ffeaa426; }
+ to { box-shadow: 8px 0 #ffe38b, -8px 0 #ffe38b, 0 8px #ffe38b, 0 -8px #ffe38b, 0 0 0 22px #ffeaa438; }
+}
+@keyframes sun-rays {
+ 0% { box-shadow: 0 -40px #ffe38b, 0 40px #ffe38b, -40px 0 #ffe38b, 40px 0 #ffe38b, 29px 29px #fff1c7, -29px 29px #fff1c7, 29px -29px #fff1c7, -29px -29px #fff1c7; }
+ 50% { box-shadow: 0 -46px #fff1c7, 0 46px #fff1c7, -46px 0 #fff1c7, 46px 0 #fff1c7, 33px 33px #ffe38b, -33px 33px #ffe38b, 33px -33px #ffe38b, -33px -33px #ffe38b; }
+}
+@keyframes cloud-pass { from { left: -14%; } to { left: 108%; } }
+@keyframes birds-fly { 0% { left: -10%; } 55%, 100% { left: 110%; } }
+@keyframes bird-flap {
+ 0% { box-shadow: -6px -3px #3b2418, -3px 0 #3b2418, 3px 0 #3b2418, 6px -3px #3b2418; }
+ 50% { box-shadow: -6px 0 #3b2418, -3px 0 #3b2418, 3px 0 #3b2418, 6px 0 #3b2418; }
+}
+@keyframes welcome-in { from { transform: translateY(-14px); opacity: 0; } }
+@keyframes welcome-float { to { transform: translateY(-3px); } }
+@keyframes star-spin { 25% { transform: rotate(90deg); } 50% { transform: rotate(180deg); } 75% { transform: rotate(270deg); } 100% { transform: rotate(360deg); } }
+@keyframes xp-shimmer { to { left: 100%; } }
+@keyframes xp-float { 0% { transform: translate(-50%, 6px); opacity: 0; } 20% { transform: translate(-50%, 0); opacity: 1; } 80% { opacity: 1; } 100% { transform: translate(-50%, -14px); opacity: 0; } }
+@keyframes hint-unfold { from { transform: scaleY(.2); opacity: 0; } }
+@keyframes level-flash { 0%, 40%, 80% { background-color: #fff3b0; transform: scale(1.03); } 20%, 60%, 100% { background-color: #ffe5ae; transform: none; } }
+@keyframes sign-plant { from { transform: translateY(24px) scaleY(.4); opacity: 0; } }
+@keyframes sign-swing { 25% { transform: rotate(-4deg); } 55% { transform: rotate(3deg); } 80% { transform: rotate(-1deg); } }
+@keyframes sign-hop { 40% { transform: translateY(-10px) scale(1.06, .96); } 70% { transform: translateY(0) scale(.96, 1.04); } }
+@keyframes tree-sway { from { transform: skewX(-1.6deg); } to { transform: skewX(1.6deg); } }
+@keyframes flower-sway { from { transform: rotate(-7deg); } to { transform: rotate(7deg); } }
+@keyframes crop-sway { from { transform: rotate(-3deg); } to { transform: rotate(3deg); } }
+@keyframes smoke-rise { 0% { transform: translate(0, 0) scale(.5); opacity: 0; } 15% { opacity: .85; } 100% { transform: translate(16px, -56px) scale(1.7); opacity: 0; } }
+@keyframes farmer-bob { 50% { transform: translateY(-2px); } }
+@keyframes butterfly-path { 0%, 100% { transform: translate(0, 0); } 20% { transform: translate(34px, -20px); } 40% { transform: translate(64px, 4px); } 55% { transform: translate(40px, -32px); } 75% { transform: translate(-22px, -12px); } }
+@keyframes wing-flap { 50% { transform: scaleX(.3); } }
+
+/* --- Responsivo --- */
+@media (max-width: 767px) {
+ .navigation-closed .farm-welcome { left: 70px; }
+ .quick-actions { left: 10px; right: 10px; bottom: 12px; justify-content: space-between; gap: 4px; }
+ .quick-sign-board { padding: 6px 7px; font-size: 10px; gap: 4px; }
+ .quick-sign-icon { width: 11px; height: 11px; }
+}
