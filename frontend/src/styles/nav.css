@@ -1,0 +1,121 @@
+/* ===== Navegação: gaveta de madeira entalhada que desliza POR CIMA do cenário ===== */
+/* Carregado depois de global.css: sobrescreve o layout antigo em grade que empurrava a fazenda */
+:root { --game-navigation-width: 124px; }
+
+/* A fazenda ocupa sempre a largura toda; a gaveta flutua por cima */
+.world-row, .navigation-closed .world-row { grid-template-columns: minmax(0, 1fr); }
+.farm-welcome { left: 74px; }
+.goals-hero-top, .navigation-closed .goals-hero-top { padding-left: 56px; }
+
+/* --- Botão hambúrguer que vira X --- */
+.navigation-toggle, .navigation-open .navigation-toggle {
+ position: fixed; top: 12px; left: 12px; z-index: 60; width: 46px; height: 46px; padding: 0;
+ transition: left .45s cubic-bezier(.34, 1.25, .64, 1);
+}
+.navigation-open .navigation-toggle { left: calc((var(--game-navigation-width) - 46px) / 2); }
+.toggle-bars { position: relative; display: block; width: 22px; height: 18px; }
+.toggle-bars > span { position: absolute; left: 0; width: 22px; height: 4px; background: #57311f; box-shadow: 0 1px #ffdfa0; transition: transform .3s steps(4), opacity .2s steps(2), top .3s steps(4); }
+.toggle-bars > span:nth-child(1) { top: 0; }
+.toggle-bars > span:nth-child(2) { top: 7px; }
+.toggle-bars > span:nth-child(3) { top: 14px; }
+.navigation-open .toggle-bars > span:nth-child(1) { top: 7px; transform: rotate(45deg); }
+.navigation-open .toggle-bars > span:nth-child(2) { opacity: 0; }
+.navigation-open .toggle-bars > span:nth-child(3) { top: 7px; transform: rotate(-45deg); }
+.navigation-toggle:hover .toggle-bars > span:nth-child(2) { transform: translateX(3px); }
+
+/* --- A gaveta --- */
+.game-navigation, .navigation-open .game-navigation {
+ position: fixed; top: 0; bottom: 0; left: 0; z-index: 50; display: flex; flex-direction: column;
+ width: var(--game-navigation-width); height: auto; padding: 72px 10px 0; overflow: hidden;
+ border: 0; border-right: 4px solid #3b2418;
+ background:
+  linear-gradient(90deg, transparent calc(100% - 12px), #3b241840 calc(100% - 12px)),
+  repeating-linear-gradient(90deg, transparent 0 29px, #4d2e1c 29px 31px, #c88a4a66 31px 32px, transparent 32px 60px),
+  repeating-linear-gradient(0deg, transparent 0 7px, #6c3e222e 7px 8px, transparent 8px 23px, #ffe1a71a 23px 24px, transparent 24px 37px),
+  repeating-linear-gradient(90deg, transparent 0 11px, #b0703a26 11px 13px, transparent 13px 46px),
+  linear-gradient(90deg, #8a5027, #a1622f 45%, #8a5027);
+ box-shadow: inset -3px 0 #e7ad62, inset -7px 0 #ad6b36, inset 3px 0 #c88a4a, 6px 0 0 #3b241866;
+ transform: translateX(calc(-100% - 14px)); visibility: hidden;
+ transition: transform .5s cubic-bezier(.34, 1.25, .64, 1), visibility 0s linear .5s;
+}
+.navigation-open .game-navigation { transform: none; visibility: visible; transition: transform .5s cubic-bezier(.34, 1.25, .64, 1), visibility 0s; }
+
+/* Pregos de ferro nos cantos */
+.nav-nails { position: absolute; top: 60px; left: 8px; width: 4px; height: 4px; background: #e4c48a; box-shadow: calc(var(--game-navigation-width) - 32px) 0 #e4c48a, 1px 1px #3b2418, calc(var(--game-navigation-width) - 31px) 1px #3b2418; }
+
+/* Vaga-lumes flutuando e piscando */
+.nav-firefly { position: absolute; z-index: 0; width: 3px; height: 3px; background: #ffe38b; box-shadow: 0 0 0 2px #ffe38b44; pointer-events: none; animation: firefly-float var(--firefly-duration, 7s) ease-in-out infinite alternate, firefly-blink 2.2s steps(1) infinite; }
+
+/* Trepadeira na borda: cresce de baixo para cima quando a gaveta abre */
+.nav-vine { position: absolute; top: 64px; bottom: 40px; right: 9px; z-index: 1; width: 12px; height: auto; clip-path: inset(100% 0 0 0); transition: clip-path .9s steps(14) .2s; pointer-events: none; }
+.navigation-open .nav-vine { clip-path: inset(0 0 0 0); }
+.vine-leaf-sway { transform-box: fill-box; transform-origin: 50% 50%; animation: vine-leaf 2.6s ease-in-out infinite alternate; }
+.vine-flower-blink { animation: sparkle-blink 1.8s steps(1) infinite; }
+
+/* Gramado no pé */
+.nav-grass { position: relative; z-index: 1; flex-shrink: 0; width: calc(100% + 20px); height: 48px; margin: auto -10px 0; }
+.grass-blades { transform-box: fill-box; transform-origin: 50% 100%; animation: grass-wave 3s ease-in-out infinite alternate; }
+.nav-flower { transform-box: fill-box; transform-origin: 50% 100%; animation: flower-sway 2.4s ease-in-out infinite alternate; }
+
+/* --- Itens --- */
+.game-nav-list { position: relative; z-index: 2; display: flex; flex: 0 1 auto; flex-direction: column; justify-content: flex-start; gap: 8px; height: auto; overflow-y: auto; scrollbar-width: none; }
+.navigation-open .game-nav-list > li { animation: nav-item-in .55s cubic-bezier(.34, 1.56, .64, 1) backwards; animation-delay: calc(var(--i) * 65ms + 140ms); }
+.game-nav-item { position: relative; min-height: 78px; gap: 6px; padding: 4px 0; border: 0; background: none; cursor: pointer; color: #ffe1a7; }
+.game-nav-icon {
+ position: relative; width: 50px; height: 50px; color: #ffe2a3;
+ background: #a86b35 repeating-linear-gradient(0deg, transparent 0 7px, #754222 7px 8px);
+ border: 3px solid #4d2e1c; box-shadow: inset 2px 2px #d29853, inset -2px -2px #754222, 2px 3px #3b2418;
+ transition: transform .2s cubic-bezier(.34, 1.56, .64, 1), box-shadow .2s steps(2);
+}
+.game-nav-icon svg { width: 26px; height: 26px; filter: drop-shadow(1px 1px 0 #4d2e1c); }
+.game-nav-label { color: #ffe1a7; text-shadow: 1px 2px #3b2418; font-size: 11px; }
+.game-nav-item:not(:disabled):hover .game-nav-icon { transform: translateY(-4px) rotate(-4deg); box-shadow: inset 2px 2px #e8b06a, inset -2px -2px #754222, 3px 6px #3b2418; }
+.game-nav-item:not(:disabled):hover .game-nav-icon svg { animation: coin-hop .5s steps(4) infinite; }
+.game-nav-item:not(:disabled):active .game-nav-icon { transform: translateY(1px) scale(.95); }
+.game-nav-item:focus-visible { outline: none; }
+.game-nav-item:focus-visible .game-nav-icon { outline: 3px solid #fff1c7; outline-offset: 3px; }
+
+/* Selecionado: placa dourada com brilho passando, faísca no canto e fita verde na lateral */
+.game-nav-item.is-selected .game-nav-icon { overflow: hidden; background: #f2c453; color: #714127; border-color: #57311f; box-shadow: inset 2px 2px #fff1c7, inset -2px -2px #b17a35, 2px 3px #3b2418, 0 0 0 3px #ffe38b55; animation: selected-glow 2.4s steps(3) infinite alternate; }
+.game-nav-item.is-selected .game-nav-icon::after { content: ''; position: absolute; top: -10px; bottom: -10px; left: -20px; width: 8px; background: #fff6c2cc; transform: rotate(20deg); animation: tile-shine 3.2s steps(10) infinite; }
+.game-nav-item.is-selected .game-nav-icon svg { filter: none; }
+.game-nav-item.is-selected::before { content: ''; position: absolute; left: -10px; top: 10px; width: 6px; height: 40px; background: #53922d; border: 2px solid #23401f; border-left: 0; box-shadow: inset 2px 0 #72ad32; animation: ribbon-in .4s cubic-bezier(.34, 1.56, .64, 1) backwards .3s; }
+.game-nav-item.is-selected .game-nav-label { color: #fff1c7; }
+.nav-sparkle { position: absolute; top: 3px; right: 3px; z-index: 1; width: 2px; height: 2px; background: #fff; box-shadow: 0 -2px #fff, 0 2px #fff, -2px 0 #fff, 2px 0 #fff; animation: sparkle-blink 1.4s steps(1) infinite; }
+
+/* Ainda não disponíveis: caixote apagado */
+.game-nav-item.is-locked { cursor: default; opacity: .62; }
+.game-nav-item.is-locked .game-nav-icon { background-color: #8f5c31; border-style: dashed; }
+
+/* --- Animações --- */
+@keyframes firefly-float { 0% { transform: translate(0, 0); } 50% { transform: translate(8px, -14px); } 100% { transform: translate(-6px, -26px); } }
+@keyframes firefly-blink { 0%, 100% { opacity: 1; } 45% { opacity: .2; } 60% { opacity: .9; } }
+@keyframes vine-leaf { from { transform: rotate(-8deg); } to { transform: rotate(8deg); } }
+@keyframes grass-wave { from { transform: skewX(-4deg); } to { transform: skewX(4deg); } }
+@keyframes nav-item-in { from { transform: translateX(-40px) rotate(-8deg); opacity: 0; } }
+@keyframes selected-glow { from { box-shadow: inset 2px 2px #fff1c7, inset -2px -2px #b17a35, 2px 3px #3b2418, 0 0 0 2px #ffe38b44; } to { box-shadow: inset 2px 2px #fff1c7, inset -2px -2px #b17a35, 2px 3px #3b2418, 0 0 0 5px #ffe38b66; } }
+@keyframes tile-shine { 0% { left: -20px; } 35%, 100% { left: 70px; } }
+@keyframes ribbon-in { from { transform: scaleX(0); transform-origin: left; } }
+
+/* --- Celular: barra inferior que sobe deslizando --- */
+@media (max-width: 767px) {
+ .farm-welcome { left: 70px; }
+ .goals-hero-top, .navigation-closed .goals-hero-top { padding-left: 0; }
+ .navigation-open .navigation-toggle { left: 12px; }
+ .game-navigation, .navigation-open .game-navigation {
+  top: auto; right: 0; width: 100%; height: calc(var(--game-navigation-height) + env(safe-area-inset-bottom, 0px));
+  padding: 4px max(4px, env(safe-area-inset-right, 0px)) calc(4px + env(safe-area-inset-bottom, 0px)) max(4px, env(safe-area-inset-left, 0px));
+  border-right: 0; border-top: 4px solid #3b2418;
+  box-shadow: inset 0 3px #e7ad62, inset 0 7px #ad6b36, 0 -4px 0 #3b241866;
+  transform: translateY(calc(100% + 8px));
+ }
+ .navigation-open .game-navigation { transform: none; }
+ .nav-vine, .nav-grass, .nav-nails, .nav-firefly { display: none; }
+ .game-nav-list { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 2px; overflow: visible; }
+ .navigation-open .game-nav-list > li { animation-name: nav-item-up; }
+ .game-nav-item { min-height: 82px; justify-content: flex-start; }
+ .game-nav-icon { width: 36px; height: 36px; }
+ .game-nav-icon svg { width: 20px; height: 20px; }
+ .game-nav-item.is-selected::before { left: 50%; top: auto; bottom: -2px; width: 24px; height: 5px; margin-left: -12px; border: 2px solid #23401f; border-bottom: 0; }
+ @keyframes nav-item-up { from { transform: translateY(24px); opacity: 0; } }
+}

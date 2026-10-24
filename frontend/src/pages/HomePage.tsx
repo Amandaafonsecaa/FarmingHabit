@@ -9,7 +9,6 @@ import { RewardDialog } from '../components/dialogs/RewardDialog';
 import { NewGoalDialog } from '../components/goals/NewGoalDialog';
 import { useGoalTracker, useToday } from '../hooks/useGoalTracker';
 import { amountOn, dailyTarget, toKey, todayStats } from '../lib/goalLogic';
-import type { QuickAction } from '../components/home/QuickActions';
 import type { NewTrackedGoal, TrackedGoal } from '../types/goals';
 import type { ItemKind, Mission, NewItem, Reward } from '../types/world';
 import { MainLayout } from '../layouts/MainLayout';
@@ -68,15 +67,6 @@ export function HomePage({ onNavigate }: { onNavigate: (page: AppPage) => void }
     }
     setAmount(goal.id, key, amount >= 1 ? 0 : 1);
     setAnnouncement(`${goal.title}: ${amount >= 1 ? 'marcação de hoje desfeita.' : 'colhida hoje!'}`);
-  }
-
-  // Atalhos das placas: trocam de aba, abrem o formulário ou rolam até o painel
-  function handleQuickAction(action: QuickAction) {
-    if (action === 'goals') { onNavigate('goals'); return; }
-    if (action === 'new-goal') { setDialogKind('goal'); return; }
-    const panel = document.getElementById(action === 'missions' ? 'missions-heading' : 'coins-heading')?.closest('section');
-    const smooth = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    panel?.scrollIntoView({ behavior: smooth ? 'smooth' : 'auto', block: 'start' });
   }
 
   function plantGoal(goal: NewTrackedGoal) {
@@ -146,7 +136,7 @@ export function HomePage({ onNavigate }: { onNavigate: (page: AppPage) => void }
     }
   }
 
-  return <MainLayout page="home" onNavigate={onNavigate} world={<GameWorld player={player} today={today} goalsDone={goalsDone} goalsDue={goalsDue} onAction={handleQuickAction}/>}>
+  return <MainLayout page="home" onNavigate={onNavigate} world={<GameWorld player={player} today={today} goalsDone={goalsDone} goalsDue={goalsDue}/>}>
     <div className="functional-panel">
       <GoalsPanel goals={goals} log={log} today={today} onCheck={checkGoal} onAdd={()=>setDialogKind('goal')}/>
       <MissionsPanel missions={missions} loading={loading} error={loadError} pendingId={pendingId} onToggle={toggleMission} onDelete={removeMission} onAdd={()=>setDialogKind('mission')}/>

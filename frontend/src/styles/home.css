@@ -14,7 +14,6 @@
 /* --- Placa de boas-vindas --- */
 .farm-welcome { animation: welcome-in .7s cubic-bezier(.34, 1.4, .64, 1) backwards; }
 .farm-welcome h1 { animation: welcome-float 4s ease-in-out infinite alternate; }
-.navigation-closed .farm-welcome { left: 74px; }
 
 /* --- Nível e XP --- */
 .level-card { position: relative; transition: transform .15s steps(2); }
@@ -35,24 +34,6 @@
 .xp-hint { margin-top: 6px; padding: 6px 8px; font-size: 11px; line-height: 1.4; background: #fff1c7; border: 2px dashed #ae652f; animation: hint-unfold .25s cubic-bezier(.34, 1.4, .64, 1) backwards; transform-origin: top; }
 .level-card.is-level-up { animation: level-flash 1.8s steps(1); }
 .farm-name-card:hover .farm-leaf { animation: plant-wiggle .6s steps(6); }
-
-/* --- Atalhos: placas fincadas no chão --- */
-.quick-actions { position: absolute; left: 20px; bottom: 16px; z-index: 5; display: flex; align-items: flex-end; gap: 10px; }
-.quick-sign { position: relative; isolation: isolate; padding: 0 0 18px; border: 0; background: none; font: inherit; cursor: pointer; transform-origin: 50% 100%; animation: sign-plant .55s cubic-bezier(.34, 1.56, .64, 1) backwards; }
-.quick-sign::after { content: ''; position: absolute; left: 50%; bottom: 0; z-index: -1; width: 8px; height: 24px; margin-left: -4px; background: #8a5838; border: 2px solid #4d2e1c; box-shadow: inset 2px 0 #b07a4c; }
-.quick-sign-board {
- display: flex; align-items: center; gap: 6px; padding: 7px 10px; font-size: 12px; font-weight: 900; color: #3b2418; white-space: nowrap;
- background: #e8ac59 repeating-linear-gradient(0deg, transparent 0 6px, #ae652f33 6px 7px);
- border: 3px solid #57311f; box-shadow: inset 2px 2px #ffd98d, inset -2px -2px #ae652f, 2px 3px 0 #42291666;
- transform-origin: 50% 100%;
-}
-.quick-sign-icon { width: 14px; height: 14px; color: #6c3e22; }
-.quick-sign:hover .quick-sign-board { animation: sign-swing .7s ease-in-out; background-color: #f5c477; }
-.quick-sign:hover .quick-sign-icon { animation: coin-hop .5s steps(4) infinite; }
-.quick-sign:active .quick-sign-board { transform: translateY(2px) scaleY(.94); }
-.quick-sign.is-hopping { animation: sign-hop .42s cubic-bezier(.34, 1.56, .64, 1); }
-.quick-sign:focus-visible { outline: none; }
-.quick-sign:focus-visible .quick-sign-board { outline: 3px solid #fff1c7; outline-offset: 2px; }
 
 /* --- Elementos vivos dentro do SVG --- */
 .tree-canopy, .flower-sway, .crop-sway, .crop-stage, .smoke-puff, .butterfly-wings { transform-box: fill-box; }
@@ -88,9 +69,6 @@
 @keyframes xp-float { 0% { transform: translate(-50%, 6px); opacity: 0; } 20% { transform: translate(-50%, 0); opacity: 1; } 80% { opacity: 1; } 100% { transform: translate(-50%, -14px); opacity: 0; } }
 @keyframes hint-unfold { from { transform: scaleY(.2); opacity: 0; } }
 @keyframes level-flash { 0%, 40%, 80% { background-color: #fff3b0; transform: scale(1.03); } 20%, 60%, 100% { background-color: #ffe5ae; transform: none; } }
-@keyframes sign-plant { from { transform: translateY(24px) scaleY(.4); opacity: 0; } }
-@keyframes sign-swing { 25% { transform: rotate(-4deg); } 55% { transform: rotate(3deg); } 80% { transform: rotate(-1deg); } }
-@keyframes sign-hop { 40% { transform: translateY(-10px) scale(1.06, .96); } 70% { transform: translateY(0) scale(.96, 1.04); } }
 @keyframes tree-sway { from { transform: skewX(-1.6deg); } to { transform: skewX(1.6deg); } }
 @keyframes flower-sway { from { transform: rotate(-7deg); } to { transform: rotate(7deg); } }
 @keyframes crop-sway { from { transform: rotate(-3deg); } to { transform: rotate(3deg); } }
@@ -99,10 +77,20 @@
 @keyframes butterfly-path { 0%, 100% { transform: translate(0, 0); } 20% { transform: translate(34px, -20px); } 40% { transform: translate(64px, 4px); } 55% { transform: translate(40px, -32px); } 75% { transform: translate(-22px, -12px); } }
 @keyframes wing-flap { 50% { transform: scaleX(.3); } }
 
-/* --- Responsivo --- */
-@media (max-width: 767px) {
- .navigation-closed .farm-welcome { left: 70px; }
- .quick-actions { left: 10px; right: 10px; bottom: 12px; justify-content: space-between; gap: 4px; }
- .quick-sign-board { padding: 6px 7px; font-size: 10px; gap: 4px; }
- .quick-sign-icon { width: 11px; height: 11px; }
+
+/* --- Riacho: correnteza descendo e peixes pulando --- */
+.river-current { opacity: .75; animation: river-flow 2.6s linear infinite; }
+/* O ciclo de cada pulo é longo: o peixe passa a maior parte do tempo escondido e salta por ~1s */
+.fish-jump, .fish-splash { transform-box: fill-box; transform-origin: center; }
+.fish-jump { opacity: 0; animation: fish-jump 11s cubic-bezier(.3, .7, .4, 1) infinite; }
+.fish-splash { opacity: 0; animation: fish-splash 11s steps(1) infinite; }
+@keyframes river-flow { to { stroke-dashoffset: var(--dash-cycle, -44px); } }
+@keyframes fish-jump {
+ 0%, 100% { transform: translate(-10px, 6px) rotate(-50deg); opacity: 0; }
+ 1% { transform: translate(-10px, 4px) rotate(-50deg); opacity: 1; }
+ 4.5% { transform: translate(0, -18px) rotate(0deg); opacity: 1; }
+ 8% { transform: translate(10px, 2px) rotate(55deg); opacity: 1; }
+ 9% { transform: translate(11px, 7px) rotate(60deg); opacity: 0; }
 }
+@keyframes fish-splash { 0%, 2.5%, 8%, 11%, 100% { opacity: 0; } 0.5% { opacity: 1; } 8.5% { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .fish-jump, .fish-splash { display: none; } }

@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react';
 import { FarmHouse } from './FarmHouse';
 import { CharacterScene } from './CharacterScene';
 function Tree({ x, y, scale = 1, delay = 0 }: { x: number; y: number; scale?: number; delay?: number }) {
@@ -22,6 +23,23 @@ function BedCrop({ stage, row, golden }: { stage: number; row: number; golden: b
     {stage >= 2 && <><path d="M-2-4h4v17h-4Zm-7-2h6v7h-6Zm9-5h7v8H0Z" fill="#28592a"/><path d="M-6-1h5v5h-5Zm8-8h5v6H2Z" fill="#80c43d"/></>}
     {stage === 3 && <><path d="M-5 5h10v9H-5Z" fill={row ? '#e7b52e' : '#df5438'}/><path d="M-3 6h3v3h-3Z" fill={row ? '#fff087' : '#ff9970'}/></>}
     {stage === 3 && golden && <path className="crop-sparkle" d="M6 0h2v2H6Zm1-3h1v1H7Zm2 2h1v1H9Z" fill="#fff6c2"/>}
+  </g>;
+}
+
+// Linha central do riacho, de montante (esquerda) para jusante (descendo): as correntezas seguem esse caminho
+const STREAM_CENTER = 'M-2000 361H-240L-170 364L-110 369L-60 375L-15 386L25 400L48 418L50 438L38 458L24 480L10 505L-6 530L-20 556L-28 582L-26 612L-38 645L-60 690';
+const CURRENTS = [{ offset: 0, dash: '14 30', speed: 2.4, width: 2 }, { offset: -5, dash: '8 40', speed: 3.1, width: 2 }, { offset: 5, dash: '20 46', speed: 2.8, width: 1 }];
+
+/** Peixinho que pula de vez em quando, com respingo na saída e na volta para a água */
+function JumpingFish({ x, y, color, delay, flip = false }: { x: number; y: number; color: string; delay: number; flip?: boolean }) {
+  return <g transform={`translate(${x} ${y})${flip ? ' scale(-1 1)' : ''}`} aria-hidden="true">
+    <g className="fish-jump" style={{ animationDelay: `${delay}s` }}>
+      <path d="M-6-2h9v1h2v2h-2v1h-9Z" fill={color}/><path d="M-9-3h3v6h-3Z" fill={color} opacity=".8"/>
+      <path d="M-4-2h6v1h-6Z" fill="#fff6c2" opacity=".7"/><path d="M3-1h1v1H3Z" fill="#1b2a3a"/>
+    </g>
+    <g className="fish-splash" style={{ animationDelay: `${delay}s` }}>
+      <path d="M-12 2h3v2h-3Zm-2-4h2v2h-2Zm6-2h2v2h-2Zm10 6h3v2H2Zm6-4h2v2H8Zm-4-3h2v2H4Z" fill="#d8f6ff"/>
+    </g>
   </g>;
 }
 
@@ -161,6 +179,15 @@ export function WorldScenery({ dailyProgress, level }: { dailyProgress: number; 
         <path d="M-32 391h13v2h-13Zm55 24h12v2H23Zm-16 38h10v2H7Zm-41 37h14v2h-14Zm-36 49h10v2h-10Zm-10 43h13v2h-13Z"/>
       </g>
     </g>
+    {/* Correntezas descendo o riacho (presas ao formato da água) */}
+    <g clipPath="url(#farm-stream-clip)" fill="none" strokeLinejoin="miter">
+      {CURRENTS.map((current, index) => <path key={index} className="river-current" d={STREAM_CENTER} transform={`translate(${current.offset * 0.6} ${current.offset})`}
+        stroke={index === 1 ? '#e6fbff' : '#b9f2ff'} strokeWidth={current.width} strokeDasharray={current.dash}
+        style={{ animationDuration: `${current.speed}s`, '--dash-cycle': `-${current.dash.split(' ').map(Number).reduce((a, b) => a + b, 0)}px` } as CSSProperties}/>)}
+    </g>
+    <JumpingFish x={-60} y={372} color="#f08a3c" delay={-1}/>
+    <JumpingFish x={34} y={428} color="#e7e2c8" delay={-5} flip/>
+    <JumpingFish x={-14} y={540} color="#f2c453" delay={-8.5}/>
     {/* A darker forest floor separates the rear woodland from the open farm. */}
     <path d="M-2000 253h2308v13h81v13H238v17H100v18H-2000Z M980 236H3200V331H1191v-13h-81v-17h-68v-20h-62Z" fill="#569630"/>
     <g fill="#ffe0a0" opacity=".65"><path d="M267 462h9v3h-9Zm146-8h7v3h-7Zm220-56h8v3h-8Zm129 48h10v3h-10Zm275-6h7v3h-7Z"/></g>
