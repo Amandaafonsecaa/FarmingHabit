@@ -1,5 +1,5 @@
 /** Original pixel architecture, on an integer grid shared with the farm. */
-export function FarmHouse() {
+export function FarmHouse({ celebrating = false }: { celebrating?: boolean }) {
   return <g transform="translate(435 188)" strokeLinejoin="miter">
     <path d="M-16 180h252v12H-16Z" fill="#36542b" opacity=".3"/>
     {/* Stone footing and sunlit timber siding. */}
@@ -28,12 +28,14 @@ export function FarmHouse() {
     <path d="M148-26h35v8h-35Z" fill="#594334"/><path d="M151-26h29v3h-29Z" fill="#d0bb8e"/>
     {/* Fumaça: três baforadas subindo e se desfazendo em sequência */}
     <g className="chimney-smoke">{[0,1,2].map(puff=><rect key={puff} className="smoke-puff" x={159} y={-40} width={12} height={10} fill="#fff3ce" style={{ animationDelay: `${puff * 1.4}s` }}/>)}</g>
+    {/* Bandeirinha do dia perfeito: fica no telhado até o dia seguinte */}
+    {celebrating && <g className="house-flag"><path d="M40-42h3v40h-3Z" fill="#57311f"/><path className="lm-flag" d="M43-42h24v15H43Z" fill="#f2c453"/><path d="M51-38h8v7h-8Z" fill="#bf5837"/><path d="M38-45h7v4h-7Z" fill="#e8ac59"/></g>}
     {/* Two recessed windows with shutters and flower boxes. */}
     {[22,151].map(x=><g key={x} transform={`translate(${x} 100)`}>
       <path d="M-9-5h49v43H-9Z" fill="#6c3e26"/>
       <path d="M0-2h30v35H0Z" fill="#ffe3a1"/>
-      <path d="M3 1h24v28H3Z" fill="#4c8eab"/>
-      <path d="M4 2h10v11H4Zm12 13h10v13H16Z" fill="#8ed5db"/>
+      <path className="house-window" d="M3 1h24v28H3Z" fill="#4c8eab"/>
+      <path className="house-window-glint" d="M4 2h10v11H4Zm12 13h10v13H16Z" fill="#8ed5db"/>
       <path d="M12 0h4v31h-4ZM2 13h26v4H2Z" fill="#e9bf73"/>
       <path d="M-7-2h5v34h-5Zm39 0h6v34h-6Z" fill="#b57638"/>
       <path d="M-7 6h5m-5 8h5m-5 8h5m34-16h6m-6 8h6m-6 8h6" stroke="#734225" strokeWidth="2"/>

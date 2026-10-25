@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { CHAPTERS } from '../../lib/journey';
 import type { FoundChest, Loot } from '../../lib/treasure';
 import { LootIcon, lootLabel, lootRarity } from './TreasureIcons';
+import { flyCoins } from '../../lib/coinFlight';
 
 /**
  * Abertura do baú: ele chacoalha esperando o toque, a tampa voa, raios de luz giram
@@ -14,6 +15,14 @@ export function ChestOpening({ chest, remaining, onOpen, onClose }: {
   const [phase, setPhase] = useState<'closed' | 'opening' | 'open'>('closed');
   const [loot, setLoot] = useState<Loot[]>([]);
   const [error, setError] = useState('');
+  const lootRef = useRef<HTMLUListElement>(null);
+
+  // Ao guardar, as moedas do baú voam até o contador do mapa (o diálogo fica por cima de tudo, então voam ao fechar)
+  function store() {
+    const coins = loot.reduce((sum, item) => sum + (item.kind === 'coins' ? item.amount : 0), 0);
+    flyCoins(lootRef.current, coins);
+    onClose();
+  }
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -50,7 +59,7 @@ export function ChestOpening({ chest, remaining, onOpen, onClose }: {
       {phase === 'closed' && <p className="chest-hint">Toque no baú para abrir</p>}
     </div>
 
-    {phase === 'open' && <ul className="loot-list">{loot.map((item, index) => <li key={index} className={`loot-card is-${lootRarity(item)}`} style={{ '--card': index } as CSSProperties}>
+    {phase === 'open' && <ul ref={lootRef} className="loot-list">{loot.map((item, index) => <li key={index} className={`loot-card is-${lootRarity(item)}`} style={{ '--card': index } as CSSProperties}>
       <span className="loot-icon"><LootIcon loot={item} className="size-full"/></span>
       <strong>{lootLabel(item)}</strong>
       <small>{item.kind === 'collectible' ? lootRarity(item) : item.kind === 'coins' ? 'creditadas' : 'XP creditado'}</small>
@@ -59,7 +68,7 @@ export function ChestOpening({ chest, remaining, onOpen, onClose }: {
 
     <footer className="welcome-actions">
       {phase === 'open'
-        ? <button type="button" className="pixel-button primary-button" onClick={onClose}>{remaining > 0 ? `Guardar tudo (mais ${remaining} ${remaining === 1 ? 'baú' : 'baús'})` : 'Guardar tudo'}</button>
+        ? <button type="button" className="pixel-button primary-button" onClick={store}>{remaining > 0 ? `Guardar tudo (mais ${remaining} ${remaining === 1 ? 'baú' : 'baús'})` : 'Guardar tudo'}</button>
         : <><button type="button" className="pixel-button" disabled={phase === 'opening'} onClick={onClose}>Depois</button><button type="button" className="pixel-button primary-button" disabled={phase !== 'closed'} onClick={open}>Abrir baú</button></>}
     </footer>
   </dialog>;

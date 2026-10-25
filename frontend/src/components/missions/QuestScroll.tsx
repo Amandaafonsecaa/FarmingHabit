@@ -8,7 +8,7 @@ const TILTS = [-1.6, 1.2, -0.8, 1.8];
 
 interface QuestScrollProps {
   mission: Mission; index: number; active: boolean; pending: boolean; celebrating: boolean; highlighted: boolean;
-  onAccept: () => void; onAbandon: () => void; onComplete: () => void; onRemove: () => void;
+  onAccept: () => void; onAbandon: () => void; onComplete: (origin: Element) => void; onRemove: () => void;
 }
 
 /** Pergaminho preso no quadro com tachinha: patente, recompensa e o caminho Partir → Cumprir */
@@ -29,7 +29,7 @@ export function QuestScroll({ mission, index, active, pending, celebrating, high
       {active && !celebrating && <p className="quest-progress"><span className="footsteps" aria-hidden="true"><span/><span/><span/></span>Em jornada</p>}
       {!celebrating && <div className="quest-actions">
         {active
-          ? <><button type="button" className="pixel-button primary-button" disabled={pending} onClick={onComplete}><PixelIcon name="check" className="size-3"/>Missão cumprida!</button>
+          ? <><button type="button" className="pixel-button primary-button" disabled={pending} onClick={event=>onComplete(event.currentTarget)}><PixelIcon name="check" className="size-3"/>Missão cumprida!</button>
               <button type="button" className="pixel-button" disabled={pending} onClick={onAbandon}>Voltar depois</button></>
           : <button type="button" className="pixel-button quest-go" disabled={pending} onClick={onAccept}><PixelIcon name="target" className="size-3"/>Partir em aventura</button>}
         <button type="button" className="plot-remove" disabled={pending} onClick={onRemove} aria-label={`Rasgar a missão ${mission.title}`}><PixelIcon name="close" className="size-2.5"/></button>

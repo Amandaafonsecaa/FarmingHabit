@@ -11,6 +11,8 @@ import { useFlipList } from '../hooks/useFlipList';
 import { isScheduled, sortByPending, toKey } from '../lib/goalLogic';
 import type { NewTrackedGoal, TrackedGoal } from '../types/goals';
 import { claimHarvest, creditPlayer, releaseHarvest, rewardLabel } from '../lib/harvestRewards';
+import { flyCoins } from '../lib/coinFlight';
+import { usePlayerCoins } from '../hooks/usePlayerCoins';
 import type { AppPage } from '../types/navigation';
 
 const VINE_LEAVES = [0.08, 0.2, 0.32, 0.44, 0.56, 0.68, 0.8, 0.92];
@@ -31,16 +33,17 @@ export function GoalsPage({ onNavigate }: { onNavigate: (page: AppPage) => void 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [announcement, setAnnouncement] = useState('');
   const [boardRef, vineProgress] = useScrollProgress<HTMLDivElement>();
+  const coins = usePlayerCoins();
   // Pendentes em cima, colhidas descem para o fim da lista
   const shown = sortByPending(view === 'today' ? goals.filter(goal => isScheduled(goal, today)) : goals, log, today);
   const plotsRef = useFlipList<HTMLUListElement>(shown.map(goal => goal.id).join());
 
   // Cumprir a meta no dia paga moedas e XP (uma vez por dia); o crédito vai para o servidor em segundo plano
-  function updateAmount(goal: TrackedGoal, amount: number) {
+  function updateAmount(goal: TrackedGoal, amount: number, origin?: Element) {
     const reward = claimHarvest(goal, log, today, amount);
     setAmount(goal.id, toKey(today), amount);
     if (reward) creditPlayer(reward.coins, reward.xp)
-      .then(() => setAnnouncement(`${goal.title}: ${rewardLabel(reward)}`))
+      .then(() => { flyCoins(origin, reward.coins); setAnnouncement(`${goal.title}: ${rewardLabel(reward)}`); })
       .catch(() => { releaseHarvest(reward); setAnnouncement(`${goal.title}: colhida, mas o servidor está fora do ar e as moedas não foram creditadas.`); });
     return reward;
   }
@@ -58,7 +61,7 @@ export function GoalsPage({ onNavigate }: { onNavigate: (page: AppPage) => void 
     setAnnouncement(`${title}: meta arrancada do canteiro.`);
   }
 
-  return <MainLayout page="goals" onNavigate={onNavigate} world={<GoalsHero goals={goals} log={log} today={today} onPlant={()=>setDialogOpen(true)}/>}>
+  return <MainLayout page="goals" onNavigate={onNavigate} world={<GoalsHero goals={goals} log={log} today={today} coins={coins} onPlant={()=>setDialogOpen(true)}/>}>
     <div className="goals-layout">
       <section className="world-panel pixel-frame goals-board-panel" aria-labelledby="plots-heading">
         <header className="panel-heading">
@@ -74,7 +77,7 @@ export function GoalsPage({ onNavigate }: { onNavigate: (page: AppPage) => void 
             ? <div className="goals-empty"><p className="item-title">{goals.length ? 'Nenhuma meta cobra hoje. Dia de descanso no sítio!' : 'O canteiro está vazio.'}</p>
                 {!goals.length && <button type="button" className="pixel-button primary-button mt-3" onClick={()=>setDialogOpen(true)}><PixelIcon name="plus" className="size-2.5"/>Plantar a primeira meta</button>}</div>
             : <ul ref={plotsRef} className="goal-plots">{shown.map(goal => <GoalCard key={goal.id} goal={goal} log={log} today={today}
-                onSetAmount={amount=>updateAmount(goal, amount)} onRemove={()=>uproot(goal.id, goal.title)} onAnnounce={setAnnouncement}/>)}</ul>}
+                onSetAmount={(amount, origin)=>updateAmount(goal, amount, origin)} onRemove={()=>uproot(goal.id, goal.title)} onAnnounce={setAnnouncement}/>)}</ul>}
         </div>
       </section>
       <ConsistencyCalendar goals={goals} log={log} today={today}/>

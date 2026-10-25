@@ -9,7 +9,7 @@ import { HARVEST_REWARD, type HarvestReward } from '../../lib/harvestRewards';
 
 interface GoalCardProps {
   goal: TrackedGoal; log: GoalLog; today: Date;
-  onSetAmount: (amount: number) => HarvestReward | null; onRemove: () => void; onAnnounce: (message: string) => void;
+  onSetAmount: (amount: number, origin?: Element) => HarvestReward | null; onRemove: () => void; onAnnounce: (message: string) => void;
 }
 
 /** Faixa seg–dom da semana atual: feito, falhou, hoje, agendado ou folga */
@@ -50,10 +50,10 @@ export function GoalCard({ goal, log, today, onSetAmount, onRemove, onAnnounce }
   }
 
   // Check único (diária, dias específicos ou um check da semanal): alterna o dia de hoje
-  function toggleCheck() {
+  function toggleCheck(origin: Element) {
     if (doneToday) { onSetAmount(0); onAnnounce(`${goal.title}: marcação de hoje desfeita.`); return; }
     // A plaquinha mostra as moedas ganhas (só na primeira colheita do dia)
-    const reward = onSetAmount(1);
+    const reward = onSetAmount(1, origin);
     const coins = reward ? ` +${reward.coins} 🪙` : '';
     if (!weekly) celebrate('big', `Colhido!${coins}`);
     else if (checks >= weekly.timesPerWeek) celebrate('small', `Colheita extra!${coins}`);
@@ -62,10 +62,10 @@ export function GoalCard({ goal, log, today, onSetAmount, onRemove, onAnnounce }
   }
 
   // Quantidade (copos, minutos...): soma ou tira um passo; floresce ao bater a meta do dia
-  function changeAmount(direction: 1 | -1) {
+  function changeAmount(direction: 1 | -1, origin: Element) {
     if (!quantity) return;
     const next = Math.max(0, amount + direction * quantity.step);
-    const reward = onSetAmount(next);
+    const reward = onSetAmount(next, origin);
     if (direction < 0) return;
     if (next >= target && amount < target) celebrate('big', `Meta do dia!${reward ? ` +${reward.coins} 🪙` : ''}`);
     else celebrate('small', `+${quantity.step} ${quantity.unit}`);
@@ -101,11 +101,11 @@ export function GoalCard({ goal, log, today, onSetAmount, onRemove, onAnnounce }
     <footer className="goal-plot-actions">
       {scheduledToday && !doneToday && <span className="reward-chip" title="Recompensa por cumprir hoje">+{HARVEST_REWARD.coins} 🪙</span>}
       {quantity ? <div className="quantity-stepper">
-        <button type="button" className="pixel-button" disabled={!scheduledToday || amount === 0} onClick={()=>changeAmount(-1)} aria-label={`Tirar ${quantity.step} ${quantity.unit}`}><PixelIcon name="minus" className="size-2.5"/></button>
+        <button type="button" className="pixel-button" disabled={!scheduledToday || amount === 0} onClick={event=>changeAmount(-1, event.currentTarget)} aria-label={`Tirar ${quantity.step} ${quantity.unit}`}><PixelIcon name="minus" className="size-2.5"/></button>
         <output className="quantity-value" aria-live="polite">{amount}<small>/{target} {quantity.unit}</small></output>
-        <button type="button" className="pixel-button harvest-button" disabled={!scheduledToday} onClick={()=>changeAmount(1)}><PixelIcon name="plus" className="size-2.5"/>{quantity.step} {quantity.unit}</button>
+        <button type="button" className="pixel-button harvest-button" disabled={!scheduledToday} onClick={event=>changeAmount(1, event.currentTarget)}><PixelIcon name="plus" className="size-2.5"/>{quantity.step} {quantity.unit}</button>
       </div>
-      : <button type="button" className="pixel-button harvest-button" aria-pressed={doneToday} disabled={!scheduledToday} onClick={toggleCheck}>
+      : <button type="button" className="pixel-button harvest-button" aria-pressed={doneToday} disabled={!scheduledToday} onClick={event=>toggleCheck(event.currentTarget)}>
         <span className="harvest-hint"><PixelIcon name={doneToday ? 'check' : 'coin'} className="size-3"/></span>
         {!scheduledToday ? 'Dia de descanso' : doneToday ? 'Colhido hoje' : weekly ? 'Marcar hoje' : 'Colher hoje'}
       </button>}

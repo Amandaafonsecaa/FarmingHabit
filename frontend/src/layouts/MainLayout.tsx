@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { GameNavigation } from '../components/GameNavigation';
+import { CoinFlightLayer } from '../components/CoinFlightLayer';
 import type { AppPage } from '../types/navigation';
 export function MainLayout({ page, onNavigate, world, children }: { page: AppPage; onNavigate: (page: AppPage) => void; world: ReactNode; children: ReactNode }) {
   // A gaveta desliza por cima do cenário (não empurra a fazenda) e começa fechada para manter a imersão
@@ -32,5 +33,6 @@ export function MainLayout({ page, onNavigate, world, children }: { page: AppPag
       </div>
       {children}
     </main>
+    <CoinFlightLayer/>
   </>;
 }

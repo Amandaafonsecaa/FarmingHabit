@@ -4,12 +4,13 @@ import { CHEST_STOPS } from '../../lib/treasure';
 import { PixelIcon } from '../PixelIcon';
 import { ProgressBar } from '../ProgressBar';
 import { JourneyMap, type MapChest } from './JourneyMap';
+import { CoinHud } from '../home/CoinHud';
 
 interface Banner { title: string; text: string }
 
-export function MissionsHero({ completed, openCount, traveling, activeMission, opened, unopened, onCreate, onFocusMission, onOpenChest }: {
+export function MissionsHero({ completed, openCount, traveling, activeMission, opened, unopened, onCreate, onFocusMission, onOpenChest, coins }: {
   completed: number; openCount: number; traveling: number; activeMission: { id: string; title: string } | null;
-  opened: string[]; unopened: number; onCreate: () => void; onFocusMission: (id: string) => void; onOpenChest: (id?: string) => void;
+  opened: string[]; unopened: number; onCreate: () => void; onFocusMission: (id: string) => void; onOpenChest: (id?: string) => void; coins: number | null;
 }) {
   const { loop, chapter, reached } = journeyState(completed);
   const [viewing, setViewing] = useState<number | null>(null);
@@ -70,6 +71,7 @@ export function MissionsHero({ completed, openCount, traveling, activeMission, o
       </dl>
     </div>
 
+    <CoinHud coins={coins} className="hero-coin-hud is-map"/>
     <nav className="chapter-tabs" aria-label="Capítulos da jornada">
       {CHAPTERS.map((item, index) => {
         const state = index < chapter || (loop > 1 && index > chapter) ? 'done' : index === chapter ? 'current' : 'locked';

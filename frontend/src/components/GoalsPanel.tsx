@@ -1,34 +1,43 @@
 import type { GoalLog, TrackedGoal } from '../types/goals';
-import { amountOn, dailyTarget, frequencyLabel, isHarvested, isScheduled, progressFor, sortByPending, toKey } from '../lib/goalLogic';
+import { amountOn, dailyTarget, frequencyLabel, isHarvested, isScheduled, progressFor, toKey } from '../lib/goalLogic';
 import { useFlipList } from '../hooks/useFlipList';
-import { GamePanel } from './GamePanel';
+import { GamePanel, SeeAll } from './GamePanel';
 import { PixelIcon } from './PixelIcon';
 import { ProgressBar } from './ProgressBar';
 
-/** Versão compacta da aba Metas: mesmas metas e regras, pendentes em cima e colhidas embaixo */
-export function GoalsPanel({ goals, log, today, onCheck, onAdd, onOpen }: { goals: TrackedGoal[]; log: GoalLog; today: Date; onCheck: (goal: TrackedGoal) => void; onAdd: () => void; onOpen: () => void }) {
-  const ordered = sortByPending(goals, log, today);
-  const listRef = useFlipList<HTMLUListElement>(ordered.map(goal => goal.id).join());
-  const harvested = goals.filter(goal => isHarvested(goal, log, today)).length;
-  return <GamePanel id="goals" title="Metas" icon="leaf" badge={`${harvested}/${goals.length} colhidas`} action="Adicionar meta" onAdd={onAdd} onOpen={onOpen}>
-    {goals.length === 0 && <p className="item-description">Nenhuma meta plantada ainda.</p>}
-    <ul ref={listRef} className="panel-list home-goal-list">{ordered.map(goal => {
+const FRUITS = ['#df5438', '#f6aa30', '#e7b52e', '#ee6996', '#9b7fd4'];
+
+/** Frutinhas no cabeçalho: uma para cada meta já colhida hoje */
+function HarvestFruits({ count }: { count: number }) {
+  if (!count) return null;
+  return <span className="harvest-fruits" aria-hidden="true">
+    {Array.from({ length: Math.min(count, 6) }, (_, index) => <span key={index} className="fruit" style={{ background: FRUITS[index % FRUITS.length], animationDelay: `${index * 80}ms` }}/>)}
+    {count > 6 && <small>+{count - 6}</small>}
+  </span>;
+}
+
+/** Metas da Casa: só as pendentes de hoje (até 3); as colhidas viram frutinhas no título */
+export function GoalsPanel({ goals, log, today, onCheck, onOpen }: { goals: TrackedGoal[]; log: GoalLog; today: Date; onCheck: (goal: TrackedGoal, element: Element) => void; onOpen: () => void }) {
+  const harvested = goals.filter(goal => isHarvested(goal, log, today));
+  const pending = goals.filter(goal => isScheduled(goal, today) && !isHarvested(goal, log, today));
+  const shown = pending.slice(0, 3);
+  const listRef = useFlipList<HTMLUListElement>(shown.map(goal => goal.id).join());
+  return <GamePanel id="goals" title="Metas" icon="leaf" badge={<HarvestFruits count={harvested.length}/>} badgeLabel={`${harvested.length} colhidas hoje`} onOpen={onOpen}>
+    {goals.length === 0 && <p className="panel-empty">Nenhuma meta plantada ainda. Toque na semente <strong>+</strong> para plantar.</p>}
+    {goals.length > 0 && pending.length === 0 && <p className="panel-empty is-happy">🌻 Tudo colhido por hoje!</p>}
+    <ul ref={listRef} className="panel-list home-goal-list">{shown.map(goal => {
       const progress = progressFor(goal, log, today);
-      const done = isHarvested(goal, log, today);
-      const scheduled = isScheduled(goal, today);
       const quantity = goal.measure.kind === 'quantity' ? goal.measure : null;
-      return <li key={goal.id} data-flip-id={goal.id} className={`goal-row home-goal-row ${done ? 'is-harvested' : ''}`}><div className="flex items-start gap-2.5">
+      return <li key={goal.id} data-flip-id={goal.id} className="goal-row home-goal-row"><div className="flex items-start gap-2.5">
         <span className="item-icon"><PixelIcon name={goal.icon}/></span>
         <div className="min-w-0 flex-1">
           <h3 className="item-title">{goal.title}</h3>
           <p className="item-description">{frequencyLabel(goal)}{quantity && ` · ${amountOn(goal, log, toKey(today))}/${dailyTarget(goal)} ${quantity.unit}`}</p>
-          <div className="mb-1 mt-2 flex justify-between text-sm"><span>Progresso</span><strong>{progress}%</strong></div>
-          <ProgressBar value={progress} label={`Progresso: ${goal.title}`} className="h-2.5"/>
+          <ProgressBar value={progress} label={`Progresso: ${goal.title}`} className="mt-2 h-2.5"/>
         </div>
-        {quantity
-          ? <button type="button" className="pixel-button mt-1 shrink-0" disabled={!scheduled} onClick={()=>onCheck(goal)} aria-label={`Somar ${quantity.step} ${quantity.unit} — meta: ${goal.title}`}>+{quantity.step}</button>
-          : <button type="button" className="pixel-button mt-1 shrink-0 aria-pressed:border-olive aria-pressed:bg-[#d3dda0] aria-pressed:text-olive" aria-pressed={amountOn(goal, log, toKey(today)) >= 1} disabled={!scheduled} onClick={()=>onCheck(goal)} aria-label={`Concluído — meta: ${goal.title}`}>{scheduled ? 'Concluído' : 'Descanso'}</button>}
+        <button type="button" className="pixel-button mt-1 shrink-0" onClick={event=>onCheck(goal, event.currentTarget)} aria-label={`${quantity ? `Somar ${quantity.step} ${quantity.unit}` : 'Colher'}: ${goal.title}`}>{quantity ? `+${quantity.step}` : 'Colher'}</button>
       </div></li>;
     })}</ul>
+    {(pending.length > 3 || goals.length > 0) && <SeeAll label={pending.length > 3 ? `Ver todas (+${pending.length - 3} pendentes)` : 'Ver todas as metas'} onOpen={onOpen}/>}
   </GamePanel>;
 }

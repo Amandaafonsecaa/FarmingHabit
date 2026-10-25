@@ -1,27 +1,9 @@
-import { useEffect, useRef, useState } from 'react';
+import { useRollingNumber } from '../../hooks/useRollingNumber';
 import type { Reward } from '../../types/world';
 import { itemKindFor } from '../../lib/shop';
 import { PixelIcon } from '../PixelIcon';
 import { ProgressBar } from '../ProgressBar';
 import { ItemIcon } from './ItemIcon';
-
-/** Número que rola até o valor novo (as moedas "descem" ao comprar) */
-function useRollingNumber(value: number) {
-  const [shown, setShown] = useState(value);
-  const from = useRef(value);
-  useEffect(() => {
-    const calm = document.documentElement.classList.contains('calm-mode') || window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (calm) { setShown(value); from.current = value; return; }
-    const start = performance.now(), initial = from.current;
-    let frame = requestAnimationFrame(function step(now) {
-      const t = Math.min(1, (now - start) / 700);
-      setShown(Math.round(initial + (value - initial) * (1 - (1 - t) ** 3)));
-      if (t < 1) frame = requestAnimationFrame(step); else from.current = value;
-    });
-    return () => cancelAnimationFrame(frame);
-  }, [value]);
-  return shown;
-}
 
 /** Cofrinho: saldo, porquinho que chacoalha ao gastar e o item que você está juntando moedas para comprar */
 export function PiggyPanel({ coins, wish, shakeKey, onEarn }: { coins: number; wish: Reward | null; shakeKey: number; onEarn: () => void }) {

@@ -11,6 +11,7 @@ import { recordAdventure } from '../lib/diary';
 import { foundChests, readTreasure, rollLoot, saveOpenedChest, type FoundChest } from '../lib/treasure';
 import { ChestOpening } from '../components/missions/ChestOpening';
 import { CollectionPanel } from '../components/missions/CollectionPanel';
+import { flyCoins } from '../lib/coinFlight';
 import type { AppPage } from '../types/navigation';
 
 const CELEBRATION_MS = 1700;
@@ -61,9 +62,10 @@ export function MissionsPage({ onNavigate }: { onNavigate: (page: AppPage) => vo
     finally { setPendingId(null); }
   }
 
-  function complete(id: string, title: string, xp: number, coins: number) {
+  function complete(id: string, title: string, xp: number, coins: number, origin: Element) {
     run(id, title, async () => {
       await board.complete(id);
+      flyCoins(origin, coins);
       recordAdventure(title);
       setCelebratingId(id);
       setAnnouncement(`${title}: missão cumprida! +${xp} XP e +${coins} moedas.`);
@@ -97,7 +99,7 @@ export function MissionsPage({ onNavigate }: { onNavigate: (page: AppPage) => vo
   }
 
   return <MainLayout page="missions" onNavigate={onNavigate}
-    world={<MissionsHero completed={completedCount} openCount={stillOpen.length} opened={treasure.opened} unopened={unopened.length} onOpenChest={showChest}
+    world={<MissionsHero completed={completedCount} openCount={stillOpen.length} opened={treasure.opened} unopened={unopened.length} onOpenChest={showChest} coins={board.player?.coins ?? null}
       traveling={stillOpen.filter(mission => accepted.includes(mission.id)).length} activeMission={stillOpen.find(mission => accepted.includes(mission.id)) ?? null}
       onCreate={()=>setDialogOpen(true)} onFocusMission={focusQuest}/>}>
     <div className="missions-layout">
@@ -114,7 +116,7 @@ export function MissionsPage({ onNavigate }: { onNavigate: (page: AppPage) => vo
             active={accepted.includes(mission.id)} pending={pendingId === mission.id} celebrating={celebratingId === mission.id} highlighted={highlightId === mission.id}
             onAccept={()=>{ accept(mission.id); setAnnouncement(`${mission.title}: pé na estrada! Boa aventura.`); }}
             onAbandon={()=>{ abandon(mission.id); setAnnouncement(`${mission.title}: fica para outro dia.`); }}
-            onComplete={()=>complete(mission.id, mission.title, mission.xp, mission.coins)}
+            onComplete={origin=>complete(mission.id, mission.title, mission.xp, mission.coins, origin)}
             onRemove={()=>remove(mission.id, mission.title)}/>)}</ul>
         </div>
       </section>

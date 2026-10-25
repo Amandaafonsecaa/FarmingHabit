@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from 'react';
+import { useRollingNumber } from '../../hooks/useRollingNumber';
 
 const SPARK_COLORS = ['#f2c453', '#72ad32', '#ffe38b', '#e8ac59'];
 interface Spark { id: number; label: string; big: boolean }
@@ -30,6 +31,7 @@ export function LevelCard({ level, totalXp, xpPerLevel }: { level: number | null
   const [hintOpen, setHintOpen] = useState(false);
   const previous = useRef<{ xp: number; level: number } | null>(null);
   const clearSpark = useCallback(() => setSpark(null), []);
+  const rollingXp = useRollingNumber(levelXp);
 
   // Enche a barra a partir de zero no primeiro carregamento (e acompanha mudanças depois)
   useEffect(() => { const frame = requestAnimationFrame(() => setShownPercent(percent)); return () => cancelAnimationFrame(frame); }, [percent]);
@@ -62,7 +64,7 @@ export function LevelCard({ level, totalXp, xpPerLevel }: { level: number | null
       </span>
       <span className="xp-tip" style={{ left: `${shownPercent}%` }}>{spark && <XpSparks key={spark.id} spark={spark} onDone={clearSpark}/>}</span>
     </button>
-    <p className="mt-2 text-right text-sm font-bold" aria-live="polite">{levelXp} / {xpPerLevel} XP</p>
+    <p className="mt-2 text-right text-sm font-bold" aria-live="polite">{rollingXp} / {xpPerLevel} XP</p>
     {hintOpen && <p id="xp-hint" className="xp-hint">Faltam <strong>{xpPerLevel - levelXp} XP</strong> para o nível {(level ?? 1) + 1}. Cumpra metas e missões para chegar lá!</p>}
   </section>;
 }

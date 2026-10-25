@@ -5,6 +5,7 @@ import { applySettings, readSettings } from './lib/settings';
 import './styles/global.css';
 import './styles/goals.css';
 import './styles/home.css';
+import './styles/scene.css';
 import './styles/missions.css';
 import './styles/diary.css';
 import './styles/evolution.css';

@@ -2,11 +2,12 @@ import type { GoalLog, TrackedGoal } from '../../types/goals';
 import { addDays, progressFor, startOfWeek, streakFor, todayStats, weekProgressFor } from '../../lib/goalLogic';
 import { PixelIcon } from '../PixelIcon';
 import { PlantGrowth } from './PlantGrowth';
+import { CoinHud } from '../home/CoinHud';
 
 const shortDate = new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: '2-digit' });
 
 /** Topo da aba: placa de madeira, quadros de resumo e um canteiro com uma muda por meta */
-export function GoalsHero({ goals, log, today, onPlant }: { goals: TrackedGoal[]; log: GoalLog; today: Date; onPlant: () => void }) {
+export function GoalsHero({ goals, log, today, coins, onPlant }: { goals: TrackedGoal[]; log: GoalLog; today: Date; coins: number | null; onPlant: () => void }) {
   const { due: dueToday, done: doneToday } = todayStats(goals, log, today);
   const weekPercent = goals.length ? Math.round(goals.reduce((sum, goal) => sum + weekProgressFor(goal, log, today), 0) / goals.length) : 0;
   const bestStreak = goals.reduce((best, goal) => Math.max(best, goal.frequency.kind === 'weekly' ? 0 : streakFor(goal, log, today)), 0);
@@ -26,6 +27,7 @@ export function GoalsHero({ goals, log, today, onPlant }: { goals: TrackedGoal[]
         <div className="hero-stat pixel-frame"><dt><PixelIcon name="flame" className="size-3 text-terracotta"/>Sequência</dt><dd>{bestStreak}<small> dias</small></dd></div>
       </dl>
     </div>
+    <CoinHud coins={coins} className="hero-coin-hud"/>
     <ul className="goals-field" aria-label="Canteiro: uma muda por meta">
       {goals.slice(0, 8).map(goal => <li key={goal.id} className="field-plant">
         <PlantGrowth variant="ground" progress={progressFor(goal, log, today)} label={goal.title}/>

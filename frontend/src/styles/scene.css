@@ -1,0 +1,150 @@
+/* ===== Casa premium: céu da hora real, estações, horta interativa, contador com moedas voando e painéis enxutos ===== */
+
+/* --- Céu por fase do dia --- */
+.game-world { transition: background 2s ease; }
+.game-world.phase-dawn { background: linear-gradient(#f4b3a6, #fbd3a2 55%, #a9d8e8); }
+.game-world.phase-dusk { background: linear-gradient(#ee8a5c, #f6c27a 50%, #a3b9d8); }
+.game-world.phase-night { background: linear-gradient(#141a3d, #27346a 60%, #3b4f80); }
+.phase-dawn .world-sun, .phase-dusk .world-sun { top: 26%; background: #ffb46b; }
+.phase-dusk .world-sun { left: 20%; } .phase-dawn .world-sun { left: 74%; }
+.world-moon { position: absolute; top: 11%; left: 70%; width: 36px; height: 36px; background: #fff3cf; box-shadow: 6px 0 #fff3cf, -6px 0 #fff3cf, 0 6px #fff3cf, 0 -6px #fff3cf, 0 0 0 16px #fff3cf1f; animation: moon-glow 4s steps(3) infinite alternate; }
+.world-moon::after { content: ''; position: absolute; left: 8px; top: 6px; width: 8px; height: 8px; background: #e6dbb8; box-shadow: 12px 12px 0 -2px #e6dbb8; }
+.sky-stars span { position: absolute; width: 3px; height: 3px; background: #fff6c2; animation: sparkle-blink 2.2s steps(1) infinite; }
+.sky-rainbow { position: absolute; left: 14%; top: 10%; width: 72%; height: 75%; opacity: 0; animation: rainbow-life 9s ease-in-out forwards;
+ background: radial-gradient(circle at 50% 100%, transparent 0 54%, #9b7fd4 54% 57%, #5fa8d3 57% 60%, #72ad32 60% 63%, #f2c453 63% 66%, #f2a33a 66% 69%, #e8576f 69% 72%, transparent 72%); }
+.sky-clouds { position: absolute; inset: 0; }
+
+/* Tom do cenário em cada fase (o desenho é o mesmo, a luz muda) */
+.world-tint { position: absolute; inset: 0; z-index: 1; pointer-events: none; mix-blend-mode: multiply; opacity: 0; transition: opacity 2s ease, background 2s ease; }
+.phase-dawn .world-tint { background: #ffc4b6; opacity: .32; }
+.phase-dusk .world-tint { background: #ff9a5c; opacity: .38; }
+.phase-night .world-tint { background: #4a5aa8; opacity: .62; }
+.phase-night .house-window { fill: #ffe38b; }
+.phase-night .house-window-glint { fill: #fff6c2; }
+.phase-dusk .house-window { fill: #f6c86a; }
+.night-fireflies { display: none; }
+.phase-night .night-fireflies, .phase-dusk .night-fireflies { display: inline; }
+.night-fireflies rect { animation: sparkle-blink 1.6s steps(1) infinite, firefly-float 5s ease-in-out infinite alternate; }
+
+/* --- Estações --- */
+.tree-blossom { display: none; }
+.season-spring .tree-blossom { display: inline; }
+.season-autumn .tree-canopy { filter: hue-rotate(-58deg) saturate(1.3); }
+.season-winter .tree-canopy { filter: saturate(.3) brightness(1.22); }
+.season-winter .world-scenery { filter: saturate(.8) brightness(1.04); }
+.season-particles, .petal-rain { position: absolute; inset: 0; z-index: 2; overflow: hidden; pointer-events: none; }
+.season-particles span, .petal-rain span { position: absolute; top: -4%; width: 6px; height: 4px; animation-name: particle-fall, particle-sway; animation-timing-function: linear, ease-in-out; animation-iteration-count: infinite; animation-direction: normal, alternate; }
+.season-particles.is-autumn span { width: 7px; height: 5px; }
+.season-particles.is-winter span { width: 4px; height: 4px; }
+.petal-rain span { width: 7px; height: 5px; animation-iteration-count: 1, infinite; animation-fill-mode: both; }
+
+/* --- Profundidade (parallax) --- */
+.parallax-far { transform: translate(calc(var(--px, 0) * -10px), calc(var(--py, 0) * -4px)); transition: transform .5s ease-out; }
+.sky-clouds { transform: translate(calc(var(--px, 0) * -20px), calc(var(--py, 0) * -6px)); transition: transform .5s ease-out; }
+.world-sun, .world-moon { translate: calc(var(--px, 0) * -8px) calc(var(--py, 0) * -3px); transition: translate .5s ease-out, top 2s, left 2s, background 2s; }
+
+/* --- Horta: canteiros clicáveis --- */
+.garden-plot { cursor: pointer; outline: none; }
+.garden-plot.is-done { cursor: default; }
+.garden-plot:not(.is-done) .crop-stage { animation: sprout-pop .6s cubic-bezier(.34, 1.56, .64, 1) backwards, npc-glint 5s steps(1) infinite; }
+.garden-plot:not(.is-done):hover .crop-stage, .garden-plot:not(.is-done):focus-visible .crop-stage { filter: drop-shadow(1px 0 0 #ffe38b) drop-shadow(-1px 0 0 #ffe38b) drop-shadow(0 1px 0 #ffe38b) drop-shadow(0 -1px 0 #ffe38b); animation: none; }
+.garden-plot:hover .crop-sway, .garden-plot:focus-visible .crop-sway { animation-duration: .8s; }
+.garden-plot.is-popping .crop-stage { animation: crop-pop .7s cubic-bezier(.34, 1.56, .64, 1); }
+.garden-plaque { transform-box: fill-box; transform-origin: 50% 100%; animation: plaque-in .25s cubic-bezier(.34, 1.56, .64, 1) backwards; }
+.garden-plaque-text { font-family: 'Courier New', monospace; font-size: 8px; font-weight: 900; fill: #3b2418; }
+
+/* --- Contador de moedas e moedas voando --- */
+.coin-hud { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px 6px 8px; font-size: 18px; font-weight: 900; color: #3b2418; }
+.coin-hud-icon { display: inline-flex; color: #a86d1c; animation: coin-spin 2.4s steps(6) infinite; }
+.coin-hud.is-bumped { animation: hud-bump .4s cubic-bezier(.34, 1.56, .64, 1); }
+.coin-hud.is-bumped .coin-hud-icon { animation: coin-spin .4s steps(4) 2; }
+.world-coin-hud { position: absolute; top: 18px; left: 74px; z-index: 11; animation: hud-in .6s cubic-bezier(.34, 1.56, .64, 1) .2s backwards; }
+.hero-coin-hud { position: absolute; left: 18px; bottom: 120px; z-index: 3; }
+.hero-coin-hud.is-map { bottom: 56px; }
+.coin-flight-layer { position: fixed; inset: 0; z-index: 9999; pointer-events: none; }
+.flying-coin { position: absolute; left: 0; top: 0; width: 18px; height: 18px; filter: drop-shadow(1px 2px 0 #57311f66); }
+
+/* --- Painéis enxutos --- */
+.panel-empty { padding: 10px 2px; font-size: 13px; color: #765337; }
+.panel-empty.is-happy { font-weight: 900; color: #3f6b35; }
+.see-all { display: flex; width: 100%; align-items: center; justify-content: space-between; margin-top: 8px; padding: 8px 4px; border: 0; border-top: 1px dashed #d2ac71; background: none; color: #7a4a26; font: inherit; font-size: 12px; font-weight: 900; cursor: pointer; }
+.see-all span { font-size: 9px; transition: transform .2s cubic-bezier(.34, 1.56, .64, 1); }
+.see-all:hover { color: #3b2418; } .see-all:hover span { transform: translateX(4px); }
+.inline-link { padding: 0; border: 0; background: none; color: #bf5837; font: inherit; font-weight: 900; text-decoration: underline; cursor: pointer; }
+.harvest-fruits { display: inline-flex; align-items: center; gap: 3px; }
+.fruit { width: 11px; height: 11px; border: 2px solid #57311f; clip-path: polygon(30% 0, 70% 0, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0 70%, 0 30%); box-shadow: inset 2px 2px #ffffff66; animation: fruit-pop .45s cubic-bezier(.34, 1.56, .64, 1) backwards; }
+.harvest-fruits small { font-size: 10px; font-weight: 900; }
+
+.mini-journey { margin: 6px 0 12px; padding: 8px 10px 12px; background: #f6e2b0 radial-gradient(#c49a6233 1px, transparent 1px) 0 0 / 8px 8px; border: 2px solid #c49a62; }
+.mini-journey-title { display: flex; justify-content: space-between; font-size: 11px; font-weight: 900; color: #7a4a26; }
+.mini-journey-track { position: relative; height: 22px; margin: 8px 8px 0 4px; }
+.mini-journey-path { position: absolute; left: 0; right: 0; top: 10px; height: 3px; background: repeating-linear-gradient(90deg, #c49a62 0 4px, transparent 4px 8px); }
+.mini-journey-path > span { display: block; height: 100%; background: repeating-linear-gradient(90deg, #7a3a1f 0 4px, transparent 4px 8px); transition: width .8s ease; }
+.mini-stop { position: absolute; top: 5px; width: 12px; height: 12px; margin-left: -6px; background: #fff8e6; border: 2px solid #8a5838; }
+.mini-stop.is-reached { background: #72ad32; border-color: #3f6b35; }
+.mini-stop.has-chest::after { content: ''; position: absolute; left: 1px; top: -9px; width: 6px; height: 5px; background: #e7b84b; border: 1px solid #57311f; }
+.mini-explorer { position: absolute; top: -2px; width: 10px; height: 14px; margin-left: -5px; background: #648244; box-shadow: 0 -5px 0 -1px #efc5a1, 0 -8px 0 -2px #e7b84b; transition: left .8s ease; animation: farmer-bob 1.1s steps(1) infinite; }
+.mini-explorer.is-traveling { animation: farmer-walk .34s steps(2) infinite; }
+.active-quest { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; padding: 12px; background: #f3efc4; border: 3px solid #3f6b35; box-shadow: inset 0 0 0 2px #c0e36b, 2px 3px 0 #23401f44; }
+.active-quest-tag { display: flex; align-items: center; gap: 8px; font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; color: #3f6b35; }
+.active-quest-reward { display: flex; gap: 12px; font-size: 12px; } .active-quest-reward strong { color: #3f6b35; } .active-quest-reward span { display: inline-flex; align-items: center; gap: 4px; font-weight: 900; color: #a86d1c; }
+.compact-quests { display: flex; flex-direction: column; }
+.compact-quests li { display: flex; align-items: center; gap: 8px; padding: 6px 0; font-size: 13px; font-weight: bold; border-bottom: 1px dashed #e0c79a; }
+.compact-reward { display: inline-flex; align-items: center; gap: 3px; font-size: 11px; font-weight: 900; color: #a86d1c; }
+.compact-check { min-height: 28px; padding: 2px 8px; }
+.home-wish { display: flex; gap: 10px; margin: 6px 0 10px; padding: 10px; background: #ffe3ea66; border: 2px dashed #e8789f; }
+.home-wish-icon { width: 38px; height: 38px; flex-shrink: 0; }
+.home-wish-label { font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; color: #c4456a; }
+.home-wish-meta { margin-top: 2px; font-size: 11px; font-weight: bold; color: #8a6136; }
+.home-shop-label { margin: 4px 0; font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; color: #7a4a26; }
+.home-shop-list li { display: flex; align-items: center; gap: 8px; padding: 6px 0; font-size: 13px; font-weight: bold; border-bottom: 1px dashed #e0c79a; }
+.home-shop-icon { width: 28px; height: 28px; flex-shrink: 0; }
+.home-shop-list .buy-button { gap: 4px; }
+
+/* --- Botão-semente "+" --- */
+.seed-fab { position: fixed; right: 24px; bottom: 24px; z-index: 45; }
+.seed-button { display: flex; width: 62px; height: 62px; align-items: center; justify-content: center; padding: 6px; border: 3px solid #3b2418; background: #f2c453; cursor: pointer; box-shadow: inset 3px 3px #ffe38b, inset -3px -3px #b17a35, 3px 4px 0 #3b241888; animation: hud-in .6s cubic-bezier(.34, 1.56, .64, 1) .5s backwards; transition: transform .2s cubic-bezier(.34, 1.56, .64, 1); }
+.seed-button svg { width: 100%; height: 100%; }
+.seed-button:hover { transform: translateY(-3px) rotate(-6deg); }
+.seed-sprout { transform-box: fill-box; transform-origin: 50% 100%; transform: scaleY(0); transition: transform .25s cubic-bezier(.34, 1.56, .64, 1); }
+.seed-button:hover .seed-sprout, .seed-fab.is-open .seed-sprout { transform: scaleY(1); }
+.seed-plus { transform-box: fill-box; transform-origin: center; transition: transform .25s cubic-bezier(.34, 1.56, .64, 1); }
+.seed-fab.is-open .seed-plus { transform: rotate(45deg); }
+.seed-button:focus-visible { outline: 3px solid #3f6b35; outline-offset: 3px; }
+.seed-options { position: absolute; right: 0; bottom: 74px; display: flex; flex-direction: column-reverse; gap: 8px; pointer-events: none; }
+.seed-options li { transform: translateY(20px) scale(.4); opacity: 0; transition: transform .25s cubic-bezier(.34, 1.56, .64, 1), opacity .15s; transition-delay: calc(var(--i) * 45ms); }
+.seed-fab.is-open .seed-options { pointer-events: auto; }
+.seed-fab.is-open .seed-options li { transform: none; opacity: 1; }
+.seed-option { display: flex; align-items: center; gap: 8px; padding: 6px 12px 6px 6px; border: 3px solid #57311f; background: #fff1c7; color: #3b2418; font: inherit; font-size: 13px; font-weight: 900; white-space: nowrap; cursor: pointer; box-shadow: 2px 3px 0 #42291666; float: right; }
+.seed-option:hover, .seed-option:focus-visible { outline: none; background: #ffe2a4; transform: translateX(-4px); }
+.seed-option-icon { display: flex; width: 28px; height: 28px; align-items: center; justify-content: center; color: #ffe2a3; background: #a86b35; border: 2px solid #4d2e1c; }
+
+/* --- Entrada da página --- */
+.functional-panel > .world-panel { animation: panel-rise .6s cubic-bezier(.34, 1.4, .64, 1) backwards; }
+.functional-panel > .world-panel:nth-child(2) { animation-delay: .12s; }
+.functional-panel > .world-panel:nth-child(3) { animation-delay: .24s; }
+.world-header { animation: hud-in .6s cubic-bezier(.34, 1.56, .64, 1) .1s backwards; }
+
+/* --- Animações --- */
+@keyframes moon-glow { from { box-shadow: 6px 0 #fff3cf, -6px 0 #fff3cf, 0 6px #fff3cf, 0 -6px #fff3cf, 0 0 0 12px #fff3cf14; } to { box-shadow: 6px 0 #fff3cf, -6px 0 #fff3cf, 0 6px #fff3cf, 0 -6px #fff3cf, 0 0 0 22px #fff3cf26; } }
+/* Arco-íris passageiro: surge, fica um pouco e se desfaz (dura o mesmo que CELEBRATION_MS) */
+@keyframes rainbow-life { 0% { opacity: 0; } 18%, 70% { opacity: .72; } 100% { opacity: 0; } }
+@keyframes particle-fall { from { top: -4%; } to { top: 104%; } }
+@keyframes particle-sway { from { transform: translateX(-14px) rotate(-20deg); } to { transform: translateX(14px) rotate(25deg); } }
+@keyframes crop-pop { 0% { transform: none; } 35% { transform: translateY(-9px) scale(1.25); } 60% { transform: translateY(0) scale(.92, 1.08); } 100% { transform: none; } }
+@keyframes plaque-in { from { transform: translateY(6px) scale(.6); opacity: 0; } }
+@keyframes farmer-walk { 50% { transform: translateY(-3px); } }
+@keyframes hud-bump { 40% { transform: scale(1.18) translateY(-3px); } }
+@keyframes hud-in { from { transform: translateY(-14px) scale(.85); opacity: 0; } }
+@keyframes fruit-pop { from { transform: scale(0); } }
+@keyframes panel-rise { from { transform: translateY(24px); opacity: 0; } }
+
+/* --- Responsivo --- */
+@media (max-width: 767px) {
+ .world-coin-hud { top: 20px; left: 70px; }
+ .coin-hud { font-size: 15px; padding: 4px 10px 4px 6px; }
+ .seed-fab { right: 14px; bottom: 16px; }
+ .navigation-open .seed-fab { bottom: calc(var(--game-navigation-height) + 16px); }
+ .hero-coin-hud { bottom: 104px; left: 12px; }
+ .hero-coin-hud.is-map { bottom: 54px; }
+}

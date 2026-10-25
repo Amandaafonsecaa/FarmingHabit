@@ -1,7 +1,8 @@
 import { FarmHouse } from './FarmHouse';
+import { useState, type KeyboardEvent } from 'react';
 import { CharacterScene } from './CharacterScene';
 function Tree({ x, y, scale = 1, delay = 0 }: { x: number; y: number; scale?: number; delay?: number }) {
-  return <g transform={`translate(${x} ${y}) scale(${scale})`}><path d="M24 122h46v4h15v7H39v-4H24Z" fill="#345e29" opacity=".3"/><path d="M36 65h19v61H32v-9h4Z" fill="#785031"/><path d="M44 68h7v54h-7Z" fill="#ad7846"/><g className="tree-canopy" style={{ animationDelay: `${delay}s` }}><path d="M8 22h18V9h39v13h19v17h10v46H78v16H14V87H0V42h8Z" fill="#286237" stroke="#234a2a" strokeWidth="3"/><path d="M13 23h18V12h31v14h17v17h10v27H74v17H19V72H6V44h7Z" fill="#459b36"/><path d="M23 26h11V16h24v13h14v21H57v13H25V52H12V36h11Z" fill="#80c63c"/><path d="M15 62h13v7H15Zm42 11h15v7H57Zm10-36h12v6H67Z" fill="#b4de54"/><path d="M23 48h6v7h-6Zm42 9h6v7h-6Z" fill="#d6a16b"/></g></g>;
+  return <g transform={`translate(${x} ${y}) scale(${scale})`}><path d="M24 122h46v4h15v7H39v-4H24Z" fill="#345e29" opacity=".3"/><path d="M36 65h19v61H32v-9h4Z" fill="#785031"/><path d="M44 68h7v54h-7Z" fill="#ad7846"/><g className="tree-canopy" style={{ animationDelay: `${delay}s` }}><path d="M8 22h18V9h39v13h19v17h10v46H78v16H14V87H0V42h8Z" fill="#286237" stroke="#234a2a" strokeWidth="3"/><path d="M13 23h18V12h31v14h17v17h10v27H74v17H19V72H6V44h7Z" fill="#459b36"/><path d="M23 26h11V16h24v13h14v21H57v13H25V52H12V36h11Z" fill="#80c63c"/><path d="M15 62h13v7H15Zm42 11h15v7H57Zm10-36h12v6H67Z" fill="#b4de54"/><path d="M23 48h6v7h-6Zm42 9h6v7h-6Z" fill="#d6a16b"/><path className="tree-blossom" d="M20 30h4v4h-4Zm30-10h4v4h-4Zm16 30h4v4h-4Zm-40 26h4v4h-4Zm54 10h4v4h-4Zm-30 12h4v4h-4Z" fill="#f7a8c4"/></g></g>;
 }
 /** Muda da horta em 4 estágios: cova com semente, broto, folhas, folhas com fruto */
 function GardenCrop({ stage, fruit }: { stage: number; fruit: string }) {
@@ -45,10 +46,25 @@ function Butterfly({ x, y, color, delay }: { x: number; y: number; color: string
   </g></g>;
 }
 
-/** Fazenda da Casa. A horta cresce com o progresso de hoje (0–1) e os canteiros amadurecem com o nível. */
-export function WorldScenery({ dailyProgress, level }: { dailyProgress: number; level: number }) {
-  // Cada uma das 15 mudas da horta precisa de 1/15 do dia cumprido para amadurecer
-  const gardenStage = (index: number) => { const grown = dailyProgress * 15 - index; return grown >= 1 ? 3 : grown >= .5 ? 2 : grown > 0 ? 1 : 0; };
+/** Canteiro da horta = uma meta de hoje */
+export interface GardenPlot { id: string; title: string; progress: number; done: boolean }
+
+/** Plaquinha de madeira com o nome da meta, acima do canteiro (no hover/foco) */
+function GardenPlaque({ x, y, title }: { x: number; y: number; title: string }) {
+  const label = title.length > 18 ? `${title.slice(0, 17)}…` : title;
+  const width = label.length * 5.4 + 14;
+  return <g className="garden-plaque" transform={`translate(${x} ${y - 30})`} pointerEvents="none">
+    <path d="M-1 6h2v12h-2Z" fill="#57311f"/><rect x={-width / 2} y="-8" width={width} height="15" fill="#57311f"/><rect x={-width / 2 + 2} y="-6" width={width - 4} height="11" fill="#d9a05a"/>
+    <text x="0" y="2.5" textAnchor="middle" className="garden-plaque-text">{label}</text>
+  </g>;
+}
+
+/** Fazenda da Casa. A horta mostra as metas de hoje (clique para colher) e os canteiros grandes amadurecem com o nível. */
+export function WorldScenery({ level, plots, onHarvest, poppedId, perfectDay }: {
+  level: number; plots: GardenPlot[]; onHarvest: (goalId: string, element: Element, index: number) => void; poppedId: string | null; perfectDay: boolean;
+}) {
+  const [hovered, setHovered] = useState<number | null>(null);
+  const onPlotKey = (event: KeyboardEvent, plot: GardenPlot, index: number) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onHarvest(plot.id, event.currentTarget, index); } };
   const bedStage = level >= 3 ? 3 : level === 2 ? 2 : 1;
   // Ground contact determines painter order. Tree artwork ends at local y=126.
   const trees = [
@@ -115,10 +131,19 @@ export function WorldScenery({ dailyProgress, level }: { dailyProgress: number; 
     </g>
     ) },
     { id: "house", depth: 384, node: (
-<FarmHouse/>
+<FarmHouse celebrating={perfectDay}/>
     ) },
     { id: "garden", depth: 423, node: (
-<g transform="translate(776 329)"><path d="M-5-5h170v104H-5Z" fill="#c3ac75"/><path d="M0 0h160v94H0Z" fill="#653d27"/><path d="M4 4h152v86H4Z" fill="#a96b35"/><path d="M4 4h152v86H4Z" fill="url(#soil)"/>{[0,1,2].flatMap(row=>[0,1,2,3,4].map(col=>{ const index = row*5+col; const stage = gardenStage(index); return <g key={`${row}-${col}`} transform={`translate(${18+col*30} ${17+row*29})`}><g className="crop-sway" style={{ animationDelay: `${-index * 0.3}s` }}><GardenCrop key={stage} stage={stage} fruit={['#f6aa30','#df5438','#e7b52e'][index%3]}/></g></g>; }))}</g>
+<g transform="translate(776 329)"><path d="M-5-5h170v104H-5Z" fill="#c3ac75"/><path d="M0 0h160v94H0Z" fill="#653d27"/><path d="M4 4h152v86H4Z" fill="#a96b35"/><path d="M4 4h152v86H4Z" fill="url(#soil)"/>{[0,1,2].flatMap(row=>[0,1,2,3,4].map(col=>{ const index = row*5+col; const plot = plots[index]; const x = 18+col*30, y = 17+row*29;
+  if (!plot) return <g key={`empty-${index}`} transform={`translate(${x} ${y})`}><path d="M-8 7h17v4H-8Z" fill="#8f6b47"/></g>;
+  const stage = plot.done ? 3 : plot.progress >= 50 ? 2 : plot.progress > 0 ? 1 : 0;
+  return <g key={plot.id} transform={`translate(${x} ${y})`} className={`garden-plot ${plot.done ? 'is-done' : ''} ${poppedId === plot.id ? 'is-popping' : ''}`} role="button" tabIndex={0}
+    aria-label={`${plot.title}: ${plot.done ? 'colhida hoje' : `${plot.progress}%. Colher`}`} onClick={event=>onHarvest(plot.id, event.currentTarget, index)} onKeyDown={event=>onPlotKey(event, plot, index)}
+    onMouseEnter={()=>setHovered(index)} onMouseLeave={()=>setHovered(null)} onFocus={()=>setHovered(index)} onBlur={()=>setHovered(null)}>
+    <rect className="plot-hit" x="-13" y="-12" width="28" height="26" fill="transparent"/>
+    <g className="crop-sway" style={{ animationDelay: `${-index * 0.3}s` }}><GardenCrop key={stage} stage={stage} fruit={['#f6aa30','#df5438','#e7b52e'][index%3]}/></g>
+  </g>; }))}
+{hovered !== null && plots[hovered] && <GardenPlaque x={18 + (hovered % 5) * 30} y={17 + Math.floor(hovered / 5) * 29} title={plots[hovered].title}/>}</g>
     ) },
     { id: "mailbox", depth: 406, node: (
 <g transform="translate(729 361)"><path d="M0 0h5v45H0Z" fill="#927453"/><path d="M-12-5h31v22h-31Z" fill="#b98662"/><path d="M-9-2h23v14H-9Z" fill="#d5ad7b"/><path d="M4 0h4v7H4Z" fill="#f0d59a"/></g>
@@ -142,12 +167,12 @@ export function WorldScenery({ dailyProgress, level }: { dailyProgress: number; 
     </g>) },
   ];
 
-  return <svg viewBox="-80 -60 1360 630" preserveAspectRatio="xMidYMax meet" className="world-scenery" role="img" aria-label={`Seu pequeno sítio: casa com chaminé fumegando, árvores ao vento, borboletas e uma horta com ${Math.round(dailyProgress * 100)}% das mudas crescidas hoje`} shapeRendering="crispEdges">
+  return <svg viewBox="-80 -60 1360 630" preserveAspectRatio="xMidYMax meet" className="world-scenery" role="group" aria-label={`Seu sítio. A horta tem ${plots.length} metas de hoje: ${plots.filter(plot => plot.done).length} colhidas.`} shapeRendering="crispEdges">
     <defs><pattern id="world-grass" width="49" height="39" patternUnits="userSpaceOnUse"><path d="M11 18v-4h3v7h-8v-4h3v1Z M37 33h5v2h-5Z" fill="#438e2d" opacity=".4"/></pattern><pattern id="roof-tiles" width="22" height="13" patternUnits="userSpaceOnUse"><path d="M0 11h22M10 0v11" stroke="#953c28" strokeWidth="2"/></pattern><pattern id="soil" width="19" height="18" patternUnits="userSpaceOnUse"><path d="M3 9h8M13 3h4" stroke="#ac8158" strokeWidth="2"/></pattern></defs>
     <path d="M-2000 256h5200v1744H-2000Z" fill="#79bd38"/>
     <path d="M-2000 256h5200v1744H-2000Z" fill="url(#world-grass)"/>
-    <path d="M-2000 143H-600v-18h140v25h140v-31h120v24H49v-17h65v-21h67v18h42v-13h64v-28h88v25h70v24h60v-13h82v-21h95v19h57v-13h80v-24h83v25h73v20h58v-16h72v-22h60v37h60v-17h35v-14h110v22h130v-31h140v23H3200V2000H-2000Z" fill="#65a991"/>
-    <path d="M-2000 190H-650v-15h180v22h150v-29h160v22H54v-18h90v17h71v-23h75v-22h80v23h82v27h71v-19h90v-32h77v13h67v25h102v-20h76v-24h95v20h84v26h96v-16h130v25h140v-29h150v20H3200V2000H-2000Z" fill="#428955"/>
+    <g className="parallax-far"><path d="M-2000 143H-600v-18h140v25h140v-31h120v24H49v-17h65v-21h67v18h42v-13h64v-28h88v25h70v24h60v-13h82v-21h95v19h57v-13h80v-24h83v25h73v20h58v-16h72v-22h60v37h60v-17h35v-14h110v22h130v-31h140v23H3200V2000H-2000Z" fill="#65a991"/>
+    <path d="M-2000 190H-650v-15h180v22h150v-29h160v22H54v-18h90v17h71v-23h75v-22h80v23h82v27h71v-19h90v-32h77v13h67v25h102v-20h76v-24h95v20h84v26h96v-16h130v25h140v-29h150v20H3200V2000H-2000Z" fill="#428955"/></g>
     <path d="M-2000 255h2100v-20h140v-12h180v13h164v-8h150v-8h130v16h124v-11h114v19h98H3200V2000H-2000Z" fill="#79bd38"/>
     <path d="M-2000 256h5200v1744H-2000Z" fill="url(#world-grass)"/>
     <g fill="#529c2c">{Array.from({ length: 48 }, (_, i) => { const x = (i * 197 + 19) % 1200; const y = 275 + (i * 71) % 270; return <path key={i} d={`M${x} ${y}h5v-5h3v8h5v-4h3v7h-19Z`}/>; })}</g>
@@ -174,6 +199,7 @@ export function WorldScenery({ dailyProgress, level }: { dailyProgress: number; 
         <path d="M-32 391h13v2h-13Zm55 24h12v2H23Zm-16 38h10v2H7Zm-41 37h14v2h-14Zm-36 49h10v2h-10Zm-10 43h13v2h-13Z"/>
       </g>
     </g>
+    <g className="night-fireflies" fill="#f6d34a">{[[120, 330], [260, 380], [470, 340], [560, 470], [700, 300], [980, 420], [1100, 360], [380, 520], [860, 520]].map(([x, y], index) => <rect key={index} x={x} y={y} width="4" height="4" style={{ animationDelay: `${-index * 0.6}s` }}/>)}</g>
     <JumpingFish x={-60} y={372} color="#f08a3c" delay={-1}/>
     <JumpingFish x={34} y={428} color="#e7e2c8" delay={-5} flip/>
     <JumpingFish x={-14} y={540} color="#f2c453" delay={-8.5}/>
