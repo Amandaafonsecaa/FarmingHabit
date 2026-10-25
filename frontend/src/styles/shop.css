@@ -1,0 +1,119 @@
+/* ===== Aba Loja: armazém do sítio ===== */
+
+/* --- Interior do armazém --- */
+.shop-hero { position: relative; isolation: isolate; overflow: hidden; min-height: 360px; padding: 18px; border: 6px solid #52301f; border-bottom-width: 10px; background: #e8c48a; box-shadow: inset 0 0 0 3px #efb96b; }
+.shop-scene { position: absolute; inset: 0; z-index: -1; width: 100%; height: 100%; }
+.shop-sign-text { font-family: 'Courier New', monospace; font-size: 20px; font-weight: 900; fill: #3b2418; letter-spacing: 3px; }
+.register-text { font-family: 'Courier New', monospace; font-size: 8px; font-weight: 900; fill: #3f6b35; }
+.shop-sign { transform-box: fill-box; transform-origin: 50% 0; animation: sign-swing-slow 3.4s ease-in-out infinite alternate; }
+.door-bell { transform-box: fill-box; transform-origin: 50% 0; animation: bell-ring 5s ease-in-out infinite; }
+.jar-glint { animation: sparkle-blink 3s steps(1) infinite; }
+.seed-packet { transform-box: fill-box; transform-origin: 50% 0; animation: tool-sway 2.8s ease-in-out infinite alternate; }
+.cat-eyes { transform-box: fill-box; transform-origin: center; animation: cat-blink 4.5s steps(1) infinite; }
+.shop-cat { transform-box: fill-box; transform-origin: 50% 100%; animation: cat-breathe 2.8s ease-in-out infinite; }
+.register-drawer { animation: drawer-pop 6s steps(1) infinite; }
+.coin-glint { animation: sparkle-blink 1.6s steps(1) infinite; }
+.counter-bell { transform-box: fill-box; transform-origin: 50% 100%; animation: bell-ding 7s steps(1) infinite; }
+.cat-bubble { position: absolute; left: calc(48.2% + 40px); top: 33%; z-index: 2; padding: 6px 10px; font-size: 11px; font-weight: 900; white-space: nowrap; animation: bubble-pop .4s cubic-bezier(.34, 1.56, .64, 1) backwards; }
+.cat-bubble::after { content: ''; position: absolute; left: -10px; bottom: 6px; width: 10px; height: 8px; background: #57311f; clip-path: polygon(100% 0, 100% 100%, 0 100%); }
+.shop-hero-top { position: relative; display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 12px; padding-left: 56px; }
+.shop-sign-board { padding: 14px 18px 16px; transform: rotate(-1deg); max-width: 340px; }
+.shop-sign-board .eyebrow { color: #7a4a26; font-size: 10px; }
+.shop-sign-board h1 { margin: 6px 0 4px; font-size: clamp(22px, 2.6vw, 32px); font-weight: 900; letter-spacing: -1.5px; line-height: 1.1; color: #3b2418; text-shadow: 2px 2px #ffd98d; }
+.spin-coin { display: inline-flex; color: #a86d1c; animation: coin-spin 1.6s steps(6) infinite; }
+
+/* --- Layout --- */
+.shop-layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; max-width: 1600px; margin: auto; padding: 18px 16px 12px; }
+.shop-side { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+@media (min-width: 1100px) { .shop-layout { grid-template-columns: minmax(0, 1.55fr) minmax(320px, 1fr); align-items: start; } .shop-side { position: sticky; top: 16px; } }
+
+/* --- Vitrine: prateleiras de madeira --- */
+.showcase { flex: 1; padding: 22px 14px 18px; background: #c98f52 repeating-linear-gradient(0deg, transparent 0 158px, #8a5838 158px 166px, #b07a4c 166px 168px, transparent 168px 200px); box-shadow: inset 0 0 0 3px #a86b35, inset 0 0 0 6px #e8ac59; }
+.product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 18px; }
+.product-card { position: relative; display: flex; flex-direction: column; background: #fff8e1; border: 3px solid #8a5838; box-shadow: inset 0 0 0 2px #f5c477, 3px 4px 0 #42291655; animation: product-in .5s cubic-bezier(.34, 1.56, .64, 1) backwards; transition: transform .2s cubic-bezier(.34, 1.56, .64, 1), box-shadow .15s steps(2); }
+.product-card:hover { transform: translateY(-4px); box-shadow: inset 0 0 0 2px #f5c477, 4px 8px 0 #42291655; }
+.product-display { position: relative; display: flex; height: 132px; align-items: flex-end; justify-content: center; padding-bottom: 14px; overflow: hidden; background: linear-gradient(#fdf1d2, #f1d9a6); border-bottom: 3px solid #8a5838; }
+.product-item { position: relative; z-index: 1; width: 68px; height: 68px; transition: transform .25s cubic-bezier(.34, 1.56, .64, 1); }
+.product-card:hover .product-item { transform: translateY(-6px) rotate(-4deg); }
+.product-card.is-affordable .product-item { animation: item-float 2.4s ease-in-out infinite; }
+.product-pedestal { position: absolute; bottom: 8px; width: 90px; height: 10px; background: #c9a46a; border: 2px solid #8a5838; box-shadow: inset 0 2px #e3c38a; }
+.product-sparkle { position: absolute; right: 30%; top: 30%; z-index: 2; width: 2px; height: 2px; background: #fff; box-shadow: 0 -3px #fff, 0 3px #fff, -3px 0 #fff, 3px 0 #fff; animation: sparkle-blink 1.4s steps(1) infinite; }
+.price-tag { position: absolute; top: 8px; right: 10px; z-index: 2; display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px 3px 12px; font-size: 13px; font-weight: 900; color: #3b2418; background: #fff1c7; border: 2px solid #8a5838; clip-path: polygon(8px 0, 100% 0, 100% 100%, 8px 100%, 0 50%); transform-origin: 100% 0; animation: tag-sway 2.6s ease-in-out infinite alternate; }
+.price-tag svg { color: #a86d1c; }
+.product-badge { position: absolute; top: 8px; left: 8px; z-index: 2; padding: 1px 6px; font-size: 9px; font-weight: 900; text-transform: uppercase; color: #7a4a26; background: #ffe8a8; border: 2px dashed #a86d1c; }
+.product-info { display: flex; flex: 1; flex-direction: column; gap: 6px; padding: 12px; }
+.product-name { font-size: 14px; font-weight: 900; line-height: 1.25; overflow-wrap: anywhere; }
+.product-status { font-size: 11px; font-weight: bold; color: #8a6136; }
+.product-status.is-ready { color: #3f6b35; }
+.product-actions { display: flex; align-items: center; gap: 6px; margin-top: auto; padding-top: 6px; }
+.product-actions .primary-button { flex: 1; }
+.wish-button { width: 34px; height: 34px; flex-shrink: 0; border: 2px solid #c49a62; background: #fff8e1; color: #c9a46a; font-size: 16px; cursor: pointer; transition: transform .2s cubic-bezier(.34, 1.56, .64, 1); }
+.wish-button:hover { transform: scale(1.12); color: #e8576f; }
+.wish-button.is-wished { color: #e8576f; border-color: #e8576f; background: #ffe3ea; animation: heart-pop .4s cubic-bezier(.34, 1.56, .64, 1); }
+.product-card.is-buying .product-item { animation: item-to-bag .7s cubic-bezier(.5, -.4, .6, 1) forwards; }
+.paper-bag { position: absolute; bottom: 10px; z-index: 0; width: 46px; height: 52px; background: #d9b47a repeating-linear-gradient(90deg, transparent 0 8px, #c49a62 8px 9px); border: 3px solid #8a5838; animation: bag-drop .5s cubic-bezier(.34, 1.56, .64, 1) .3s backwards, bag-hop .4s ease-in-out 1s; }
+.paper-bag::before { content: ''; position: absolute; top: -10px; left: 10px; width: 20px; height: 10px; border: 3px solid #8a5838; border-bottom: 0; }
+.product-card .harvest-burst { left: 50%; top: 45%; }
+
+/* --- Cofrinho --- */
+.piggy-body { display: flex; flex-direction: column; gap: 14px; padding: 16px; }
+.piggy-row { display: flex; align-items: center; gap: 14px; }
+.piggy { width: 76px; height: 62px; flex-shrink: 0; animation: piggy-shake .5s ease-in-out; }
+.piggy-label { font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; color: #7a4a26; }
+.piggy-coins { font-size: 34px; font-weight: 900; line-height: 1; color: #a86d1c; text-shadow: 2px 2px #ffe8a8; }
+.piggy-coins small { font-size: 13px; color: #765337; text-shadow: none; }
+.wish-box { padding: 12px; background: #ffe3ea66; border: 2px dashed #e8789f; }
+.wish-item { display: flex; align-items: center; gap: 10px; margin-top: 6px; font-size: 14px; }
+.wish-icon { width: 34px; height: 34px; flex-shrink: 0; }
+.wish-meta { margin-top: 4px; font-size: 11px; font-weight: bold; color: #8a6136; }
+.wish-empty { font-size: 12px; font-style: italic; color: #8a6136; }
+.earn-button { align-self: flex-start; }
+
+/* --- Baú --- */
+.chest-body { display: flex; flex-direction: column; align-items: stretch; gap: 12px; padding: 16px; }
+.chest { align-self: center; width: 96px; height: 72px; }
+.chest-lid { transform-box: fill-box; transform-origin: 0 100%; animation: lid-open .7s cubic-bezier(.34, 1.56, .64, 1) .3s both; }
+.chest-glow { animation: sparkle-blink 1.6s steps(1) infinite 1s; }
+.chest-empty { font-size: 12px; font-style: italic; text-align: center; color: #8a6136; }
+.chest-list { display: flex; flex-direction: column; gap: 8px; max-height: 360px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #a47545 #f6dfa6; }
+.chest-item { display: flex; align-items: center; gap: 10px; padding: 8px; background: #fff8e1; border: 2px solid #d2ac71; }
+.chest-item.is-fresh { animation: chest-drop .6s cubic-bezier(.34, 1.56, .64, 1) backwards; border-color: #f2c453; box-shadow: inset 0 0 0 2px #ffe38b; }
+.chest-item.is-used { opacity: .7; }
+.chest-item.is-used .chest-title { text-decoration: line-through; text-decoration-color: #72ad32; }
+.chest-icon { width: 30px; height: 30px; flex-shrink: 0; }
+.chest-title { font-size: 13px; font-weight: 900; overflow-wrap: anywhere; }
+.chest-meta { font-size: 10px; color: #8a6136; }
+.enjoy-button { min-height: 30px; padding: 4px 8px; font-size: 11px; }
+.enjoy-button.is-used { background: #d3dda0; border-color: #3f6b35; color: #23401f; }
+
+/* --- Animações --- */
+@keyframes sign-swing-slow { from { transform: rotate(-2.5deg); } to { transform: rotate(2.5deg); } }
+@keyframes bell-ring { 0%, 80%, 100% { transform: rotate(0); } 84% { transform: rotate(14deg); } 88% { transform: rotate(-12deg); } 92% { transform: rotate(8deg); } 96% { transform: rotate(-4deg); } }
+@keyframes cat-blink { 0%, 90%, 100% { transform: scaleY(1); } 93%, 96% { transform: scaleY(.15); } }
+@keyframes drawer-pop { 0%, 85%, 100% { transform: translateY(0); } 87%, 95% { transform: translateY(6px); } }
+@keyframes bell-ding { 0%, 70%, 100% { transform: none; } 72% { transform: translateY(-2px); } 74% { transform: none; } }
+@keyframes bubble-pop { from { transform: scale(.3) translateY(10px); opacity: 0; } }
+@keyframes coin-spin { 0%, 100% { transform: scaleX(1); } 50% { transform: scaleX(.1); } }
+@keyframes product-in { from { transform: translateY(16px) scale(.92); opacity: 0; } }
+@keyframes item-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+@keyframes tag-sway { from { transform: rotate(-4deg); } to { transform: rotate(5deg); } }
+@keyframes heart-pop { 40% { transform: scale(1.35); } }
+@keyframes item-to-bag { 40% { transform: translateY(-28px) rotate(-12deg) scale(1.1); } 100% { transform: translateY(30px) scale(.3); opacity: 0; } }
+@keyframes bag-drop { from { transform: translateY(-60px); opacity: 0; } }
+@keyframes bag-hop { 50% { transform: translateY(-6px) scale(1.05, .95); } }
+@keyframes piggy-shake { 20% { transform: rotate(-8deg); } 40% { transform: rotate(7deg); } 60% { transform: rotate(-5deg); } 80% { transform: rotate(3deg); } }
+@keyframes lid-open { from { transform: rotate(0); } to { transform: rotate(-22deg) translateY(-2px); } }
+@keyframes chest-drop { from { transform: translateY(-16px) scale(.9); opacity: 0; } }
+
+/* --- Responsivo --- */
+@media (max-width: 767px) {
+ .shop-hero { min-height: 420px; padding: 70px 12px 12px; border-width: 4px; border-bottom-width: 8px; }
+ .shop-hero-top { padding-left: 0; }
+ .shop-sign-board { max-width: none; width: 100%; transform: none; }
+ .cat-bubble { display: none; }
+ .shop-layout { padding: 14px 10px; gap: 14px; }
+ .product-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+}
+
+/* Minhas compras: sacolinha no lugar do baú (baús agora são achados nas Missões) */
+.shopping-bag { align-self: center; width: 64px; height: 68px; animation: bag-hop 2.4s ease-in-out infinite; }

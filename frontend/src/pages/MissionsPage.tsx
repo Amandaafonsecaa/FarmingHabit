@@ -8,6 +8,9 @@ import { PixelIcon } from '../components/PixelIcon';
 import { useAcceptedMissions, useMissionBoard } from '../hooks/useMissionBoard';
 import type { NewItem } from '../types/world';
 import { recordAdventure } from '../lib/diary';
+import { foundChests, readTreasure, rollLoot, saveOpenedChest, type FoundChest } from '../lib/treasure';
+import { ChestOpening } from '../components/missions/ChestOpening';
+import { CollectionPanel } from '../components/missions/CollectionPanel';
 import type { AppPage } from '../types/navigation';
 
 const CELEBRATION_MS = 1700;
@@ -22,12 +25,33 @@ export function MissionsPage({ onNavigate }: { onNavigate: (page: AppPage) => vo
   const [highlightId, setHighlightId] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [announcement, setAnnouncement] = useState('');
+  const [treasure, setTreasure] = useState(readTreasure);
+  const [openingChest, setOpeningChest] = useState<FoundChest | null>(null);
 
   // A missão sendo comemorada fica no quadro até o carimbo terminar, depois vai para o diário
   const open = board.missions.filter(mission => !mission.completed || mission.id === celebratingId)
     .sort((a, b) => Number(accepted.includes(b.id)) - Number(accepted.includes(a.id)));
   const done = board.missions.filter(mission => mission.completed && mission.id !== celebratingId);
   const stillOpen = open.filter(mission => !mission.completed);
+  const completedCount = board.missions.filter(mission => mission.completed).length;
+  const chests = foundChests(completedCount);
+  const unopened = chests.filter(chest => !treasure.opened.includes(chest.id));
+
+  // Abre o baú: sorteia, credita moedas/XP no servidor e só então marca como aberto (se falhar, dá para tentar de novo)
+  async function openChest(chest: FoundChest) {
+    const loot = rollLoot(chest);
+    const coins = loot.reduce((sum, item) => sum + (item.kind === 'coins' ? item.amount : 0), 0);
+    const xp = loot.reduce((sum, item) => sum + (item.kind === 'xp' ? item.amount : 0), 0);
+    await board.grant(coins, xp);
+    setTreasure(current => saveOpenedChest(current, chest.id, loot));
+    setAnnouncement(`Baú aberto! +${coins} moedas${xp ? ` e +${xp} XP` : ''}.`);
+    return loot;
+  }
+
+  function showChest(id?: string) {
+    const chest = id ? unopened.find(item => item.id === id) : unopened[0];
+    if (chest) setOpeningChest(chest);
+  }
 
   async function run(id: string, label: string, action: () => Promise<void>) {
     if (pendingId) return;
@@ -73,7 +97,7 @@ export function MissionsPage({ onNavigate }: { onNavigate: (page: AppPage) => vo
   }
 
   return <MainLayout page="missions" onNavigate={onNavigate}
-    world={<MissionsHero completed={board.missions.filter(mission => mission.completed).length} openCount={stillOpen.length}
+    world={<MissionsHero completed={completedCount} openCount={stillOpen.length} opened={treasure.opened} unopened={unopened.length} onOpenChest={showChest}
       traveling={stillOpen.filter(mission => accepted.includes(mission.id)).length} activeMission={stillOpen.find(mission => accepted.includes(mission.id)) ?? null}
       onCreate={()=>setDialogOpen(true)} onFocusMission={focusQuest}/>}>
     <div className="missions-layout">
@@ -94,9 +118,10 @@ export function MissionsPage({ onNavigate }: { onNavigate: (page: AppPage) => vo
             onRemove={()=>remove(mission.id, mission.title)}/>)}</ul>
         </div>
       </section>
-      <AdventureDiary entries={done} freshId={freshId}/>
+      <div className="missions-side"><AdventureDiary entries={done} freshId={freshId}/><CollectionPanel collection={treasure.collection}/></div>
     </div>
     <p role="status" className="world-status">{announcement || 'Toda grande descoberta começa com uma pequena curiosidade.'}</p>
     {dialogOpen && <MissionDialog onSave={create} onClose={()=>setDialogOpen(false)}/>}
+    {openingChest && <ChestOpening key={openingChest.id} chest={openingChest} remaining={unopened.filter(chest => chest.id !== openingChest.id).length} onOpen={openChest} onClose={()=>setOpeningChest(null)}/>}
   </MainLayout>;
 }

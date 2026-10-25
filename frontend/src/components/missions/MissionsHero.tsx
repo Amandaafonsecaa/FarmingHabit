@@ -1,14 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
 import { CHAPTERS, JOURNEY_LENGTH, STOPS_PER_CHAPTER, journeyState } from '../../lib/journey';
+import { CHEST_STOPS } from '../../lib/treasure';
 import { PixelIcon } from '../PixelIcon';
 import { ProgressBar } from '../ProgressBar';
-import { JourneyMap } from './JourneyMap';
+import { JourneyMap, type MapChest } from './JourneyMap';
 
 interface Banner { title: string; text: string }
 
-export function MissionsHero({ completed, openCount, traveling, activeMission, onCreate, onFocusMission }: {
+export function MissionsHero({ completed, openCount, traveling, activeMission, opened, unopened, onCreate, onFocusMission, onOpenChest }: {
   completed: number; openCount: number; traveling: number; activeMission: { id: string; title: string } | null;
-  onCreate: () => void; onFocusMission: (id: string) => void;
+  opened: string[]; unopened: number; onCreate: () => void; onFocusMission: (id: string) => void; onOpenChest: (id?: string) => void;
 }) {
   const { loop, chapter, reached } = journeyState(completed);
   const [viewing, setViewing] = useState<number | null>(null);
@@ -24,9 +25,12 @@ export function MissionsHero({ completed, openCount, traveling, activeMission, o
     const was = journeyState(before);
     const lastStop = CHAPTERS[was.chapter].stops[STOPS_PER_CHAPTER - 1].name;
     setViewing(null);
-    if (loop > was.loop) setBanner({ title: 'A princesa foi salva! 👑', text: `Começa a jornada ${loop}: de volta ao Vale do Sítio, com novas aventuras.` });
-    else if (chapter > was.chapter) setBanner({ title: `Capítulo ${chapter + 1}: ${CHAPTERS[chapter].name}`, text: `Depois de passar por ${lastStop}, uma nova terra se abre.` });
-    else setFreshStop(reached - 1);
+    if (loop > was.loop) setBanner({ title: 'A princesa foi salva! 👑', text: `Começa a jornada ${loop}. E no fim do castelo, um baú grande te espera!` });
+    else if (chapter > was.chapter) setBanner({ title: `Capítulo ${chapter + 1}: ${CHAPTERS[chapter].name}`, text: `Depois de passar por ${lastStop}, você achou um baú grande! 🎁` });
+    else {
+      setFreshStop(reached - 1);
+      if (CHEST_STOPS[reached - 1]) setBanner({ title: 'Um baú apareceu! 🎁', text: 'Toque no baú brilhando no mapa para abrir.' });
+    }
     const timer = window.setTimeout(() => { setBanner(null); setFreshStop(null); }, 3400);
     return () => window.clearTimeout(timer);
   }, [completed]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -35,9 +39,18 @@ export function MissionsHero({ completed, openCount, traveling, activeMission, o
   const isCurrent = shown === chapter;
   const canView = (index: number) => index <= chapter || loop > 1;
   const within = completed % JOURNEY_LENGTH;
+  const shownReached = isCurrent ? reached : STOPS_PER_CHAPTER;
+  // Baús do capítulo exibido: só os da volta atual (capítulos já vistos em voltas anteriores aparecem como abertos)
+  const mapChests: MapChest[] = Object.entries(CHEST_STOPS).map(([stop, size]) => {
+    const index = Number(stop);
+    const id = `${shown <= chapter ? loop : loop - 1}:${shown}:${index}`;
+    const found = index < shownReached;
+    return { stop: index, id, size, state: !found ? 'hidden' : opened.includes(id) ? 'opened' : 'ready' };
+  });
 
   return <section className="missions-hero" aria-labelledby="missions-title">
-    <JourneyMap chapterIndex={shown} reached={isCurrent ? reached : STOPS_PER_CHAPTER} heading={isCurrent && !!activeMission} showExplorer={isCurrent} freshStop={isCurrent ? freshStop : null} loop={loop}/>
+    <JourneyMap chapterIndex={shown} reached={shownReached} heading={isCurrent && !!activeMission} showExplorer={isCurrent} freshStop={isCurrent ? freshStop : null} loop={loop} chests={mapChests} onOpenChest={onOpenChest}/>
+    {unopened > 0 && <button type="button" className="chest-alert pixel-frame" onClick={()=>onOpenChest()}><span aria-hidden="true">🎁</span>{unopened} {unopened === 1 ? 'baú para abrir' : 'baús para abrir'}</button>}
 
     <div className="missions-hero-top">
       <div className="missions-sign pixel-frame">

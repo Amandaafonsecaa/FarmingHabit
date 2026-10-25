@@ -1,0 +1,67 @@
+/* ===== Personagem: criador, boas-vindas e cartão do fazendeiro ===== */
+
+/* --- Criador de personagem --- */
+.character-creator { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 16px; align-items: start; }
+.creator-stage { position: relative; display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 14px 10px 12px; background: linear-gradient(#a9dcef 0 62%, #8fd36a 62% 70%, #79bd38 70%); border: 3px solid #57311f; box-shadow: inset 0 0 0 2px #f5c477; }
+.creator-avatar { position: relative; z-index: 1; width: 150px; height: 165px; image-rendering: pixelated; animation: avatar-hop .4s cubic-bezier(.34, 1.56, .64, 1); }
+.creator-avatar svg { animation: avatar-idle 1.4s steps(1) infinite; }
+.creator-grass { display: block; width: 140px; height: 10px; margin-top: -18px; background: repeating-linear-gradient(90deg, #53922d 0 6px, #72ad32 6px 12px); clip-path: polygon(0 40%, 8% 0, 16% 40%, 24% 0, 32% 40%, 40% 0, 48% 40%, 56% 0, 64% 40%, 72% 0, 80% 40%, 88% 0, 96% 40%, 100% 0, 100% 100%, 0 100%); }
+.creator-random { position: relative; z-index: 1; font-size: 11px; }
+.creator-random:hover:not(:disabled) { animation: plant-wiggle .5s steps(5); }
+.creator-panel { min-width: 0; }
+.creator-tabs { display: flex; flex-wrap: wrap; gap: 4px; border-bottom: 3px solid #8a5838; }
+.creator-tab { padding: 6px 12px; border: 2px solid #8a5838; border-bottom: 0; background: #f6e2b0; color: #5b3826; font: inherit; font-size: 12px; font-weight: 900; cursor: pointer; }
+.creator-tab[aria-selected="true"] { background: #fffaf0; color: #3b2418; transform: translateY(3px); padding-bottom: 9px; box-shadow: inset 0 3px #f2c453; }
+.creator-options { padding: 12px 4px 4px; animation: section-in .3s ease-out backwards; }
+.creator-label { margin: 6px 0 8px; font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; color: #7a4a26; }
+.style-options { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 8px; }
+.style-option { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px 4px 8px; border: 2px solid #d2ac71; background: #fffaf0; font: inherit; font-size: 10px; font-weight: bold; color: #5b3826; cursor: pointer; transition: transform .15s cubic-bezier(.34, 1.56, .64, 1); }
+.style-option:hover { transform: translateY(-3px); border-color: #8a5838; }
+.style-option[aria-checked="true"] { border-color: #3f6b35; background: #e8f0c4; color: #23401f; box-shadow: inset 0 0 0 2px #c0e36b; }
+.style-preview { width: 56px; height: 62px; }
+.swatches { display: flex; flex-wrap: wrap; gap: 8px; }
+.swatch { width: 34px; height: 34px; padding: 0; border: 3px solid #57311f; cursor: pointer; box-shadow: inset 2px 2px #ffffff55, 2px 2px 0 #42291655; transition: transform .15s cubic-bezier(.34, 1.56, .64, 1); }
+.swatch:hover { transform: translateY(-2px) rotate(-4deg); }
+.swatch[aria-checked="true"] { outline: 3px solid #3f6b35; outline-offset: 2px; transform: scale(1.1); }
+.style-option:focus-visible, .swatch:focus-visible, .creator-tab:focus-visible { outline: 3px solid #3f6b35; outline-offset: 2px; }
+
+/* --- Boas-vindas (primeira visita) --- */
+.welcome-dialog { width: min(760px, calc(100vw - 32px)); }
+.welcome-skip { padding: 4px 8px; border: 0; background: none; font: inherit; font-size: 12px; font-weight: bold; color: #7a4a26; text-decoration: underline; cursor: pointer; }
+.welcome-steps { display: flex; gap: 6px; padding: 12px 20px 0; }
+.welcome-steps li { display: flex; flex: 1; align-items: center; gap: 6px; padding-bottom: 8px; font-size: 11px; font-weight: bold; color: #8a6136; border-bottom: 4px solid #e3c38a; }
+.welcome-steps li span { display: flex; width: 22px; height: 22px; flex-shrink: 0; align-items: center; justify-content: center; border: 2px solid #8a5838; background: #f6e2b0; font-size: 11px; }
+.welcome-steps li.is-current { color: #3b2418; border-color: #f2c453; }
+.welcome-steps li.is-current span { background: #f2c453; animation: chapter-pulse 1.4s steps(2) infinite; }
+.welcome-steps li.is-done { color: #3f6b35; border-color: #72ad32; }
+.welcome-steps li.is-done span { background: #72ad32; color: #fff1c7; border-color: #3f6b35; }
+.welcome-body { padding: 18px 20px 6px; animation: section-in .35s ease-out backwards; }
+.welcome-actions { display: flex; justify-content: flex-end; gap: 10px; padding: 12px 20px 18px; border-top: 2px solid #e0c79a; margin: 8px 0 0; }
+.welcome-done { display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; padding-bottom: 8px; }
+.welcome-hero { display: flex; flex-direction: column; align-items: center; padding: 14px 40px 10px; background: linear-gradient(#a9dcef 0 62%, #8fd36a 62% 70%, #79bd38 70%); border: 3px solid #57311f; animation: banner-in .6s cubic-bezier(.34, 1.56, .64, 1) backwards; }
+.welcome-avatar { width: 140px; height: 154px; animation: avatar-cheer .8s ease-in-out 3 .5s; }
+.welcome-done-title { margin-top: 6px; font-size: 20px; font-weight: 900; color: #3f6b35; }
+
+/* --- Cartão do fazendeiro (Perfil) --- */
+.farmer-card { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; padding: 14px; background: #f8e7bf repeating-linear-gradient(0deg, transparent 0 5px, #c9a46a14 5px 6px); border: 3px solid #8a5838; box-shadow: inset 0 0 0 2px #f5c477, 3px 4px 0 #42291644; }
+.farmer-card-avatar { width: 96px; height: 106px; flex-shrink: 0; padding: 4px; background: linear-gradient(#a9dcef 0 70%, #79bd38 70%); border: 3px solid #57311f; }
+.farmer-card-avatar svg { animation: avatar-idle 1.4s steps(1) infinite; }
+.farmer-card-name { font-size: 20px; font-weight: 900; line-height: 1.2; overflow-wrap: anywhere; }
+.farmer-card-farm { margin-top: 2px; font-size: 13px; font-weight: bold; color: #3f6b35; }
+.farmer-card-bio { margin-top: 6px; font-size: 13px; font-style: italic; color: #5b3826; overflow-wrap: anywhere; }
+.farmer-card-meta { margin-top: 6px; font-size: 11px; color: #8a6136; }
+.settings-creator { padding: 14px; }
+.settings-badge { padding: 2px 8px; font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; color: #7a4a26; background: #ffe8a8; border: 2px dashed #a86d1c; }
+
+@keyframes avatar-hop { 40% { transform: translateY(-10px) scale(1.04, .97); } }
+@keyframes avatar-idle { 50% { transform: translateY(-2px); } }
+@keyframes avatar-cheer { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
+
+@media (max-width: 640px) {
+ .character-creator { grid-template-columns: minmax(0, 1fr); }
+ .creator-avatar { width: 120px; height: 132px; }
+ .welcome-steps li { font-size: 0; gap: 0; justify-content: center; }
+ .welcome-steps li span { font-size: 11px; }
+ .farmer-card { align-items: flex-start; }
+ .farmer-card-avatar { width: 72px; height: 80px; }
+}

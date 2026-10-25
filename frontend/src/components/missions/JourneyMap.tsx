@@ -1,6 +1,31 @@
 import type { CSSProperties, ReactNode } from 'react';
 import { CHAPTERS, smoothPath, type ChapterTheme } from '../../lib/journey';
 import { JourneyStop } from './Landmarks';
+import { useProfile } from '../../hooks/useProfile';
+import { avatarColors } from '../../lib/avatar';
+import type { KeyboardEvent } from 'react';
+
+export interface MapChest { stop: number; id: string; size: 'mid' | 'big'; state: 'hidden' | 'ready' | 'opened' }
+
+/** Baú ao lado da parada: contorno tracejado (ainda longe), dourado pulando (pronto para abrir) ou aberto e vazio */
+function MapChestMarker({ x, y, chest, onOpen }: { x: number; y: number; chest: MapChest; onOpen: (id: string) => void }) {
+  const ready = chest.state === 'ready';
+  const onKey = (event: KeyboardEvent) => { if (ready && (event.key === 'Enter' || event.key === ' ')) { event.preventDefault(); onOpen(chest.id); } };
+  const trim = chest.size === 'big' ? '#f2c453' : '#c6ccd6';
+  return <g transform={`translate(${x} ${y})`} className={`map-chest is-${chest.state}`} shapeRendering="crispEdges"
+    {...(ready ? { role: 'button', tabIndex: 0, 'aria-label': `Abrir baú ${chest.size === 'big' ? 'grande' : ''}`, onClick: () => onOpen(chest.id), onKeyDown: onKey } : { 'aria-hidden': true })}>
+    {chest.state === 'hidden'
+      ? <path d="M-8-12h16v12H-8Z" fill="none" stroke="#8a5838" strokeWidth="1.5" strokeDasharray="2 2"/>
+      : <g className="map-chest-body">
+          {ready && <ellipse cx="0" cy="-6" rx="14" ry="10" fill="#fff6c2" className="map-chest-halo"/>}
+          <path d="M-9-8h18v8H-9Z" fill="#a86b35" stroke="#3b2418" strokeWidth="1.5"/><path d="M-2-8h4v5h-4Z" fill={trim}/>
+          {chest.state === 'opened'
+            ? <path d="M-9-16h18v4H-9Z" fill="#8a5838" stroke="#3b2418" strokeWidth="1.5" transform="rotate(-25 -9 -12)"/>
+            : <path d="M-9-13h18v5H-9Z" fill="#8a5838" stroke="#3b2418" strokeWidth="1.5"/>}
+          {ready && <path className="map-chest-spark" d="M10-18h2v2h-2Zm-22 2h2v2h-2Z" fill="#fff"/>}
+        </g>}
+  </g>;
+}
 
 const PARCHMENT: Record<ChapterTheme, string> = { valley: '#f0d49a', forest: '#e4d9a0', mountain: '#ebe5d6', castle: '#e6d4c6' };
 const tree = (x: number, y: number, color = '#6d9b45', size = 1) => <g key={`${x}-${y}`} transform={`translate(${x} ${y}) scale(${size})`}><path d="M0-18l9 14h-4l7 10h-24l7-10h-4Z" fill={color} stroke="#3f6b35" strokeWidth="1.5" strokeLinejoin="round"/><path d="M-1 6h2v5h-2Z" fill="#7a4a26"/></g>;
@@ -39,19 +64,23 @@ const SCENERY: Record<ChapterTheme, ReactNode> = {
 
 /** Exploradora: anda (com transição) até a parada atual e mostra "!" quando está a caminho de uma missão */
 function Explorer({ x, y, heading }: { x: number; y: number; heading: boolean }) {
+  // Mini versão da personagem do jogador, com as cores escolhidas no perfil
+  const [profile] = useProfile();
+  const colors = avatarColors(profile.avatar);
   return <g className="map-explorer" style={{ transform: `translate(${x}px, ${y}px)` }} aria-hidden="true">
     <g className="explorer-bob" shapeRendering="crispEdges">
       <ellipse cx="0" cy="8" rx="7" ry="2" fill="#3b2418" opacity=".25"/>
-      <path d="M-4 3h3v5h-3Zm5 0h3v5H1Z" fill="#846853"/><path d="M-5-5h10v9H-5Z" fill="#648244"/><path d="M5-4h4v6H5Z" fill="#b07a4c"/>
-      <path d="M-4-12h8v7h-8Z" fill="#efc5a1"/><path d="M-2-10h1v2h-1Zm3 0h1v2H1Z" fill="#3b2418"/>
-      <path d="M-8-14h16v3H-8Zm3-4h10v4H-5Z" fill="#e7b84b"/>
+      <path d="M-4 3h3v5h-3Zm5 0h3v5H1Z" fill="#846853"/><path d="M-5-5h10v9H-5Z" fill={colors.outfit}/><path d="M5-4h4v6H5Z" fill="#b07a4c"/>
+      <path d="M-6-13h12v8h-12Z" fill={colors.hair}/><path d="M-4-12h8v7h-8Z" fill={colors.skin}/><path d="M-2-10h1v2h-1Zm3 0h1v2H1Z" fill="#3b2418"/>
+      {profile.avatar.hat !== 'none' && <path d="M-8-14h16v3H-8Zm3-4h10v4H-5Z" fill={colors.hat}/>}
       {heading && <g className="explorer-alert"><path d="M7-32h10v12H7Z" fill="#fff1c7" stroke="#57311f" strokeWidth="1.5"/><path d="M11-30h2v5h-2Zm0 6h2v2h-2Z" fill="#bf5837"/></g>}
     </g>
   </g>;
 }
 
-export function JourneyMap({ chapterIndex, reached, heading, showExplorer, freshStop, loop }: {
+export function JourneyMap({ chapterIndex, reached, heading, showExplorer, freshStop, loop, chests, onOpenChest }: {
   chapterIndex: number; reached: number; heading: boolean; showExplorer: boolean; freshStop: number | null; loop: number;
+  chests: MapChest[]; onOpenChest: (id: string) => void;
 }) {
   const chapter = CHAPTERS[chapterIndex];
   const points: [number, number][] = [chapter.start, ...chapter.stops.map(stop => stop.at)];
@@ -75,6 +104,8 @@ export function JourneyMap({ chapterIndex, reached, heading, showExplorer, fresh
     <g transform={`translate(${chapter.exit[0]} ${chapter.exit[1]})`}><path d="M-6 0l12-6v12Z" fill="#8a5838" className="exit-arrow"/></g>
 
     {chapter.stops.map((stop, index) => <JourneyStop key={`${chapterIndex}-${index}`} x={stop.at[0]} y={stop.at[1]} landmark={stop.landmark} name={stop.name} revealed={index < reached} fresh={freshStop === index}/>)}
+
+    {chests.map(chest => { const [x, y] = chapter.stops[chest.stop].at; return <MapChestMarker key={chest.id} x={x + 26} y={y} chest={chest} onOpen={onOpenChest}/>; })}
 
     {/* Rosa dos ventos */}
     <g transform="translate(46 290)"><circle r="18" fill="#f6e2b0" stroke="#7a4a26" strokeWidth="2"/><path d="M0-18l3 15 15 3-15 3-3 15-3-15-15-3 15-3Z" fill="#e8ac59" stroke="#7a4a26" strokeWidth="1" strokeLinejoin="round"/><g className="compass-needle"><path d="M0-13l3 13h-6Z" fill="#bf5837"/><path d="M0 13l3-13h-6Z" fill="#3b2418"/></g></g>

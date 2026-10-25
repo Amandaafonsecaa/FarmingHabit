@@ -60,7 +60,7 @@
 /* --- Itens --- */
 .game-nav-list { position: relative; z-index: 2; display: flex; flex: 0 1 auto; flex-direction: column; justify-content: flex-start; gap: 8px; height: auto; overflow-y: auto; scrollbar-width: none; }
 .navigation-open .game-nav-list > li { animation: nav-item-in .55s cubic-bezier(.34, 1.56, .64, 1) backwards; animation-delay: calc(var(--i) * 65ms + 140ms); }
-.game-nav-item { position: relative; min-height: 78px; gap: 6px; padding: 4px 0; border: 0; background: none; cursor: pointer; color: #ffe1a7; }
+.game-nav-item { position: relative; min-height: 72px; gap: 6px; padding: 4px 0; border: 0; background: none; cursor: pointer; color: #ffe1a7; }
 .game-nav-icon {
  position: relative; width: 50px; height: 50px; color: #ffe2a3;
  background: #a86b35 repeating-linear-gradient(0deg, transparent 0 7px, #754222 7px 8px);
@@ -111,7 +111,7 @@
  }
  .navigation-open .game-navigation { transform: none; }
  .nav-vine, .nav-grass, .nav-nails, .nav-firefly { display: none; }
- .game-nav-list { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 2px; overflow: visible; }
+ .game-nav-list { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 2px; overflow: visible; }
  .navigation-open .game-nav-list > li { animation-name: nav-item-up; }
  .game-nav-item { min-height: 82px; justify-content: flex-start; }
  .game-nav-icon { width: 36px; height: 36px; }

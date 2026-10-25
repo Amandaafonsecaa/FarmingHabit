@@ -1,8 +1,8 @@
 import type { Mission } from '../types/world';
 import { GamePanel } from './GamePanel';
 import { PixelIcon } from './PixelIcon';
-export function MissionsPanel({ missions, loading, error, pendingId, onToggle, onDelete, onAdd }: { missions: Mission[]; loading: boolean; error: string; pendingId: string | null; onToggle: (id: string) => void; onDelete: (id: string) => void; onAdd: () => void }) {
-  return <GamePanel id="missions" title="Missões" icon="mission" badge={`${missions.filter(item=>item.completed).length}/${missions.length} concluídas`} action="Adicionar missão" onAdd={onAdd}>
+export function MissionsPanel({ missions, loading, error, pendingId, onToggle, onDelete, onAdd, onOpen }: { missions: Mission[]; loading: boolean; error: string; pendingId: string | null; onToggle: (id: string) => void; onDelete: (id: string) => void; onAdd: () => void; onOpen: () => void }) {
+  return <GamePanel id="missions" title="Missões" icon="mission" badge={`${missions.filter(item=>item.completed).length}/${missions.length} concluídas`} action="Adicionar missão" onAdd={onAdd} onOpen={onOpen}>
     {loading && <p className="item-description">Carregando missões...</p>}
     {error && <p role="alert" className="text-sm font-bold text-[#8c3027]">{error}</p>}
     {!loading && !error && missions.length === 0 && <p className="item-description">Nenhuma missão por aqui ainda.</p>}

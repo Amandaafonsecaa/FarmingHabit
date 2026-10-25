@@ -6,11 +6,11 @@ import { PixelIcon } from './PixelIcon';
 import { ProgressBar } from './ProgressBar';
 
 /** Versão compacta da aba Metas: mesmas metas e regras, pendentes em cima e colhidas embaixo */
-export function GoalsPanel({ goals, log, today, onCheck, onAdd }: { goals: TrackedGoal[]; log: GoalLog; today: Date; onCheck: (goal: TrackedGoal) => void; onAdd: () => void }) {
+export function GoalsPanel({ goals, log, today, onCheck, onAdd, onOpen }: { goals: TrackedGoal[]; log: GoalLog; today: Date; onCheck: (goal: TrackedGoal) => void; onAdd: () => void; onOpen: () => void }) {
   const ordered = sortByPending(goals, log, today);
   const listRef = useFlipList<HTMLUListElement>(ordered.map(goal => goal.id).join());
   const harvested = goals.filter(goal => isHarvested(goal, log, today)).length;
-  return <GamePanel id="goals" title="Metas" icon="leaf" badge={`${harvested}/${goals.length} colhidas`} action="Adicionar meta" onAdd={onAdd}>
+  return <GamePanel id="goals" title="Metas" icon="leaf" badge={`${harvested}/${goals.length} colhidas`} action="Adicionar meta" onAdd={onAdd} onOpen={onOpen}>
     {goals.length === 0 && <p className="item-description">Nenhuma meta plantada ainda.</p>}
     <ul ref={listRef} className="panel-list home-goal-list">{ordered.map(goal => {
       const progress = progressFor(goal, log, today);

@@ -38,9 +38,10 @@ export function GameNavigation({ open, page, onNavigate, navRef }: { open: boole
       <NavigationItem index={0} label="Casa" icon="home" selected={page === 'home'} onSelect={()=>onNavigate('home')}/>
       <NavigationItem index={1} label="Metas" icon="target" selected={page === 'goals'} onSelect={()=>onNavigate('goals')}/>
       <NavigationItem index={2} label="Missões" icon="mission" selected={page === 'missions'} onSelect={()=>onNavigate('missions')}/>
-      <NavigationItem index={3} label="Diário" icon="book" selected={page === 'diary'} onSelect={()=>onNavigate('diary')}/>
-      <NavigationItem index={4} label="Evolução" icon="growth"/>
-      <NavigationItem index={5} label="Configurações" icon="settings"/>
+      <NavigationItem index={3} label="Loja" icon="coin" selected={page === 'shop'} onSelect={()=>onNavigate('shop')}/>
+      <NavigationItem index={4} label="Diário" icon="book" selected={page === 'diary'} onSelect={()=>onNavigate('diary')}/>
+      <NavigationItem index={5} label="Evolução" icon="growth" selected={page === 'evolution'} onSelect={()=>onNavigate('evolution')}/>
+      <NavigationItem index={6} label="Configurações" icon="settings" selected={page === 'settings'} onSelect={()=>onNavigate('settings')}/>
     </ul>
     <NavGrass/>
   </nav>;

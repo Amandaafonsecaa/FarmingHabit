@@ -10,7 +10,7 @@ export function useFlipList<T extends HTMLElement>(order: string) {
   useLayoutEffect(() => {
     const list = ref.current;
     if (!list) return;
-    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches || document.documentElement.classList.contains('calm-mode');
     const next = new Map<string, { left: number; top: number }>();
     for (const child of Array.from(list.children) as HTMLElement[]) {
       const id = child.dataset.flipId;

@@ -196,3 +196,70 @@
  .chapter-name { display: none; }
  .chapter-tab.is-viewing .chapter-name { display: inline; }
 }
+
+/* ===== Baús da jornada e coleção de achados ===== */
+.missions-side { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+@media (min-width: 1100px) { .missions-side { position: sticky; top: 16px; } .missions-side .adventure-diary { position: static; } }
+
+/* Baú no mapa */
+.map-chest.is-hidden { opacity: .55; }
+.map-chest.is-ready { cursor: pointer; outline: none; }
+.map-chest.is-ready .map-chest-body { transform-box: fill-box; transform-origin: 50% 100%; animation: chest-bounce 1.2s ease-in-out infinite; }
+.map-chest-halo { opacity: .5; animation: halo-pulse 1.2s steps(3) infinite alternate; }
+.map-chest-spark { animation: sparkle-blink 1s steps(1) infinite; }
+.map-chest.is-ready:focus-visible .map-chest-halo { fill: #c0e36b; opacity: .9; }
+.map-chest.is-opened { opacity: .7; }
+.chest-alert { position: absolute; right: 18px; bottom: 56px; z-index: 4; display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; font: inherit; font-size: 12px; font-weight: 900; color: #3b2418; cursor: pointer; animation: chest-alert-in .5s cubic-bezier(.34, 1.56, .64, 1) backwards, chest-nudge 2.4s ease-in-out 1s infinite; }
+.chest-alert span { font-size: 16px; }
+.chest-alert:hover { background-color: #fff3c4; }
+
+/* Abertura do baú */
+.chest-dialog { width: min(560px, calc(100vw - 32px)); }
+.chest-stage { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 230px; overflow: hidden; background: radial-gradient(circle at 50% 60%, #fff1c7 0, #f6dfa6 45%, #e8c48a 100%); }
+.chest-button { position: relative; z-index: 1; padding: 0; border: 0; background: none; cursor: pointer; }
+.chest-button:disabled { cursor: default; }
+.chest-button:focus-visible { outline: 3px solid #3f6b35; outline-offset: 6px; }
+.treasure-chest { width: 150px; height: 125px; }
+.treasure-chest.is-big { width: 180px; height: 150px; }
+.chest-dialog.is-closed .treasure-chest { animation: chest-wiggle 1.4s ease-in-out infinite; }
+.treasure-lid { transform-box: fill-box; transform-origin: 0 100%; }
+.chest-dialog:not(.is-closed) .treasure-lid { animation: lid-fly .6s cubic-bezier(.3, 1.4, .5, 1) forwards; }
+.treasure-glow { opacity: 0; }
+.chest-dialog:not(.is-closed) .treasure-glow { animation: glow-burst .6s steps(3) forwards; }
+.chest-hint { position: relative; z-index: 1; margin-top: 8px; font-size: 12px; font-weight: 900; color: #7a4a26; animation: sparkle-blink 1.6s steps(1) infinite; }
+.chest-rays { position: absolute; left: 50%; top: 55%; width: 520px; height: 520px; margin: -260px 0 0 -260px; opacity: 0; background: repeating-conic-gradient(#fff6c2 0 10deg, transparent 10deg 30deg); }
+.chest-dialog:not(.is-closed) .chest-rays { animation: rays-in .5s ease-out forwards, rays-spin 12s linear infinite; }
+.loot-list { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; padding: 16px 16px 4px; perspective: 800px; }
+.loot-card { display: flex; width: 140px; flex-direction: column; align-items: center; gap: 4px; padding: 12px 8px; text-align: center; background: #fff8e1; border: 3px solid #8a5838; box-shadow: 3px 4px 0 #42291644; animation: card-flip .6s cubic-bezier(.34, 1.56, .64, 1) backwards; animation-delay: calc(var(--card) * 260ms + .1s); }
+.loot-card strong { font-size: 12px; line-height: 1.25; }
+.loot-card small { font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; color: #8a6136; }
+.loot-icon { width: 52px; height: 52px; }
+.loot-card.is-raro { border-color: #3d7fa8; box-shadow: inset 0 0 0 2px #9fd8f0, 3px 4px 0 #1f4a6644; }
+.loot-card.is-raro small { color: #3d7fa8; }
+.loot-card.is-lendário { position: relative; overflow: hidden; border-color: #a86d1c; background: #fff3c4; box-shadow: inset 0 0 0 2px #f2c453, 0 0 0 3px #ffe38b88, 3px 4px 0 #42291644; }
+.loot-card.is-lendário small { color: #bf5837; }
+.loot-card.is-lendário::after { content: ''; position: absolute; top: -20px; bottom: -20px; left: -30px; width: 14px; background: #fffbe0cc; transform: rotate(20deg); animation: tile-shine 2.4s steps(10) infinite 1s; }
+
+/* Coleção de achados */
+.collection-body { display: flex; flex-direction: column; gap: 12px; padding: 14px; }
+.collection-chapter { margin-bottom: 6px; font-size: 10px; font-weight: 900; letter-spacing: 1.5px; text-transform: uppercase; color: #7a4a26; }
+.collection-row { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.collection-slot { position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 4px 6px; text-align: center; background: #f3e2bb; border: 2px dashed #c49a62; }
+.collection-slot.is-found { background: #fffaf0; border-style: solid; border-color: #8a5838; animation: medal-bob 3s ease-in-out infinite; }
+.collection-slot.is-found.is-raro { border-color: #3d7fa8; box-shadow: inset 0 0 0 2px #bfe6f3; }
+.collection-slot.is-found.is-lendário { border-color: #a86d1c; background: #fff3c4; box-shadow: inset 0 0 0 2px #f2c453; }
+.collection-name { font-size: 9px; font-weight: bold; line-height: 1.2; color: #5b3826; overflow-wrap: anywhere; }
+.collection-count { position: absolute; top: 2px; right: 3px; padding: 0 3px; font-size: 9px; font-weight: 900; color: #fff1c7; background: #bf5837; }
+
+@keyframes chest-bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+@keyframes halo-pulse { from { opacity: .3; } to { opacity: .7; } }
+@keyframes chest-alert-in { from { transform: scale(.4); opacity: 0; } }
+@keyframes chest-nudge { 0%, 80%, 100% { transform: rotate(0); } 85% { transform: rotate(-4deg); } 90% { transform: rotate(4deg); } 95% { transform: rotate(-2deg); } }
+@keyframes chest-wiggle { 0%, 60%, 100% { transform: rotate(0); } 70% { transform: rotate(-4deg) translateY(-2px); } 80% { transform: rotate(4deg); } 90% { transform: rotate(-2deg); } }
+@keyframes lid-fly { to { transform: translate(-6px, -14px) rotate(-38deg); } }
+@keyframes glow-burst { from { opacity: 0; } to { opacity: 1; } }
+@keyframes rays-in { to { opacity: .55; } }
+@keyframes rays-spin { to { transform: rotate(360deg); } }
+@keyframes card-flip { from { transform: rotateY(90deg) translateY(16px); opacity: 0; } }
+
+@media (max-width: 767px) { .chest-alert { right: 10px; bottom: 54px; } .loot-card { width: calc(50% - 8px); } }

@@ -13,6 +13,7 @@ import type { NewTrackedGoal, TrackedGoal } from '../types/goals';
 import type { ItemKind, Mission, NewItem, Reward } from '../types/world';
 import { MainLayout } from '../layouts/MainLayout';
 import { recordAdventure } from '../lib/diary';
+import { recordPurchase } from '../lib/shop';
 import type { Player } from '../services/api';
 import type { AppPage } from '../types/navigation';
 import { claimReward, completeMission, createMission, createReward, deleteMission, listMissions, listRewards, loadPlayer, updateMission } from '../services/api';
@@ -117,6 +118,7 @@ export function HomePage({ onNavigate }: { onNavigate: (page: AppPage) => void }
     }
     run(id, reward.name, async () => {
       const { remainingCoins } = await claimReward(id, player.id);
+      recordPurchase(id, reward.name, reward.price);
       setPlayer(current=>current && { ...current, coins: remainingCoins });
       setPurchasedIds(current=>[...current, id]);
       setAnnouncement(`${reward.name} resgatado! Aproveite esse momento para você.`);
@@ -140,9 +142,9 @@ export function HomePage({ onNavigate }: { onNavigate: (page: AppPage) => void }
 
   return <MainLayout page="home" onNavigate={onNavigate} world={<GameWorld player={player} today={today} goalsDone={goalsDone} goalsDue={goalsDue}/>}>
     <div className="functional-panel">
-      <GoalsPanel goals={goals} log={log} today={today} onCheck={checkGoal} onAdd={()=>setDialogKind('goal')}/>
-      <MissionsPanel missions={missions} loading={loading} error={loadError} pendingId={pendingId} onToggle={toggleMission} onDelete={removeMission} onAdd={()=>setDialogKind('mission')}/>
-      <CoinsPanel coins={coins} rewards={[mockReward, ...rewards]} purchasedIds={purchasedIds} onBuy={buyReward} onAdd={()=>setDialogKind('reward')}/>
+      <GoalsPanel goals={goals} log={log} today={today} onCheck={checkGoal} onAdd={()=>setDialogKind('goal')} onOpen={()=>onNavigate('goals')}/>
+      <MissionsPanel missions={missions} loading={loading} error={loadError} pendingId={pendingId} onToggle={toggleMission} onDelete={removeMission} onAdd={()=>setDialogKind('mission')} onOpen={()=>onNavigate('missions')}/>
+      <CoinsPanel coins={coins} rewards={[mockReward, ...rewards]} purchasedIds={purchasedIds} onBuy={buyReward} onAdd={()=>setDialogKind('reward')} onOpen={()=>onNavigate('shop')}/>
     </div>
     <p role="status" className="world-status">{announcement || loadError || 'Cada conquista tem o seu tempo. Continue cultivando.'}</p>
     {dialogKind === 'goal' && <NewGoalDialog onSave={plantGoal} onClose={()=>setDialogKind(null)}/>}

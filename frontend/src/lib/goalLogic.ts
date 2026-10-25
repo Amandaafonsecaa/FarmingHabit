@@ -140,3 +140,34 @@ export function todayStats(goals: TrackedGoal[], log: GoalLog, today: Date) {
     : isScheduled(goal, today));
   return { due: due.length, done: due.filter(goal => isDoneOn(goal, log, today)).length };
 }
+
+// --- Histórico (aba Evolução) ---
+
+export const fromKey = (key: string) => { const [year, month, day] = key.split('-').map(Number); return new Date(year, month - 1, day); };
+
+/** Maior sequência já feita: dias agendados seguidos (ou semanas batidas, nas semanais) */
+export function longestStreak(goal: TrackedGoal, log: GoalLog, today: Date) {
+  let best = 0, run = 0;
+  if (goal.frequency.kind === 'weekly') {
+    const target = goal.frequency.timesPerWeek;
+    for (let week = startOfWeek(fromKey(goal.createdOn)); week <= today; week = addDays(week, 7)) {
+      if (weekChecks(goal, log, week) >= target) best = Math.max(best, ++run);
+      else if (addDays(week, 6) < today) run = 0;
+    }
+    return best;
+  }
+  const todayKey = toKey(today);
+  for (let day = fromKey(goal.createdOn); toKey(day) <= todayKey; day = addDays(day, 1)) {
+    if (!isScheduled(goal, day)) continue;
+    if (isDoneOn(goal, log, day)) best = Math.max(best, ++run);
+    else if (toKey(day) !== todayKey) run = 0;
+  }
+  return best;
+}
+
+/** Quantas "colheitas" (meta cumprida num dia) aconteceram entre duas datas, inclusive */
+export function harvestsBetween(goals: TrackedGoal[], log: GoalLog, from: Date, to: Date) {
+  let total = 0;
+  for (let day = from; day <= to; day = addDays(day, 1)) total += goals.filter(goal => isDoneOn(goal, log, day)).length;
+  return total;
+}
