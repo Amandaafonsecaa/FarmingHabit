@@ -5,10 +5,11 @@ import { PixelIcon } from '../PixelIcon';
 import { ProgressBar } from '../ProgressBar';
 import { PlantGrowth } from './PlantGrowth';
 import { HarvestBurst, type Burst } from './HarvestBurst';
+import { HARVEST_REWARD, type HarvestReward } from '../../lib/harvestRewards';
 
 interface GoalCardProps {
   goal: TrackedGoal; log: GoalLog; today: Date;
-  onSetAmount: (amount: number) => void; onRemove: () => void; onAnnounce: (message: string) => void;
+  onSetAmount: (amount: number) => HarvestReward | null; onRemove: () => void; onAnnounce: (message: string) => void;
 }
 
 /** Faixa seg–dom da semana atual: feito, falhou, hoje, agendado ou folga */
@@ -51,20 +52,22 @@ export function GoalCard({ goal, log, today, onSetAmount, onRemove, onAnnounce }
   // Check único (diária, dias específicos ou um check da semanal): alterna o dia de hoje
   function toggleCheck() {
     if (doneToday) { onSetAmount(0); onAnnounce(`${goal.title}: marcação de hoje desfeita.`); return; }
-    onSetAmount(1);
-    if (!weekly) celebrate('big', 'Colhido!');
-    else if (checks >= weekly.timesPerWeek) celebrate('small', 'Colheita extra!');
-    else if (checks + 1 >= weekly.timesPerWeek) celebrate('big', 'Semana completa!');
-    else celebrate('small', `${checks + 1}/${weekly.timesPerWeek} na semana`);
+    // A plaquinha mostra as moedas ganhas (só na primeira colheita do dia)
+    const reward = onSetAmount(1);
+    const coins = reward ? ` +${reward.coins} 🪙` : '';
+    if (!weekly) celebrate('big', `Colhido!${coins}`);
+    else if (checks >= weekly.timesPerWeek) celebrate('small', `Colheita extra!${coins}`);
+    else if (checks + 1 >= weekly.timesPerWeek) celebrate('big', `Semana completa!${coins}`);
+    else celebrate('small', `${checks + 1}/${weekly.timesPerWeek} na semana${coins}`);
   }
 
   // Quantidade (copos, minutos...): soma ou tira um passo; floresce ao bater a meta do dia
   function changeAmount(direction: 1 | -1) {
     if (!quantity) return;
     const next = Math.max(0, amount + direction * quantity.step);
-    onSetAmount(next);
+    const reward = onSetAmount(next);
     if (direction < 0) return;
-    if (next >= target && amount < target) celebrate('big', 'Meta do dia!');
+    if (next >= target && amount < target) celebrate('big', `Meta do dia!${reward ? ` +${reward.coins} 🪙` : ''}`);
     else celebrate('small', `+${quantity.step} ${quantity.unit}`);
   }
 
@@ -96,6 +99,7 @@ export function GoalCard({ goal, log, today, onSetAmount, onRemove, onAnnounce }
     </div>
 
     <footer className="goal-plot-actions">
+      {scheduledToday && !doneToday && <span className="reward-chip" title="Recompensa por cumprir hoje">+{HARVEST_REWARD.coins} 🪙</span>}
       {quantity ? <div className="quantity-stepper">
         <button type="button" className="pixel-button" disabled={!scheduledToday || amount === 0} onClick={()=>changeAmount(-1)} aria-label={`Tirar ${quantity.step} ${quantity.unit}`}><PixelIcon name="minus" className="size-2.5"/></button>
         <output className="quantity-value" aria-live="polite">{amount}<small>/{target} {quantity.unit}</small></output>

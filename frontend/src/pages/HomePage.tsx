@@ -14,6 +14,7 @@ import type { ItemKind, Mission, NewItem, Reward } from '../types/world';
 import { MainLayout } from '../layouts/MainLayout';
 import { recordAdventure } from '../lib/diary';
 import { recordPurchase } from '../lib/shop';
+import { PLAYER_EVENT, claimHarvest, creditPlayer, releaseHarvest, rewardLabel } from '../lib/harvestRewards';
 import type { Player } from '../services/api';
 import type { AppPage } from '../types/navigation';
 import { claimReward, completeMission, createMission, createReward, deleteMission, listMissions, listRewards, loadPlayer, updateMission } from '../services/api';
@@ -48,6 +49,13 @@ export function HomePage({ onNavigate }: { onNavigate: (page: AppPage) => void }
     return () => { active = false; };
   }, []);
 
+  // Moedas/XP ganhos em outra parte (metas, baús) atualizam o jogador desta tela
+  useEffect(() => {
+    const onPlayer = (event: Event) => setPlayer((event as CustomEvent<Player>).detail);
+    window.addEventListener(PLAYER_EVENT, onPlayer);
+    return () => window.removeEventListener(PLAYER_EVENT, onPlayer);
+  }, []);
+
   // Executa uma ação na API travando o item e anunciando erros
   async function run(id: string, label: string, action: () => Promise<void>) {
     if (pendingId) return;
@@ -57,16 +65,27 @@ export function HomePage({ onNavigate }: { onNavigate: (page: AppPage) => void }
     finally { setPendingId(null); }
   }
 
+  // Meta cumprida no dia paga moedas e XP (uma vez por dia); a barra de XP e o saldo atualizam pelo PLAYER_EVENT
+  function payHarvest(goal: TrackedGoal, nextAmount: number) {
+    const reward = claimHarvest(goal, log, today, nextAmount);
+    if (!reward) return;
+    creditPlayer(reward.coins, reward.xp)
+      .then(() => setAnnouncement(`${goal.title}: colhida! ${rewardLabel(reward)}`))
+      .catch(() => { releaseHarvest(reward); setAnnouncement(`${goal.title}: colhida, mas o servidor está fora do ar e as moedas não foram creditadas.`); });
+  }
+
   // Check único alterna o dia de hoje; quantidade soma um passo (o controle completo fica na aba Metas)
   function checkGoal(goal: TrackedGoal) {
     const key = toKey(today);
     const amount = amountOn(goal, log, key);
     if (goal.measure.kind === 'quantity') {
       const next = amount + goal.measure.step;
+      payHarvest(goal, next);
       setAmount(goal.id, key, next);
       setAnnouncement(next >= dailyTarget(goal) && amount < dailyTarget(goal) ? `${goal.title}: meta do dia colhida!` : `${goal.title}: ${next}/${dailyTarget(goal)} ${goal.measure.unit}.`);
       return;
     }
+    if (amount < 1) payHarvest(goal, 1);
     setAmount(goal.id, key, amount >= 1 ? 0 : 1);
     setAnnouncement(`${goal.title}: ${amount >= 1 ? 'marcação de hoje desfeita.' : 'colhida hoje!'}`);
   }

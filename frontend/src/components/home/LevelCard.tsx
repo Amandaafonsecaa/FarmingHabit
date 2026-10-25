@@ -63,6 +63,6 @@ export function LevelCard({ level, totalXp, xpPerLevel }: { level: number | null
       <span className="xp-tip" style={{ left: `${shownPercent}%` }}>{spark && <XpSparks key={spark.id} spark={spark} onDone={clearSpark}/>}</span>
     </button>
     <p className="mt-2 text-right text-sm font-bold" aria-live="polite">{levelXp} / {xpPerLevel} XP</p>
-    {hintOpen && <p id="xp-hint" className="xp-hint">Faltam <strong>{xpPerLevel - levelXp} XP</strong> para o nível {(level ?? 1) + 1}. Conclua missões para chegar lá!</p>}
+    {hintOpen && <p id="xp-hint" className="xp-hint">Faltam <strong>{xpPerLevel - levelXp} XP</strong> para o nível {(level ?? 1) + 1}. Cumpra metas e missões para chegar lá!</p>}
   </section>;
 }

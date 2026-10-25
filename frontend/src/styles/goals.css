@@ -229,3 +229,8 @@
 .goal-plots, .home-goal-list { position: relative; }
 .home-goal-row.is-harvested .item-title { color: #3f6b35; }
 .home-goal-row.is-harvested { opacity: .8; }
+
+/* Recompensa por cumprir a meta hoje (some depois de colhida) */
+.goal-plot-actions { align-items: center; gap: 8px; }
+.reward-chip { margin-right: auto; padding: 2px 8px; font-size: 11px; font-weight: 900; color: #7a4a26; background: #fff1c7; border: 2px dashed #e7b84b; animation: chip-bob 2s ease-in-out infinite; }
+@keyframes chip-bob { 50% { transform: translateY(-2px); } }

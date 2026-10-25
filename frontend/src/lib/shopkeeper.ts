@@ -1,4 +1,5 @@
 import type { Reward } from '../types/world';
+import { HARVEST_REWARD, WEEK_BONUS } from './harvestRewards';
 
 /** O que o Bigode sabe sobre o jogador na hora da conversa */
 export interface ShopContext { name: string; coins: number; rewards: Reward[]; wish: Reward | null; lastPurchase: string | null; hour: number }
@@ -34,12 +35,12 @@ export function respond(choice: ChoiceId, context: ShopContext): string[] {
     const affordable = context.rewards.filter(reward => reward.price <= context.coins).sort((a, b) => b.price - a.price);
     if (affordable.length) return [`Com ${context.coins} moedas, eu levaria o "${affordable[0].name}". É um dos meus favoritos!`, 'Mas não conta pros outros produtos que eu falei isso. 🤫'];
     const closest = [...context.rewards].sort((a, b) => a.price - b.price)[0];
-    return [`Hmm... o "${closest.name}" sai por ${closest.price} moedas.`, `Faltam só ${closest.price - context.coins}! Uma ou duas missões e ele é seu.`];
+    return [`Hmm... o "${closest.name}" sai por ${closest.price} moedas.`, `Faltam só ${closest.price - context.coins}! Umas metas em dia e uma missão, e ele é seu.`];
   }
   if (choice === 'earn') return [
-    'Missões cumpridas pagam em moedas! Quanto maior a aventura, mais moedinhas.',
+    `Cada meta cumprida no dia rende ${HARVEST_REWARD.coins} moedinhas e um tiquinho de XP. Batendo a meta da semana, ganha mais ${WEEK_BONUS.coins} de bônus!`,
+    'Mas quem paga bem mesmo são as missões: muito mais moedas e XP. Quanto maior a aventura, maior o prêmio.',
     'E dizem que pela jornada aparecem baús com moedas e coisas raras... 🎁',
-    'Ah, e manter as metas em dia deixa a horta linda. Não paga moeda, mas paga em felicidade!',
   ];
   if (choice === 'wish' && context.wish) {
     const missing = context.wish.price - context.coins;

@@ -28,7 +28,7 @@ export function saveSettings(settings: Settings) {
 export const SETTINGS_EVENT = EVENT;
 
 // --- Backup dos dados que vivem no navegador ---
-export const LOCAL_KEYS = ['farminghabit.goals.v1', 'farminghabit.diary.v1', 'farminghabit.adventures.v1', 'farminghabit.missions.accepted.v1', 'farminghabit.profile.v1', 'farminghabit.purchases.v1', 'farminghabit.wish.v1', 'farminghabit.treasure.v1', KEY];
+export const LOCAL_KEYS = ['farminghabit.goals.v1', 'farminghabit.diary.v1', 'farminghabit.adventures.v1', 'farminghabit.missions.accepted.v1', 'farminghabit.profile.v1', 'farminghabit.purchases.v1', 'farminghabit.wish.v1', 'farminghabit.treasure.v1', 'farminghabit.harvest-rewards.v1', KEY];
 
 export function exportBackup() {
   const data = Object.fromEntries(LOCAL_KEYS.map(key => { try { return [key, JSON.parse(localStorage.getItem(key) ?? 'null')]; } catch { return [key, null]; } }));

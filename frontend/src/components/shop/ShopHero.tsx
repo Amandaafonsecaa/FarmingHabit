@@ -1,14 +1,9 @@
-import { useEffect, useState } from 'react';
 import { PixelIcon } from '../PixelIcon';
 
-const PHRASES = ['Bem-vinda ao armazém!', 'Tudo fresquinho hoje!', 'Juntou moedinhas? 🪙', 'Mimos para quem se cuida.', 'Volte sempre!'];
 const JARS: [number, number, string][] = [[70, 150, '#ee6996'], [96, 150, '#f2c453'], [122, 150, '#72ad32'], [148, 150, '#5fa8d3'], [70, 194, '#e8954a'], [96, 194, '#9b7fd4'], [122, 194, '#f2c453'], [148, 194, '#bf5837']];
 
 /** Interior do armazém: placa balançando, sininho, prateleiras, caixa registradora e o gato Bigode no balcão */
 export function ShopHero({ coins, items, bought, onCreate, onTalk }: { coins: number | null; items: number; bought: number; onCreate: () => void; onTalk: () => void }) {
-  const [phrase, setPhrase] = useState(0);
-  useEffect(() => { const timer = window.setInterval(() => setPhrase(index => (index + 1) % PHRASES.length), 4200); return () => window.clearInterval(timer); }, []);
-
   return <section className="shop-hero" aria-labelledby="shop-title">
     <svg className="shop-scene" viewBox="0 0 1000 320" preserveAspectRatio="xMidYMax slice" shapeRendering="crispEdges" aria-hidden="true">
       {/* Papel de parede listrado, lambri e piso xadrez */}
@@ -37,7 +32,7 @@ export function ShopHero({ coins, items, bought, onCreate, onTalk }: { coins: nu
       {[818, 860, 902, 940].map((x, i) => <g key={x} className="shelf-plant" style={{ animationDelay: `${-i * 0.6}s` }}><rect x={x} y="114" width="16" height="16" fill="#b96845"/><path d={`M${x + 6} 100h4v14h-4Zm-6 4h4v8h-4Zm12 2h4v6h-4Z`} fill="#53922d"/></g>)}
 
       {/* Balcão, caixa registradora, pote de moedas e o gato Bigode */}
-      {/* Clicar no Bigode abre a conversa (para teclado e leitores de tela há o botão do balão e o da placa) */}
+      {/* Clicar no Bigode abre a conversa: contorno brilhante + cursor de fala indicam que ele é interativo */}
       <g className="shop-cat is-clickable" onClick={onTalk}>
         <rect x="455" y="150" width="54" height="52" fill="#9aa3b2"/><rect x="455" y="150" width="54" height="10" fill="#7d8696"/>
         <rect x="459" y="118" width="46" height="36" fill="#9aa3b2"/><rect x="459" y="110" width="10" height="10" fill="#9aa3b2"/><rect x="495" y="110" width="10" height="10" fill="#9aa3b2"/><rect x="461" y="112" width="6" height="6" fill="#f2a6a6"/><rect x="497" y="112" width="6" height="6" fill="#f2a6a6"/>
@@ -45,6 +40,9 @@ export function ShopHero({ coins, items, bought, onCreate, onTalk }: { coins: nu
         <g className="cat-eyes"><rect x="468" y="132" width="6" height="6" fill="#3b2418"/><rect x="490" y="132" width="6" height="6" fill="#3b2418"/><rect x="469" y="133" width="2" height="2" fill="#fff"/><rect x="491" y="133" width="2" height="2" fill="#fff"/></g>
         <rect x="479" y="140" width="6" height="4" fill="#e8576f"/><rect x="450" y="140" width="14" height="2" fill="#fff"/><rect x="500" y="140" width="14" height="2" fill="#fff"/>
         <rect x="463" y="162" width="38" height="40" fill="#fff1d6"/><rect x="463" y="162" width="38" height="4" fill="#bf5837"/><rect x="476" y="174" width="12" height="8" fill="#f2c453"/>
+        {/* Aviso de interação (só no hover/foco), como o "[E] Conversar" dos jogos */}
+        <g className="talk-prompt"><rect x="452" y="80" width="60" height="18" fill="#57311f"/><rect x="454" y="82" width="56" height="14" fill="#fff1c7"/><rect x="478" y="98" width="8" height="4" fill="#57311f"/>
+          <rect x="458" y="85" width="8" height="6" fill="#bf5837"/><rect x="460" y="91" width="2" height="2" fill="#bf5837"/><text x="489" y="93" textAnchor="middle" className="talk-prompt-text">Conversar</text></g>
       </g>
       <rect x="380" y="200" width="300" height="60" fill="#8a5838"/><rect x="380" y="196" width="300" height="8" fill="#b07a4c"/><rect x="380" y="196" width="300" height="2" fill="#d9a05a"/>
       {[400, 480, 560, 640].map(x => <rect key={x} x={x} y="214" width="60" height="38" fill="#7a4a26"/>)}
@@ -53,15 +51,15 @@ export function ShopHero({ coins, items, bought, onCreate, onTalk }: { coins: nu
       <g><rect x="410" y="170" width="28" height="26" fill="#d8f0f6" opacity=".6"/><rect x="408" y="166" width="32" height="5" fill="#8a5838"/>{[[414, 186], [424, 182], [418, 178], [430, 188]].map(([x, y], i) => <rect key={i} className="coin-glint" x={x} y={y} width="8" height="6" fill="#f2c453" style={{ animationDelay: `${i * 0.4}s` }}/>)}</g>
       <g className="counter-bell"><rect x="652" y="188" width="16" height="8" fill="#f2c453"/><rect x="658" y="184" width="4" height="4" fill="#a86d1c"/></g>
     </svg>
-    <button type="button" className="cat-bubble pixel-frame" key={phrase} onClick={onTalk} aria-label={`${PHRASES[phrase]} Conversar com o Bigode`}>{PHRASES[phrase]}<small>💬 clique para conversar</small></button>
+    {/* Para teclado e leitores de tela: aparece só quando recebe foco */}
+    <button type="button" className="talk-sr-button sr-only focus:not-sr-only" onClick={onTalk}>Conversar com o Bigode</button>
 
     <div className="shop-hero-top">
       <div className="shop-sign-board pixel-frame">
         <p className="eyebrow">Armazém do sítio</p>
         <h1 id="shop-title">Loja</h1>
         <p className="missions-motto">Troque suas moedas por mimos de verdade.</p>
-        <div className="flex flex-wrap gap-2"><button type="button" className="pixel-button primary-button" onClick={onCreate}><PixelIcon name="plus" className="size-2.5"/>Nova recompensa</button>
-          <button type="button" className="pixel-button" onClick={onTalk}>💬 Falar com o Bigode</button></div>
+        <button type="button" className="pixel-button primary-button" onClick={onCreate}><PixelIcon name="plus" className="size-2.5"/>Nova recompensa</button>
       </div>
       <dl className="goals-stats">
         <div className="hero-stat pixel-frame"><dt><span className="spin-coin"><PixelIcon name="coin" className="size-3"/></span>Moedas</dt><dd>{coins ?? '–'}</dd></div>

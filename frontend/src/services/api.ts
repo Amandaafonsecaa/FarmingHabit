@@ -38,8 +38,8 @@ export async function loadPlayer(): Promise<Player> {
   return toPlayer(await request<Player>('/users', { method: 'POST', body: JSON.stringify({ name: 'Amanda', email: 'amanda@farminghabit.local' }) }));
 }
 
-/** Credita moedas e XP achados em baús (mesma regra de nível do backend: a cada 100 XP, +1 nível) */
-export async function grantTreasure(player: Player, coins: number, xp: number): Promise<Player> {
+/** Credita moedas e XP (baús e metas cumpridas), com a mesma regra de nível do backend: a cada 100 XP, +1 nível */
+export async function grantRewards(player: Player, coins: number, xp: number): Promise<Player> {
   const totalXp = player.xp + xp;
   return toPlayer(await request<Player>(`/users/${player.id}`, { method: 'PATCH', body: JSON.stringify({ coins: player.coins + coins, xp: totalXp, level: Math.floor(totalXp / 100) + 1 }) }));
 }

@@ -10,6 +10,7 @@ import { CharacterCreator } from '../components/profile/CharacterCreator';
 import { PixelAvatar } from '../components/PixelAvatar';
 import { LOCAL_KEYS, exportBackup, importBackup } from '../lib/settings';
 import { JOURNEY_LENGTH } from '../lib/journey';
+import { HARVEST_REWARD, WEEK_BONUS } from '../lib/harvestRewards';
 import { loadPlayer, updatePlayerName, type Player } from '../services/api';
 import type { AppPage } from '../types/navigation';
 
@@ -241,7 +242,9 @@ export function SettingsPage({ onNavigate }: { onNavigate: (page: AppPage) => vo
               </SettingsRow>
             </SettingsGroup>
             <SettingsGroup title="Como o jogo funciona">
-              <SettingsRow label="Níveis" description="Cumprir missões dá XP e moedas."><span className="settings-value">100 XP por nível</span></SettingsRow>
+              <SettingsRow label="Níveis" description="Metas e missões dão XP."><span className="settings-value">100 XP por nível</span></SettingsRow>
+              <SettingsRow label="Metas" description={`Cada meta cumprida no dia (uma vez por dia). Meta semanal batida: +${WEEK_BONUS.coins} moedas e +${WEEK_BONUS.xp} XP de bônus.`}><span className="settings-value">+{HARVEST_REWARD.coins} moedas · +{HARVEST_REWARD.xp} XP</span></SettingsRow>
+              <SettingsRow label="Missões" description="Pagam bem mais que metas. Você escolhe o tamanho ao criar."><span className="settings-value">15 a 80+ moedas</span></SettingsRow>
               <SettingsRow label="Semana das metas" description="Metas semanais zeram a contagem."><span className="settings-value">Começa na segunda</span></SettingsRow>
               <SettingsRow label="Jornada das missões" description="4 capítulos até salvar a princesa; depois recomeça."><span className="settings-value">{JOURNEY_LENGTH} missões por volta</span></SettingsRow>
             </SettingsGroup>

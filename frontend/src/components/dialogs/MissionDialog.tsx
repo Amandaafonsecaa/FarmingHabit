@@ -3,11 +3,12 @@ import type { NewItem } from '../../types/world';
 import { ChoiceCards, GameDialog } from './GameDialog';
 
 type Size = 'small' | 'medium' | 'big' | 'custom';
-const REWARDS: Record<Exclude<Size, 'custom'>, { xp: number; coins: number }> = { small: { xp: 10, coins: 5 }, medium: { xp: 30, coins: 15 }, big: { xp: 100, coins: 50 } };
+// Missões pagam bem mais que metas (meta cumprida: +5 moedas e +5 XP)
+const REWARDS: Record<Exclude<Size, 'custom'>, { xp: number; coins: number }> = { small: { xp: 20, coins: 15 }, medium: { xp: 50, coins: 30 }, big: { xp: 120, coins: 80 } };
 const SIZES: { value: Size; label: string; hint: string }[] = [
-  { value: 'small', label: 'Passinho', hint: '+10 XP · 5 moedas' },
-  { value: 'medium', label: 'Desafio', hint: '+30 XP · 15 moedas' },
-  { value: 'big', label: 'Conquista', hint: '+100 XP · 50 moedas' },
+  { value: 'small', label: 'Passinho', hint: '+20 XP · 15 moedas' },
+  { value: 'medium', label: 'Desafio', hint: '+50 XP · 30 moedas' },
+  { value: 'big', label: 'Conquista', hint: '+120 XP · 80 moedas' },
   { value: 'custom', label: 'Personalizada', hint: 'Você escolhe os valores.' },
 ];
 
@@ -35,8 +36,8 @@ export function MissionDialog({ onSave, onClose }: { onSave: (item: Extract<NewI
     <fieldset className="dialog-fieldset"><legend>Recompensa</legend>
       <ChoiceCards name="size" value={size} options={SIZES} onChange={setSize} compact/>
       {size === 'custom' && <div className="mt-3 grid grid-cols-2 gap-2">
-        <label className="form-label text-sm" htmlFor="mission-xp">XP<input id="mission-xp" name="xp" type="number" min={1} max={1000} defaultValue={30}/></label>
-        <label className="form-label text-sm" htmlFor="mission-coins">Moedas<input id="mission-coins" name="coins" type="number" min={0} max={10000} defaultValue={15}/></label>
+        <label className="form-label text-sm" htmlFor="mission-xp">XP<input id="mission-xp" name="xp" type="number" min={1} max={1000} defaultValue={50}/></label>
+        <label className="form-label text-sm" htmlFor="mission-coins">Moedas<input id="mission-coins" name="coins" type="number" min={0} max={10000} defaultValue={30}/></label>
       </div>}
     </fieldset>
   </GameDialog>;

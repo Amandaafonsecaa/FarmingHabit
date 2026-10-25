@@ -44,7 +44,7 @@ export function PiggyPanel({ coins, wish, shakeKey, onEarn }: { coins: number; w
             <p className="wish-meta">{coins >= wish.price ? 'Já dá para comprar! 🎉' : `${coins}/${wish.price} · faltam ${wish.price - coins}`}</p>
           </div>
         : <p className="wish-empty">Toque no ♥ de um produto para juntar moedas para ele.</p>}
-      <button type="button" className="pixel-button earn-button" onClick={onEarn}><PixelIcon name="mission" className="size-3"/>Ganhar moedas em missões</button>
+      <button type="button" className="pixel-button earn-button" onClick={onEarn}><PixelIcon name="mission" className="size-3"/>Ganhar moedas: metas e missões</button>
     </div>
   </section>;
 }

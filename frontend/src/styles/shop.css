@@ -10,12 +10,10 @@
 .jar-glint { animation: sparkle-blink 3s steps(1) infinite; }
 .seed-packet { transform-box: fill-box; transform-origin: 50% 0; animation: tool-sway 2.8s ease-in-out infinite alternate; }
 .cat-eyes { transform-box: fill-box; transform-origin: center; animation: cat-blink 4.5s steps(1) infinite; }
-.shop-cat { transform-box: fill-box; transform-origin: 50% 100%; animation: cat-breathe 2.8s ease-in-out infinite; }
+.shop-cat { transform-box: fill-box; transform-origin: 50% 100%; }
 .register-drawer { animation: drawer-pop 6s steps(1) infinite; }
 .coin-glint { animation: sparkle-blink 1.6s steps(1) infinite; }
 .counter-bell { transform-box: fill-box; transform-origin: 50% 100%; animation: bell-ding 7s steps(1) infinite; }
-.cat-bubble { position: absolute; left: calc(48.2% + 40px); top: 33%; z-index: 2; padding: 6px 10px; font-size: 11px; font-weight: 900; white-space: nowrap; animation: bubble-pop .4s cubic-bezier(.34, 1.56, .64, 1) backwards; }
-.cat-bubble::after { content: ''; position: absolute; left: -10px; bottom: 6px; width: 10px; height: 8px; background: #57311f; clip-path: polygon(100% 0, 100% 100%, 0 100%); }
 .shop-hero-top { position: relative; display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 12px; padding-left: 56px; }
 .shop-sign-board { padding: 14px 18px 16px; transform: rotate(-1deg); max-width: 340px; }
 .shop-sign-board .eyebrow { color: #7a4a26; font-size: 10px; }
@@ -92,7 +90,6 @@
 @keyframes cat-blink { 0%, 90%, 100% { transform: scaleY(1); } 93%, 96% { transform: scaleY(.15); } }
 @keyframes drawer-pop { 0%, 85%, 100% { transform: translateY(0); } 87%, 95% { transform: translateY(6px); } }
 @keyframes bell-ding { 0%, 70%, 100% { transform: none; } 72% { transform: translateY(-2px); } 74% { transform: none; } }
-@keyframes bubble-pop { from { transform: scale(.3) translateY(10px); opacity: 0; } }
 @keyframes coin-spin { 0%, 100% { transform: scaleX(1); } 50% { transform: scaleX(.1); } }
 @keyframes product-in { from { transform: translateY(16px) scale(.92); opacity: 0; } }
 @keyframes item-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
@@ -110,8 +107,7 @@
  .shop-hero { min-height: 420px; padding: 70px 12px 12px; border-width: 4px; border-bottom-width: 8px; }
  .shop-hero-top { padding-left: 0; }
  .shop-sign-board { max-width: none; width: 100%; transform: none; }
- .cat-bubble { display: none; }
- .shop-layout { padding: 14px 10px; gap: 14px; }
+  .shop-layout { padding: 14px 10px; gap: 14px; }
  .product-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
 }
 
@@ -121,10 +117,17 @@
 /* ===== Conversa com o Bigode (caixa de diálogo estilo Stardew) ===== */
 .shop-cat.is-clickable { cursor: pointer; }
 .shop-cat.is-clickable:hover { filter: brightness(1.08); }
-.cat-bubble { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; font: inherit; font-size: 11px; font-weight: 900; color: #3b2418; text-align: left; cursor: pointer; }
-.cat-bubble small { font-size: 9px; font-weight: bold; color: #7a4a26; }
-.cat-bubble:hover { background-color: #fff3c4; transform: translateY(-2px); }
-.cat-bubble:focus-visible { outline: 3px solid #3f6b35; outline-offset: 2px; }
+/* Bigode interativo, como NPCs de jogos: contorno dourado que pisca de vez em quando, fixo no hover,
+   cursor de balão de fala e o aviso "Conversar" acima da cabeça */
+.shop-hero-top { pointer-events: none; }
+.shop-hero-top > * { pointer-events: auto; }
+.shop-cat.is-clickable { cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' shape-rendering='crispEdges'%3E%3Cpath d='M2 2h22v16H10l-6 6v-6H2Z' fill='%2357311f'/%3E%3Cpath d='M4 4h18v12H9l-3 3v-3H4Z' fill='%23fff1c7'/%3E%3Cpath d='M8 9h2v2H8Zm4 0h2v2h-2Zm4 0h2v2h-2Z' fill='%23bf5837'/%3E%3C/svg%3E") 4 4, pointer; animation: cat-breathe 2.8s ease-in-out infinite, npc-glint 4s steps(1) infinite; }
+.shop-cat.is-clickable:hover { filter: drop-shadow(2px 0 0 #ffe38b) drop-shadow(-2px 0 0 #ffe38b) drop-shadow(0 2px 0 #ffe38b) drop-shadow(0 -2px 0 #ffe38b); animation: cat-breathe 2.8s ease-in-out infinite; }
+.talk-prompt { opacity: 0; transform-box: fill-box; transform-origin: 50% 100%; transform: translateY(4px) scale(.8); transition: opacity .15s, transform .2s cubic-bezier(.34, 1.56, .64, 1); pointer-events: none; }
+.shop-cat.is-clickable:hover .talk-prompt, .shop-hero:has(.talk-sr-button:focus) .talk-prompt { opacity: 1; transform: none; }
+.talk-prompt-text { font-family: 'Courier New', monospace; font-size: 9px; font-weight: 900; fill: #3b2418; }
+.talk-sr-button { position: absolute; left: 50%; top: 40%; z-index: 3; padding: 6px 10px; font-weight: 900; background: #fff1c7; border: 3px solid #57311f; }
+@keyframes npc-glint { 0%, 82%, 100% { filter: none; } 86%, 94% { filter: drop-shadow(2px 0 0 #ffe38b) drop-shadow(-2px 0 0 #ffe38b) drop-shadow(0 2px 0 #ffe38b) drop-shadow(0 -2px 0 #ffe38b); } 90% { filter: drop-shadow(1px 0 0 #fff6c2) drop-shadow(-1px 0 0 #fff6c2) drop-shadow(0 1px 0 #fff6c2) drop-shadow(0 -1px 0 #fff6c2); } }
 
 .shopkeeper-dialog { position: fixed; inset: auto 0 0; width: min(900px, calc(100vw - 24px)); max-width: none; margin: 0 auto 16px; padding: 0; border: 0; background: none; overflow: visible; }
 .shopkeeper-dialog::backdrop { background: #241d1766; animation: backdrop-in .2s ease-out backwards; }

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import type { Reward } from '../types/world';
 import { claimReward, createReward, hideReward, listRewards, loadPlayer, type Player } from '../services/api';
 import { WISH_KEY, readPurchases, recordPurchase, writePurchases, type Purchase } from '../lib/shop';
+import { PLAYER_EVENT } from '../lib/harvestRewards';
 
 /** Vitrine (backend), saldo do jogador, baú de compras e item desejado (navegador) */
 export function useShop() {
@@ -23,6 +24,12 @@ export function useShop() {
       .catch(reason => { if (active) setError(reason instanceof Error ? reason.message : 'Não foi possível falar com o servidor.'); })
       .finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
+  }, []);
+
+  useEffect(() => {
+    const onPlayer = (event: Event) => setPlayer((event as CustomEvent<Player>).detail);
+    window.addEventListener(PLAYER_EVENT, onPlayer);
+    return () => window.removeEventListener(PLAYER_EVENT, onPlayer);
   }, []);
 
   useEffect(() => { try { if (wishId) localStorage.setItem(WISH_KEY, wishId); else localStorage.removeItem(WISH_KEY); } catch { /* ignora */ } }, [wishId]);
