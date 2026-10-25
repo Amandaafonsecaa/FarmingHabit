@@ -31,10 +31,11 @@ export function MissionsPanel({ missions, accepted, loading, error, pendingId, o
           <h3 className="item-title">{mission.title}</h3>
           {traveling && <p className="traveling-tag"><span className="footsteps" aria-hidden="true"><span/><span/><span/></span>Em jornada</p>}
           {mission.description && <p className="item-description">{mission.description}</p>}
-          <Bounty coins={mission.coins} xp={mission.xp}/>
         </div>
         <button type="button" className="pixel-button mt-1 shrink-0" disabled={pendingId === mission.id} onClick={event=>onComplete(mission.id, event.currentTarget)} aria-label={`Cumprir: ${mission.title}`}>Cumprir</button>
-      </div></li>;
+      </div>
+      {/* Recompensa numa 2ª linha, começando na borda esquerda do ícone */}
+      <div className="mission-reward-row"><Bounty coins={mission.coins} xp={mission.xp}/></div></li>;
     })}</ul>
   </GamePanel>;
 }

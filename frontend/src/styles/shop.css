@@ -167,3 +167,17 @@
  .bigode-portrait { width: 64px; height: 64px; }
  .dialogue-text { min-height: 72px; font-size: 14px; }
 }
+
+/* ===== Confirmação de compra (modal da Casa) ===== */
+.purchase-preview { display: flex; align-items: center; gap: 12px; padding: 12px; background: #fff8e1; border: 2px solid #c49a62; }
+.purchase-item { width: 56px; height: 56px; flex-shrink: 0; padding: 4px; background: #f1d9a6; border: 2px solid #8a5838; }
+.purchase-name { font-size: 15px; font-weight: 900; }
+.purchase-description { margin-top: 2px; font-size: 12px; line-height: 1.4; color: #765337; }
+.purchase-math { display: grid; gap: 4px; padding: 12px; background: #fffaf0; border: 2px dashed #c49a62; font-size: 13px; }
+.purchase-math div { display: flex; justify-content: space-between; }
+.purchase-math dt { color: #765337; }
+.purchase-math dd { display: inline-flex; align-items: center; gap: 4px; margin: 0; font-weight: 900; }
+.purchase-math .is-cost { color: #bf5837; }
+.purchase-math .is-total { margin-top: 4px; padding-top: 8px; border-top: 2px solid #e0c79a; }
+.purchase-math .is-total dd { color: #3f6b35; font-size: 15px; }
+

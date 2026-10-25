@@ -8,6 +8,7 @@ import { SeedFab } from '../components/home/SeedFab';
 import type { GardenPlot } from '../components/WorldScenery';
 import { MissionDialog } from '../components/dialogs/MissionDialog';
 import { RewardDialog } from '../components/dialogs/RewardDialog';
+import { ConfirmPurchaseDialog } from '../components/dialogs/ConfirmPurchaseDialog';
 import { NewGoalDialog } from '../components/goals/NewGoalDialog';
 import { useGoalTracker, useToday } from '../hooks/useGoalTracker';
 import { useAcceptedMissions } from '../hooks/useMissionBoard';
@@ -43,6 +44,7 @@ export function HomePage({ onNavigate }: { onNavigate: (page: AppPage) => void }
   const setAnnouncement = toast;
   const [dialogKind, setDialogKind] = useState<ItemKind | null>(null);
   const [poppedId, setPoppedId] = useState<string | null>(null);
+  const [confirming, setConfirming] = useState<Reward | null>(null);
   const [perfectDate, setPerfectDate] = useState(() => { try { return localStorage.getItem(PERFECT_KEY); } catch { return null; } });
   const [celebrating, setCelebrating] = useState(false);
   const [wishId] = useState(() => { try { return localStorage.getItem(WISH_KEY); } catch { return null; } });
@@ -150,16 +152,26 @@ export function HomePage({ onNavigate }: { onNavigate: (page: AppPage) => void }
     });
   }
 
-  // Vitrine fixa desconta direto no jogador; recompensas personalizadas usam o resgate do backend
+  // Comprar pela Casa pede confirmação antes
   function buyReward(id: string) {
     const reward = catalog.find(item => item.id === id);
-    if (!reward || !player || coins < reward.price) return;
-    run(id, reward.name, async () => {
+    if (reward && player && coins >= reward.price) setConfirming(reward);
+  }
+
+  // Vitrine fixa desconta direto no jogador; recompensas personalizadas usam o resgate do backend
+  async function purchase(reward: Reward): Promise<boolean> {
+    if (!player) return false;
+    try {
       if (reward.fixed) setPlayer(await creditPlayer(-reward.price, 0));
-      else { const { remainingCoins } = await claimReward(id, player.id); setPlayer(current => current && { ...current, coins: remainingCoins }); }
-      recordPurchase(id, reward.name, reward.price);
+      else { const { remainingCoins } = await claimReward(reward.id, player.id); setPlayer(current => current && { ...current, coins: remainingCoins }); }
+      recordPurchase(reward.id, reward.name, reward.price);
       setAnnouncement(`${reward.name} foi para suas compras! Aproveite.`);
-    });
+      setConfirming(null);
+      return true;
+    } catch (error) {
+      setAnnouncement(`${reward.name}: ${errorMessage(error)}`);
+      return false;
+    }
   }
 
   // Devolve se salvou: o modal só fecha em caso de sucesso e libera o botão em caso de erro
@@ -189,5 +201,6 @@ export function HomePage({ onNavigate }: { onNavigate: (page: AppPage) => void }
     {dialogKind === 'goal' && <NewGoalDialog onSave={plantGoal} onClose={()=>setDialogKind(null)}/>}
     {dialogKind === 'mission' && <MissionDialog onSave={addItem} onClose={()=>setDialogKind(null)}/>}
     {dialogKind === 'reward' && <RewardDialog onSave={addItem} onClose={()=>setDialogKind(null)}/>}
+    {confirming && <ConfirmPurchaseDialog reward={confirming} coins={coins} onConfirm={()=>purchase(confirming)} onClose={()=>setConfirming(null)}/>}
   </MainLayout>;
 }

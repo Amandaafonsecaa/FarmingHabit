@@ -5,24 +5,12 @@ import { GamePanel } from './GamePanel';
 import { PixelIcon } from './PixelIcon';
 import { ProgressBar } from './ProgressBar';
 
-const FRUITS = ['#df5438', '#f6aa30', '#e7b52e', '#ee6996', '#9b7fd4'];
-
-/** Frutinhas no cabeçalho: uma para cada meta já colhida hoje */
-function HarvestFruits({ count }: { count: number }) {
-  if (!count) return null;
-  return <span className="harvest-fruits" aria-hidden="true">
-    {Array.from({ length: Math.min(count, 6) }, (_, index) => <span key={index} className="fruit" style={{ background: FRUITS[index % FRUITS.length], animationDelay: `${index * 80}ms` }}/>)}
-    {count > 6 && <small>+{count - 6}</small>}
-  </span>;
-}
-
-/** Metas da Casa: só as pendentes de hoje (até 3); as colhidas viram frutinhas no título */
+/** Metas da Casa: só as pendentes de hoje (até 3) */
 export function GoalsPanel({ goals, log, today, onCheck, onOpen }: { goals: TrackedGoal[]; log: GoalLog; today: Date; onCheck: (goal: TrackedGoal, element: Element) => void; onOpen: () => void }) {
-  const harvested = goals.filter(goal => isHarvested(goal, log, today));
   const pending = goals.filter(goal => isScheduled(goal, today) && !isHarvested(goal, log, today));
   const shown = pending.slice(0, 3);
   const listRef = useFlipList<HTMLUListElement>(shown.map(goal => goal.id).join());
-  return <GamePanel id="goals" title="Metas" icon="leaf" badge={<HarvestFruits count={harvested.length}/>} badgeLabel={`${harvested.length} colhidas hoje`} onOpen={onOpen}>
+  return <GamePanel id="goals" title="Metas" icon="leaf" onOpen={onOpen}>
     {goals.length === 0 && <p className="panel-empty">Nenhuma meta plantada ainda. Toque na semente <strong>+</strong> para plantar.</p>}
     {goals.length > 0 && pending.length === 0 && <p className="panel-empty is-happy">🌻 Tudo colhido por hoje!</p>}
     <ul ref={listRef} className="panel-list home-goal-list">{shown.map(goal => {

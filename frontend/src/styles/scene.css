@@ -180,3 +180,7 @@
 .product-description { font-size: 11px; line-height: 1.4; color: #765337; }
 
 @media (max-width: 640px) { .toaster { right: 50%; transform: translateX(50%); align-items: stretch; } }
+
+/* Missões na Casa: a recompensa forma uma 2ª linha alinhada à borda esquerda do ícone */
+.mission-reward-row { margin-top: 10px; }
+.mission-reward-row .bounty { margin-top: 0; }
