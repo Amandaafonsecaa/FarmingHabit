@@ -1,38 +1,49 @@
 import type { GoalLog, TrackedGoal } from '../../types/goals';
-import { addDays, progressFor, startOfWeek, streakFor, todayStats, weekProgressFor } from '../../lib/goalLogic';
+import { addDays, isDoneOn, isScheduled, startOfWeek, streakFor, weekChecks } from '../../lib/goalLogic';
 import { PixelIcon } from '../PixelIcon';
-import { PlantGrowth } from './PlantGrowth';
+import { useEffect, useState } from 'react';
+import { GoalStand } from './GoalStand';
+import { VendorDialog } from './VendorDialog';
+import { loadPlayer } from '../../services/api';
 import { CoinHud } from '../home/CoinHud';
 
 const shortDate = new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: '2-digit' });
 
-/** Topo da aba: placa de madeira, quadros de resumo e um canteiro com uma muda por meta */
-export function GoalsHero({ goals, log, today, coins, onPlant }: { goals: TrackedGoal[]; log: GoalLog; today: Date; coins: number | null; onPlant: () => void }) {
-  const { due: dueToday, done: doneToday } = todayStats(goals, log, today);
-  const weekPercent = goals.length ? Math.round(goals.reduce((sum, goal) => sum + weekProgressFor(goal, log, today), 0) / goals.length) : 0;
-  const bestStreak = goals.reduce((best, goal) => Math.max(best, goal.frequency.kind === 'weekly' ? 0 : streakFor(goal, log, today)), 0);
+/** Topo da aba: placa de madeira plantada no chão e a vendinha com as metas de hoje em caixotes */
+export function GoalsHero({ goals, log, today, coins, onPlant, onHarvest }: { goals: TrackedGoal[]; log: GoalLog; today: Date; coins: number | null; onPlant: () => void; onHarvest: (goal: TrackedGoal, origin: Element) => void }) {
   const monday = startOfWeek(today);
+  const [talking, setTalking] = useState(false);
+  const [playerName, setPlayerName] = useState('fazendeira');
+  // Nome do jogador para o Seu Zé cumprimentar (carregado antes de abrir a conversa)
+  useEffect(() => { let active = true; loadPlayer().then(player => { if (active) setPlayerName(player.name); }).catch(() => {}); return () => { active = false; }; }, []);
+  const openTalk = () => setTalking(true);
+  // Na vendinha ficam as metas que cobram hoje (semanais já batidas na semana saem do balcão)
+  const dueGoals = goals.filter(goal => goal.frequency.kind === 'weekly'
+    ? weekChecks(goal, log, today) < goal.frequency.timesPerWeek || isDoneOn(goal, log, today)
+    : isScheduled(goal, today));
 
   return <section className="goals-hero" aria-labelledby="goals-title">
     <div className="world-cloud left-[38%] top-[18%]" aria-hidden="true"/><div className="world-cloud right-[12%] top-[34%]" aria-hidden="true"/>
     <div className="goals-hero-top">
+      {/* Placa plantada no chão: as estacas descem até a grama da cena */}
+      <div className="planted-sign">
       <div className="goals-sign pixel-frame">
         <p className="eyebrow">Semana de {shortDate.format(monday)} a {shortDate.format(addDays(monday, 6))}</p>
         <h1 id="goals-title">Canteiro de Metas</h1>
         <button type="button" className="pixel-button primary-button plant-button" onClick={onPlant}><PixelIcon name="plus" className="size-2.5"/>Plantar meta</button>
       </div>
-      <dl className="goals-stats">
-        <div className="hero-stat pixel-frame"><dt>Colhidas hoje</dt><dd>{doneToday}<small>/{dueToday}</small></dd></div>
-        <div className="hero-stat pixel-frame"><dt>Semana</dt><dd>{weekPercent}<small>%</small></dd></div>
-        <div className="hero-stat pixel-frame"><dt><PixelIcon name="flame" className="size-3 text-terracotta"/>Sequência</dt><dd>{bestStreak}<small> dias</small></dd></div>
-      </dl>
+      <span className="planted-sign-posts" aria-hidden="true"><span className="post-mound"/><span className="post-mound is-right"/></span>
+      </div>
     </div>
     <CoinHud coins={coins} className="hero-coin-hud"/>
-    <ul className="goals-field" aria-label="Canteiro: uma muda por meta">
-      {goals.slice(0, 8).map(goal => <li key={goal.id} className="field-plant">
-        <PlantGrowth variant="ground" progress={progressFor(goal, log, today)} label={goal.title}/>
-        <span className="field-sign" aria-hidden="true">{goal.title}</span>
-      </li>)}
-    </ul>
+    <GoalStand goals={dueGoals} log={log} today={today} onHarvest={onHarvest} onTalk={openTalk}/>
+    {/* Para teclado e leitores de tela: aparece só quando recebe foco */}
+    <button type="button" className="talk-sr-button sr-only focus:not-sr-only" onClick={openTalk}>Conversar com o Seu Zé</button>
+    {talking && <VendorDialog onClose={()=>setTalking(false)} context={{
+      name: playerName, hour: new Date().getHours(),
+      done: dueGoals.filter(goal => isDoneOn(goal, log, today)).map(goal => goal.title),
+      pending: dueGoals.filter(goal => !isDoneOn(goal, log, today)).map(goal => goal.title),
+      bestStreak: goals.reduce<{ title: string; days: number } | null>((best, goal) => { const days = goal.frequency.kind === 'weekly' ? 0 : streakFor(goal, log, today); return days > (best?.days ?? 0) ? { title: goal.title, days } : best; }, null),
+    }}/>}
   </section>;
 }

@@ -58,20 +58,23 @@ export function ConsistencyCalendar({ goals, log, today }: { goals: TrackedGoal[
   });
   const harvested = days.filter(day => day.summary.status === 'harvest').length;
   const partial = days.filter(day => day.summary.status === 'partial').length;
-  const monthName = new Intl.DateTimeFormat('pt-BR', { month: 'long', year: 'numeric' }).format(month);
 
-  return <section className="world-panel pixel-frame harvest-calendar" aria-labelledby="harvest-heading">
-    <header className="panel-heading">
-      <h2 id="harvest-heading"><PixelIcon name="growth" className="size-5"/>Calendário da Safra</h2>
-      <span className="panel-tag">{harvested} colhidos · {partial} parciais</span>
-    </header>
-    <div className="panel-content pb-3">
-      <div className="calendar-toolbar">
-        <button type="button" className="pixel-button" aria-label="Mês anterior" onClick={()=>setMonth(current=>new Date(current.getFullYear(), current.getMonth() - 1, 1))}>◀</button>
-        <p className="calendar-month-name" aria-live="polite">{monthName}</p>
-        <button type="button" className="pixel-button" aria-label="Próximo mês" disabled={isCurrentMonth} onClick={()=>setMonth(current=>new Date(current.getFullYear(), current.getMonth() + 1, 1))}>▶</button>
-      </div>
-      <label className="calendar-filter">Plantação
+  // Calendário de parede: pendurado num prego com barbante, espiral de arame no topo e folhas empilhadas embaixo
+  return <section className="wall-calendar harvest-calendar" aria-labelledby="harvest-heading">
+    <span className="calendar-hanger" aria-hidden="true"><span className="calendar-nail"/></span>
+    <div className="calendar-rings" aria-hidden="true">{Array.from({ length: 12 }, (_, index) => <span key={index}/>)}</div>
+    <div className="calendar-sheet">
+      <header className="calendar-band">
+        <h2 id="harvest-heading" className="calendar-band-label"><PixelIcon name="growth" className="size-3"/>Calendário da Safra</h2>
+        <div className="calendar-band-month">
+          <button type="button" className="calendar-flip" aria-label="Mês anterior" onClick={()=>setMonth(current=>new Date(current.getFullYear(), current.getMonth() - 1, 1))}>◀</button>
+          <p aria-live="polite"><strong>{new Intl.DateTimeFormat('pt-BR', { month: 'long' }).format(month)}</strong><small>{month.getFullYear()}</small></p>
+          <button type="button" className="calendar-flip" aria-label="Próximo mês" disabled={isCurrentMonth} onClick={()=>setMonth(current=>new Date(current.getFullYear(), current.getMonth() + 1, 1))}>▶</button>
+        </div>
+        <p className="calendar-band-summary">{harvested} colhidos · {partial} parciais</p>
+      </header>
+      <div className="calendar-body">
+      <label className="calendar-filter">Meta
         <select value={filter} onChange={event=>setFilter(event.target.value)}>
           <option value="all">Todas as metas</option>
           {goals.map(goal => <option key={goal.id} value={goal.id}>{goal.title}</option>)}
@@ -97,6 +100,8 @@ export function ConsistencyCalendar({ goals, log, today }: { goals: TrackedGoal[
       <ul className="harvest-legend">
         {(['harvest', 'partial', 'dry', 'rest'] as const).map(status => <li key={status}><span className={`legend-seed is-${status}`}><SeedSprite status={status}/></span>{{ harvest: 'Colhido', partial: 'Parcial', dry: 'Terra seca', rest: 'Descanso' }[status]}</li>)}
       </ul>
+      </div>
     </div>
+    <span className="calendar-pages" aria-hidden="true"/>
   </section>;
 }

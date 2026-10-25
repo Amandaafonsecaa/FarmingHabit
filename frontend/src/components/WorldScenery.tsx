@@ -1,7 +1,7 @@
 import { FarmHouse } from './FarmHouse';
 import { useState, type KeyboardEvent } from 'react';
 import { CharacterScene } from './CharacterScene';
-function Tree({ x, y, scale = 1, delay = 0 }: { x: number; y: number; scale?: number; delay?: number }) {
+export function Tree({ x, y, scale = 1, delay = 0 }: { x: number; y: number; scale?: number; delay?: number }) {
   return <g transform={`translate(${x} ${y}) scale(${scale})`}><path d="M24 122h46v4h15v7H39v-4H24Z" fill="#345e29" opacity=".3"/><path d="M36 65h19v61H32v-9h4Z" fill="#785031"/><path d="M44 68h7v54h-7Z" fill="#ad7846"/><g className="tree-canopy" style={{ animationDelay: `${delay}s` }}><path d="M8 22h18V9h39v13h19v17h10v46H78v16H14V87H0V42h8Z" fill="#286237" stroke="#234a2a" strokeWidth="3"/><path d="M13 23h18V12h31v14h17v17h10v27H74v17H19V72H6V44h7Z" fill="#459b36"/><path d="M23 26h11V16h24v13h14v21H57v13H25V52H12V36h11Z" fill="#80c63c"/><path d="M15 62h13v7H15Zm42 11h15v7H57Zm10-36h12v6H67Z" fill="#b4de54"/><path d="M23 48h6v7h-6Zm42 9h6v7h-6Z" fill="#d6a16b"/><path className="tree-blossom" d="M20 30h4v4h-4Zm30-10h4v4h-4Zm16 30h4v4h-4Zm-40 26h4v4h-4Zm54 10h4v4h-4Zm-30 12h4v4h-4Z" fill="#f7a8c4"/></g></g>;
 }
 /** Muda da horta em 4 estágios: cova com semente, broto, folhas, folhas com fruto */

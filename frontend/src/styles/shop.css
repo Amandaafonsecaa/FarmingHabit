@@ -122,9 +122,9 @@
 .shop-hero-top { pointer-events: none; }
 .shop-hero-top > * { pointer-events: auto; }
 .shop-cat.is-clickable { cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' shape-rendering='crispEdges'%3E%3Cpath d='M2 2h22v16H10l-6 6v-6H2Z' fill='%2357311f'/%3E%3Cpath d='M4 4h18v12H9l-3 3v-3H4Z' fill='%23fff1c7'/%3E%3Cpath d='M8 9h2v2H8Zm4 0h2v2h-2Zm4 0h2v2h-2Z' fill='%23bf5837'/%3E%3C/svg%3E") 4 4, pointer; animation: cat-breathe 2.8s ease-in-out infinite, npc-glint 4s steps(1) infinite; }
-.shop-cat.is-clickable:hover { filter: drop-shadow(2px 0 0 #ffe38b) drop-shadow(-2px 0 0 #ffe38b) drop-shadow(0 2px 0 #ffe38b) drop-shadow(0 -2px 0 #ffe38b); animation: cat-breathe 2.8s ease-in-out infinite; }
+.shop-cat.is-clickable:hover, .npc-clickable:hover { filter: drop-shadow(2px 0 0 #ffe38b) drop-shadow(-2px 0 0 #ffe38b) drop-shadow(0 2px 0 #ffe38b) drop-shadow(0 -2px 0 #ffe38b); }
 .talk-prompt { opacity: 0; transform-box: fill-box; transform-origin: 50% 100%; transform: translateY(4px) scale(.8); transition: opacity .15s, transform .2s cubic-bezier(.34, 1.56, .64, 1); pointer-events: none; }
-.shop-cat.is-clickable:hover .talk-prompt, .shop-hero:has(.talk-sr-button:focus) .talk-prompt { opacity: 1; transform: none; }
+.shop-cat.is-clickable:hover .talk-prompt, .npc-clickable:hover .talk-prompt, .goals-hero:has(.talk-sr-button:focus) .talk-prompt, .shop-hero:has(.talk-sr-button:focus) .talk-prompt { opacity: 1; transform: none; }
 .talk-prompt-text { font-family: 'Courier New', monospace; font-size: 9px; font-weight: 900; fill: #3b2418; }
 .talk-sr-button { position: absolute; left: 50%; top: 40%; z-index: 3; padding: 6px 10px; font-weight: 900; background: #fff1c7; border: 3px solid #57311f; }
 @keyframes npc-glint { 0%, 82%, 100% { filter: none; } 86%, 94% { filter: drop-shadow(2px 0 0 #ffe38b) drop-shadow(-2px 0 0 #ffe38b) drop-shadow(0 2px 0 #ffe38b) drop-shadow(0 -2px 0 #ffe38b); } 90% { filter: drop-shadow(1px 0 0 #fff6c2) drop-shadow(-1px 0 0 #fff6c2) drop-shadow(0 1px 0 #fff6c2) drop-shadow(0 -1px 0 #fff6c2); } }
@@ -181,3 +181,14 @@
 .purchase-math .is-total { margin-top: 4px; padding-top: 8px; border-top: 2px solid #e0c79a; }
 .purchase-math .is-total dd { color: #3f6b35; font-size: 15px; }
 
+
+/* Personagens com quem dá para conversar (Bigode na Loja, Seu Zé nas Metas): mesmo cursor, brilho e aviso "Conversar" */
+.npc-clickable { cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' shape-rendering='crispEdges'%3E%3Cpath d='M2 2h22v16H10l-6 6v-6H2Z' fill='%2357311f'/%3E%3Cpath d='M4 4h18v12H9l-3 3v-3H4Z' fill='%23fff1c7'/%3E%3Cpath d='M8 9h2v2H8Zm4 0h2v2h-2Zm4 0h2v2h-2Z' fill='%23bf5837'/%3E%3C/svg%3E") 4 4, pointer; animation: npc-glint 4s steps(1) infinite; }
+.vendor-body { animation: farmer-bob 1.3s steps(1) infinite; }
+.vendor-portrait { width: 112px; height: 112px; overflow: hidden; background: #cfe7c0; border: 4px solid #57311f; box-shadow: inset 0 0 0 2px #f5c477; }
+.vendor-portrait-avatar { width: 224px; height: 246px; margin: -14px 0 0 -56px; }
+.vendor-portrait.is-talking .vendor-portrait-avatar { animation: farmer-bob .36s steps(1) infinite; }
+@media (max-width: 640px) { .vendor-portrait { width: 64px; height: 64px; } .vendor-portrait-avatar { width: 128px; height: 141px; margin: -8px 0 0 -32px; } }
+/* No hover o brilho fica fixo: pausa a piscada (o Bigode continua respirando) */
+.shop-cat.is-clickable:hover { animation: cat-breathe 2.8s ease-in-out infinite; }
+.npc-clickable:hover { animation: none; }

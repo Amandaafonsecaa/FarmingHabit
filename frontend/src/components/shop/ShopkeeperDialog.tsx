@@ -1,7 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
+import { NpcDialog } from '../NpcDialog';
 import { choicesFor, greeting, respond, type ChoiceId, type ShopContext } from '../../lib/shopkeeper';
 
-const TYPE_SPEED_MS = 24;
 
 /** Retrato do Bigode: pisca e mexe a boca enquanto fala */
 function BigodePortrait({ talking }: { talking: boolean }) {
@@ -16,61 +16,9 @@ function BigodePortrait({ talking }: { talking: boolean }) {
   </svg>;
 }
 
-/**
- * Conversa com o vendedor no estilo das caixas de diálogo do Stardew:
- * texto letra a letra (clique para pular), depois opções de resposta.
- */
+/** Conversa com o Bigode: falas da loja (lib/shopkeeper) na caixa de diálogo compartilhada */
 export function ShopkeeperDialog({ context, onClose }: { context: ShopContext; onClose: () => void }) {
-  const dialogRef = useRef<HTMLDialogElement>(null);
-  const [lines, setLines] = useState(() => greeting(context));
-  const [index, setIndex] = useState(0);
-  const [shown, setShown] = useState(0);
-  const [closing, setClosing] = useState(false);
-  const line = lines[index];
-  const typing = shown < line.length;
-  const lastLine = index === lines.length - 1;
-
-  useEffect(() => {
-    const dialog = dialogRef.current;
-    dialog?.showModal();
-    return () => dialog?.close();
-  }, []);
-
-  // Máquina de escrever: revela a fala aos poucos (instantâneo no modo calmo)
-  useEffect(() => {
-    const calm = document.documentElement.classList.contains('calm-mode') || window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (calm) { setShown(line.length); return; }
-    setShown(0);
-    const timer = window.setInterval(() => setShown(count => { if (count >= line.length) { window.clearInterval(timer); return count; } return count + 1; }), TYPE_SPEED_MS);
-    return () => window.clearInterval(timer);
-  }, [line]);
-
-  function advance() {
-    if (typing) { setShown(line.length); return; }
-    if (!lastLine) { setIndex(current => current + 1); return; }
-    if (closing) onClose();
-  }
-
-  function choose(choice: ChoiceId) {
-    setLines(respond(choice, context));
-    setIndex(0);
-    setClosing(choice === 'bye');
-  }
-
-  const showChoices = !typing && lastLine && !closing;
-  return <dialog ref={dialogRef} className="shopkeeper-dialog" aria-labelledby="bigode-name" onCancel={event=>{ event.preventDefault(); onClose(); }}>
-    <div className="dialogue-box">
-      <div className="dialogue-portrait"><BigodePortrait talking={typing}/><p id="bigode-name" className="dialogue-name">Bigode</p></div>
-      <div className="dialogue-main">
-        <button type="button" className="dialogue-text" onClick={advance} aria-label={typing ? 'Mostrar a fala inteira' : 'Continuar'}>
-          <span aria-hidden="true">{line.slice(0, shown)}</span><span className="sr-only">{line}</span>
-          {!typing && !showChoices && <span className="dialogue-next" aria-hidden="true">▼</span>}
-        </button>
-        {showChoices && <ul className="dialogue-choices">{choicesFor(context).map(choice => <li key={choice.id}>
-          <button type="button" className="dialogue-choice" onClick={()=>choose(choice.id)}><span aria-hidden="true">▶</span>{choice.label}</button>
-        </li>)}</ul>}
-      </div>
-      <button type="button" className="dialogue-close" onClick={onClose} aria-label="Encerrar conversa">✕</button>
-    </div>
-  </dialog>;
+  const [greetingLines] = useState(() => greeting(context));
+  return <NpcDialog<ChoiceId> name="Bigode" portrait={talking => <BigodePortrait talking={talking}/>} greeting={greetingLines}
+    choices={choicesFor(context)} respond={choice => respond(choice, context)} farewell="bye" onClose={onClose}/>;
 }

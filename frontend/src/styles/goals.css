@@ -4,16 +4,14 @@
 /* --- Topo: céu, placa e canteiro --- */
 .goals-hero {
  position: relative; isolation: isolate; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; gap: 18px;
- min-height: 330px; padding: 18px 18px 0;
+ min-height: 380px; padding: 18px 18px 0;
  border: 6px solid #52301f; border-bottom-width: 10px; box-shadow: inset 0 0 0 3px #efb96b;
- background: linear-gradient(#74c9ef 0 58%, #a6dcf2 58% 70%, #8fd36a 70% 73%, #5fa83a 73% 75%, #6a3f22 75%);
+ background: linear-gradient(#74c9ef, #a6dcf2 75%);
 }
 .goals-hero .world-cloud { z-index: -1; }
 .goals-hero-top { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 12px; }
 .navigation-closed .goals-hero-top { padding-left: 56px; }
-.goals-sign { position: relative; padding: 14px 18px 16px; transform: rotate(-1deg); max-width: 360px; }
-.goals-sign::before, .goals-sign::after { content: ''; position: absolute; top: 100%; width: 8px; height: 22px; background: #8a5838; border: 2px solid #57311f; border-top: 0; }
-.goals-sign::before { left: 28px; } .goals-sign::after { right: 28px; }
+.goals-sign { position: relative; z-index: 1; padding: 14px 18px 16px; max-width: 360px; }
 .goals-sign .eyebrow { color: #7a4a26; font-size: 10px; }
 .goals-sign h1 { margin: 6px 0 12px; font-size: clamp(22px, 2.6vw, 32px); font-weight: 900; letter-spacing: -1.5px; line-height: 1.1; color: #3b2418; text-shadow: 2px 2px #ffd98d; }
 .plant-button:hover:not(:disabled) .size-2\.5 { animation: seed-hop .45s steps(3) infinite alternate; }
@@ -23,13 +21,6 @@
 .hero-stat dd { margin: 4px 0 0; font-size: 28px; font-weight: 900; line-height: 1; color: #3b2418; }
 .hero-stat dd small { font-size: 12px; font-weight: bold; color: #765337; }
 
-/* Canteiro: sulcos de terra com uma muda por meta */
-.goals-field {
- display: flex; align-items: flex-end; justify-content: space-around; gap: 6px; height: 108px; margin: 0 -18px; padding: 0 14px 8px;
- background: repeating-linear-gradient(0deg, transparent 0 9px, #5b38264d 9px 11px);
-}
-.field-plant { display: flex; min-width: 0; flex: 0 1 96px; flex-direction: column; align-items: center; }
-.field-sign { max-width: 100%; margin-top: -4px; padding: 2px 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 9px; font-weight: bold; color: #ffe1a7; background: #8a5838; border: 2px solid #4d2e1c; box-shadow: inset 1px 1px #b07a4c; }
 
 /* --- Planta pixelada (vaso ou canteiro) --- */
 .plant-growth { flex-shrink: 0; image-rendering: pixelated; }
@@ -44,8 +35,7 @@
 /* --- Layout da aba --- */
 .goals-layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; max-width: 1600px; margin: auto; padding: 18px 16px 12px; }
 @media (min-width: 1100px) {
- .goals-layout { grid-template-columns: minmax(0, 1.3fr) minmax(360px, 1fr); align-items: start; }
- .harvest-calendar { position: sticky; top: 16px; }
+ .goals-layout { grid-template-columns: minmax(0, 1.3fr) minmax(360px, 1fr); align-items: stretch; }
 }
 .view-tabs { display: flex; gap: 4px; }
 .view-tab { min-height: 32px; padding: 4px 10px; border: 2px solid #693b21; background: #f5c477; color: #3b2418; font: inherit; font-size: 11px; font-weight: bold; cursor: pointer; box-shadow: inset 1px 1px #ffdfa0, 1px 2px #59341f; }
@@ -215,8 +205,6 @@
  .goals-sign { max-width: none; width: 100%; transform: none; }
  .goals-stats { width: 100%; }
  .hero-stat dd { font-size: 22px; }
- .goals-field { height: 92px; margin: 0 -12px; justify-content: flex-start; overflow-x: auto; }
- .field-plant { flex: 0 0 76px; }
  .goals-layout { padding: 14px 10px; gap: 14px; }
  .goals-board { padding-left: 12px; }
  .goals-vine { display: none; }
@@ -234,3 +222,107 @@
 .goal-plot-actions { align-items: center; gap: 8px; }
 .reward-chip { margin-right: auto; padding: 2px 8px; font-size: 11px; font-weight: 900; color: #7a4a26; background: #fff1c7; border: 2px dashed #e7b84b; animation: chip-bob 2s ease-in-out infinite; }
 @keyframes chip-bob { 50% { transform: translateY(-2px); } }
+
+/* ===== Vendinha de metas (topo da aba) ===== */
+.goal-stand { position: absolute; inset: 0; z-index: -1; width: 100%; height: 100%; overflow: visible; }
+.stand-sign-text { font-family: 'Courier New', monospace; font-size: 12px; font-weight: 900; letter-spacing: 1px; fill: #3b2418; }
+.stand-chalk { font-family: 'Courier New', monospace; font-size: 12px; font-weight: 900; fill: #fff6dd; }
+.stand-crate { cursor: pointer; outline: none; }
+.stand-crate.is-done { cursor: default; }
+.stand-crate:not(.is-done) { animation: npc-glint 5s steps(1) infinite; }
+.stand-crate:not(.is-done):hover, .stand-crate:not(.is-done):focus-visible { filter: drop-shadow(1px 0 0 #ffe38b) drop-shadow(-1px 0 0 #ffe38b) drop-shadow(0 1px 0 #ffe38b) drop-shadow(0 -1px 0 #ffe38b); animation: none; }
+.stand-crate:hover .crate-produce { animation: produce-bounce .5s steps(2) infinite alternate; }
+.crate-produce > g { animation: sprout-pop .45s cubic-bezier(.34, 1.56, .64, 1) backwards; }
+.crate-produce, .crate-produce > g { transform-box: fill-box; transform-origin: 50% 100%; }
+.crate-sparkle { animation: sparkle-blink 1.2s steps(1) infinite; }
+.crate-tag { font-family: 'Courier New', monospace; font-size: 7.5px; font-weight: 900; fill: #3b2418; }
+.crate-tag-progress { font-family: 'Courier New', monospace; font-size: 7px; font-weight: 900; fill: #a86d1c; }
+.crate-tag-progress.is-done { fill: #3f6b35; }
+.crate-plaque { transform-box: fill-box; transform-origin: 50% 100%; animation: plaque-in .25s cubic-bezier(.34, 1.56, .64, 1) backwards; }
+.crate-plaque-text { font-family: 'Courier New', monospace; font-size: 10px; font-weight: 900; fill: #3b2418; }
+@keyframes produce-bounce { to { transform: translateY(-2px); } }
+
+/* ===== Quadro "Metas": mesma altura do calendário; com mais metas, rola por dentro ===== */
+.goals-board-panel { position: relative; }
+.goals-board { flex: 1 1 0; min-height: 0; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #a47545 #f6dfa6; position: static; }
+.goals-board-panel .goals-vine { top: 72px; bottom: 16px; left: 18px; }
+@media (min-width: 1100px) { .goals-board-panel { contain: size; } }
+@media (max-width: 1099px) { .goals-board-panel { height: 520px; } }
+
+/* ===== Calendário de parede: prego e barbante, espiral de arame, faixa do mês e folhas empilhadas ===== */
+.wall-calendar { position: relative; display: flex; flex-direction: column; padding-top: 36px; margin-bottom: 14px; }
+.calendar-hanger { position: absolute; top: -6px; left: 50%; width: 46%; height: 46px; transform: translateX(-50%); pointer-events: none;
+ background: linear-gradient(to bottom right, transparent calc(50% - 1.5px), #8a5838 calc(50% - 1.5px), #8a5838 calc(50% + 1.5px), transparent calc(50% + 1.5px)) left / 50% 100% no-repeat,
+  linear-gradient(to bottom left, transparent calc(50% - 1.5px), #8a5838 calc(50% - 1.5px), #8a5838 calc(50% + 1.5px), transparent calc(50% + 1.5px)) right / 50% 100% no-repeat; }
+.calendar-nail { position: absolute; top: -4px; left: 50%; z-index: 2; width: 12px; height: 12px; margin-left: -6px; background: #8d8794; border: 2px solid #3b2418; box-shadow: inset 2px 2px #d6d0da, 1px 2px 0 #3b241866; }
+.calendar-rings { position: absolute; top: 24px; left: 6%; right: 6%; z-index: 3; display: flex; justify-content: space-between; pointer-events: none; }
+.calendar-rings span { width: 11px; height: 24px; border: 3px solid #8d8794; border-radius: 6px 6px 2px 2px; box-shadow: inset 1px 1px #d6d0da, 1px 1px 0 #3b241855; }
+.calendar-sheet { position: relative; z-index: 2; display: flex; flex: 1; flex-direction: column; padding-top: 16px; background: #fff8e1; border: 3px solid #57311f; box-shadow: inset 0 0 0 2px #f5c477, 3px 4px 0 #42291655; }
+.calendar-band { margin: 0 10px; padding: 10px 12px 12px; text-align: center; color: #fff1c7; background: #bf5837; box-shadow: inset 0 3px #e87a5c, inset 0 -3px #8c3a22; }
+.calendar-band-label { display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 10px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; }
+.calendar-band-month { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 4px 0 2px; }
+.calendar-band-month p { display: flex; flex-direction: column; align-items: center; line-height: 1.1; }
+.calendar-band-month strong { font-size: 26px; font-weight: 900; text-transform: capitalize; text-shadow: 2px 2px #8c3a22; }
+.calendar-band-month small { font-size: 12px; font-weight: bold; color: #ffe1a7; }
+.calendar-flip { width: 32px; height: 32px; padding: 0; border: 2px solid #fff1c7; background: #a8432a; color: #fff1c7; font: inherit; font-weight: 900; cursor: pointer; box-shadow: 1px 2px 0 #6e2a17; }
+.calendar-flip:hover:not(:disabled) { background: #c95a3c; }
+.calendar-flip:disabled { opacity: .35; cursor: default; }
+.calendar-flip:focus-visible { outline: 3px solid #fff1c7; outline-offset: 2px; }
+.calendar-band-summary { font-size: 11px; font-weight: bold; color: #ffe1a7; }
+.calendar-body { display: flex; flex: 1; flex-direction: column; padding: 12px 14px 14px; }
+.calendar-body .calendar-filter { margin-bottom: 12px; }
+.calendar-pages { position: absolute; left: 8px; right: 8px; bottom: -8px; z-index: 1; height: 12px; background: #f3e2bb; border: 2px solid #8a5838; }
+.calendar-pages::after { content: ''; position: absolute; left: 6px; right: 6px; bottom: -8px; height: 8px; background: #e8d2a8; border: 2px solid #8a5838; }
+@media (max-width: 767px) { .goals-hero { min-height: 440px; } .calendar-band-month strong { font-size: 22px; } }
+/* Sem metas: a mensagem fica no centro do quadro (que tem a altura do calendário) */
+.goals-board:has(.goals-empty) { display: flex; align-items: center; justify-content: center; }
+
+/* ===== Placa plantada no chão =====
+   A cena da vendinha encosta embaixo (meet, YMax): o chão (y≈292 de 330) fica a 38 unidades do fundo,
+   e a escala é min(largura/1000, altura/330). Com o topo em 380px de altura isso dá min(3.8cqw, 43.8px). */
+.goals-hero { container-type: inline-size; }
+@media (min-width: 768px) { .goals-hero { height: 380px; min-height: 0; } }
+.goals-hero-top { flex: 1; align-items: stretch; }
+.planted-sign { display: flex; flex-direction: column; align-self: stretch; width: min(360px, 100%); }
+.planted-sign-posts { position: relative; flex: 1; min-height: 24px; margin: -3px 30px min(3.8cqw, 43.8px); }
+.planted-sign-posts::before, .planted-sign-posts::after { content: ''; position: absolute; top: 0; bottom: 0; width: 12px; background: repeating-linear-gradient(0deg, #8a5838 0 14px, #7a4a2a 14px 16px); border: 2px solid #57311f; box-shadow: inset 3px 0 #b07a4c; }
+.planted-sign-posts::before { left: 0; } .planted-sign-posts::after { right: 0; }
+.post-mound { position: absolute; bottom: -5px; left: -8px; width: 28px; height: 8px; background: #6a3f22; border: 2px solid #4d2e1c; box-shadow: -4px -4px 0 -2px #72ad32, 18px -5px 0 -2px #53922d; }
+.post-mound.is-right { left: auto; right: -8px; }
+.goals-hero .hero-coin-hud { top: 18px; right: 18px; left: auto; bottom: auto; }
+
+/* ===== Coluna da direita: calendário compacto + sequência ===== */
+.goals-side { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.wall-calendar { margin-bottom: 10px; }
+.wall-calendar .harvest-day { aspect-ratio: auto; height: 38px; }
+.wall-calendar .harvest-day > svg { width: 24px; height: 24px; }
+.wall-calendar .harvest-grid { gap: 3px; }
+.wall-calendar .calendar-band { padding: 8px 12px 10px; }
+.wall-calendar .calendar-band-month strong { font-size: 22px; }
+.wall-calendar .calendar-body { padding: 10px 12px 12px; }
+.wall-calendar .harvest-legend { margin-top: 10px; padding-top: 8px; }
+
+/* ===== Sequência (inspirada no Duolingo) ===== */
+.streak-panel { min-height: 0; padding: 14px 16px 16px; }
+.streak-hero { display: flex; align-items: center; gap: 14px; }
+.streak-flame { width: 72px; height: 72px; flex-shrink: 0; filter: drop-shadow(2px 3px 0 #42291644); }
+.streak-flame.is-lit { transform-origin: 50% 100%; animation: flame-dance 1.2s steps(2) infinite alternate; }
+.streak-count strong { font-size: 44px; font-weight: 900; line-height: 1; color: #e8762f; text-shadow: 2px 2px 0 #8c3a22; }
+.streak-panel:not(:has(.is-lit)) .streak-count strong { color: #a3957d; text-shadow: 2px 2px 0 #6b6255; }
+.streak-label { font-size: 14px; font-weight: 900; color: #3b2418; }
+.streak-message { margin-top: 4px; font-size: 11px; line-height: 1.4; color: #765337; }
+.streak-week { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; margin-top: 14px; padding: 10px 8px; background: #fff8e1; border: 2px solid #e0c79a; }
+.streak-day { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.streak-day-name { font-size: 10px; font-weight: 900; color: #8a6136; }
+.streak-day-dot { display: flex; width: 26px; height: 26px; align-items: center; justify-content: center; font-size: 12px; font-weight: 900; color: #fff1c7; background: #ece3cf; border: 2px solid #c9bfa8; }
+.streak-day.is-kept .streak-day-dot { background: #f2a33a; border-color: #a8432a; box-shadow: inset 2px 2px #ffe38b; animation: pip-fill .35s cubic-bezier(.34, 1.56, .64, 1) backwards; }
+.streak-day.is-today .streak-day-dot { border-style: dashed; border-color: #e8762f; background: #fff1c7; }
+.streak-day.is-future { opacity: .45; }
+.streak-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 12px 0 0; }
+.streak-stats div { padding: 6px 10px; background: #f6e2b0; border: 2px solid #c49a62; }
+.streak-stats dt { font-size: 10px; font-weight: 900; letter-spacing: 1px; text-transform: uppercase; color: #7a4a26; }
+.streak-stats dd { margin: 2px 0 0; font-size: 20px; font-weight: 900; color: #3b2418; }
+.streak-stats dd small { font-size: 11px; color: #765337; }
+@keyframes flame-dance { from { transform: scale(1, 1); } to { transform: scale(.94, 1.06); } }
+
+@media (max-width: 767px) { .planted-sign { width: 100%; } }
