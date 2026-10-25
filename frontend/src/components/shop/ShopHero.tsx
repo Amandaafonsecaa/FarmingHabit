@@ -5,7 +5,7 @@ const PHRASES = ['Bem-vinda ao armazém!', 'Tudo fresquinho hoje!', 'Juntou moed
 const JARS: [number, number, string][] = [[70, 150, '#ee6996'], [96, 150, '#f2c453'], [122, 150, '#72ad32'], [148, 150, '#5fa8d3'], [70, 194, '#e8954a'], [96, 194, '#9b7fd4'], [122, 194, '#f2c453'], [148, 194, '#bf5837']];
 
 /** Interior do armazém: placa balançando, sininho, prateleiras, caixa registradora e o gato Bigode no balcão */
-export function ShopHero({ coins, items, bought, onCreate }: { coins: number | null; items: number; bought: number; onCreate: () => void }) {
+export function ShopHero({ coins, items, bought, onCreate, onTalk }: { coins: number | null; items: number; bought: number; onCreate: () => void; onTalk: () => void }) {
   const [phrase, setPhrase] = useState(0);
   useEffect(() => { const timer = window.setInterval(() => setPhrase(index => (index + 1) % PHRASES.length), 4200); return () => window.clearInterval(timer); }, []);
 
@@ -37,7 +37,8 @@ export function ShopHero({ coins, items, bought, onCreate }: { coins: number | n
       {[818, 860, 902, 940].map((x, i) => <g key={x} className="shelf-plant" style={{ animationDelay: `${-i * 0.6}s` }}><rect x={x} y="114" width="16" height="16" fill="#b96845"/><path d={`M${x + 6} 100h4v14h-4Zm-6 4h4v8h-4Zm12 2h4v6h-4Z`} fill="#53922d"/></g>)}
 
       {/* Balcão, caixa registradora, pote de moedas e o gato Bigode */}
-      <g className="shop-cat">
+      {/* Clicar no Bigode abre a conversa (para teclado e leitores de tela há o botão do balão e o da placa) */}
+      <g className="shop-cat is-clickable" onClick={onTalk}>
         <rect x="455" y="150" width="54" height="52" fill="#9aa3b2"/><rect x="455" y="150" width="54" height="10" fill="#7d8696"/>
         <rect x="459" y="118" width="46" height="36" fill="#9aa3b2"/><rect x="459" y="110" width="10" height="10" fill="#9aa3b2"/><rect x="495" y="110" width="10" height="10" fill="#9aa3b2"/><rect x="461" y="112" width="6" height="6" fill="#f2a6a6"/><rect x="497" y="112" width="6" height="6" fill="#f2a6a6"/>
         <rect x="465" y="122" width="6" height="2" fill="#7d8696"/><rect x="479" y="120" width="6" height="2" fill="#7d8696"/><rect x="493" y="122" width="6" height="2" fill="#7d8696"/>
@@ -52,14 +53,15 @@ export function ShopHero({ coins, items, bought, onCreate }: { coins: number | n
       <g><rect x="410" y="170" width="28" height="26" fill="#d8f0f6" opacity=".6"/><rect x="408" y="166" width="32" height="5" fill="#8a5838"/>{[[414, 186], [424, 182], [418, 178], [430, 188]].map(([x, y], i) => <rect key={i} className="coin-glint" x={x} y={y} width="8" height="6" fill="#f2c453" style={{ animationDelay: `${i * 0.4}s` }}/>)}</g>
       <g className="counter-bell"><rect x="652" y="188" width="16" height="8" fill="#f2c453"/><rect x="658" y="184" width="4" height="4" fill="#a86d1c"/></g>
     </svg>
-    <p className="cat-bubble pixel-frame" aria-live="polite" key={phrase}>{PHRASES[phrase]}</p>
+    <button type="button" className="cat-bubble pixel-frame" key={phrase} onClick={onTalk} aria-label={`${PHRASES[phrase]} Conversar com o Bigode`}>{PHRASES[phrase]}<small>💬 clique para conversar</small></button>
 
     <div className="shop-hero-top">
       <div className="shop-sign-board pixel-frame">
         <p className="eyebrow">Armazém do sítio</p>
         <h1 id="shop-title">Loja</h1>
         <p className="missions-motto">Troque suas moedas por mimos de verdade.</p>
-        <button type="button" className="pixel-button primary-button" onClick={onCreate}><PixelIcon name="plus" className="size-2.5"/>Nova recompensa</button>
+        <div className="flex flex-wrap gap-2"><button type="button" className="pixel-button primary-button" onClick={onCreate}><PixelIcon name="plus" className="size-2.5"/>Nova recompensa</button>
+          <button type="button" className="pixel-button" onClick={onTalk}>💬 Falar com o Bigode</button></div>
       </div>
       <dl className="goals-stats">
         <div className="hero-stat pixel-frame"><dt><span className="spin-coin"><PixelIcon name="coin" className="size-3"/></span>Moedas</dt><dd>{coins ?? '–'}</dd></div>

@@ -5,6 +5,7 @@ import { ProductCard } from '../components/shop/ProductCard';
 import { PiggyPanel } from '../components/shop/PiggyPanel';
 import { ChestPanel } from '../components/shop/ChestPanel';
 import { RewardDialog } from '../components/dialogs/RewardDialog';
+import { ShopkeeperDialog } from '../components/shop/ShopkeeperDialog';
 import { PixelIcon } from '../components/PixelIcon';
 import { useShop } from '../hooks/useShop';
 import { mockReward } from '../data/world';
@@ -26,6 +27,7 @@ export function ShopPage({ onNavigate }: { onNavigate: (page: AppPage) => void }
   const [mockBought, setMockBought] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [announcement, setAnnouncement] = useState('');
+  const [talking, setTalking] = useState(false);
 
   // O item de exemplo (o mesmo da Casa) só desconta nesta sessão e não vai para o baú
   const coins = (shop.player?.coins ?? 0) - (mockBought ? mockReward.price : 0);
@@ -78,7 +80,7 @@ export function ShopPage({ onNavigate }: { onNavigate: (page: AppPage) => void }
     }
   }
 
-  return <MainLayout page="shop" onNavigate={onNavigate} world={<ShopHero coins={shop.player ? coins : null} items={catalog.length} bought={shop.purchases.length} onCreate={()=>setDialogOpen(true)}/>}>
+  return <MainLayout page="shop" onNavigate={onNavigate} world={<ShopHero coins={shop.player ? coins : null} items={catalog.length} bought={shop.purchases.length} onCreate={()=>setDialogOpen(true)} onTalk={()=>setTalking(true)}/>}>
     <div className="shop-layout">
       <section className="world-panel pixel-frame showcase-panel" aria-labelledby="showcase-heading">
         <header className="panel-heading">
@@ -104,5 +106,6 @@ export function ShopPage({ onNavigate }: { onNavigate: (page: AppPage) => void }
     </div>
     <p role="status" className="world-status">{announcement || 'Cuidar de si também é uma recompensa.'}</p>
     {dialogOpen && <RewardDialog onSave={create} onClose={()=>setDialogOpen(false)}/>}
+    {talking && <ShopkeeperDialog onClose={()=>setTalking(false)} context={{ name: shop.player?.name ?? 'fazendeira', coins, rewards: catalog, wish, lastPurchase: shop.purchases[0]?.title ?? null, hour: new Date().getHours() }}/>}
   </MainLayout>;
 }
