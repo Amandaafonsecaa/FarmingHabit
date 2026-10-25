@@ -1,12 +1,16 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { GameNavigation } from '../components/GameNavigation';
 import { CoinFlightLayer } from '../components/CoinFlightLayer';
+import { Toaster } from '../components/Toaster';
 import type { AppPage } from '../types/navigation';
+import { useHoverOpen } from '../hooks/useHoverOpen';
 export function MainLayout({ page, onNavigate, world, children }: { page: AppPage; onNavigate: (page: AppPage) => void; world: ReactNode; children: ReactNode }) {
   // A gaveta desliza por cima do cenário (não empurra a fazenda) e começa fechada para manter a imersão
   const [navigationOpen, setNavigationOpen] = useState(false);
   const navigationRef = useRef<HTMLElement>(null);
   const toggleRef = useRef<HTMLButtonElement>(null);
+  // Passar o mouse no botão abre a gaveta; sair do botão e da gaveta fecha
+  const hover = useHoverOpen(navigationOpen, setNavigationOpen);
 
   // Fecha com Esc ou clicando fora da gaveta
   useEffect(() => {
@@ -25,14 +29,15 @@ export function MainLayout({ page, onNavigate, world, children }: { page: AppPag
     <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:bg-paper focus:p-3">Pular para o conteúdo</a>
     <main id="main" tabIndex={-1} className={`application-content min-h-screen bg-cream ${navigationOpen ? 'navigation-open' : 'navigation-closed'}`}>
       <div className="world-row">
-        <button ref={toggleRef} type="button" className="navigation-toggle pixel-button" aria-label={navigationOpen ? 'Fechar navegação' : 'Abrir navegação'} aria-expanded={navigationOpen} aria-controls="game-navigation" onClick={()=>setNavigationOpen(open=>!open)}>
+        <button ref={toggleRef} type="button" className="navigation-toggle pixel-button" aria-label={navigationOpen ? 'Fechar navegação' : 'Abrir navegação'} aria-expanded={navigationOpen} aria-controls="game-navigation" onClick={hover.toggleByClick} onPointerEnter={hover.onPointerEnter} onPointerLeave={hover.onPointerLeave}>
           <span className="toggle-bars" aria-hidden="true"><span/><span/><span/></span>
         </button>
-        <GameNavigation navRef={navigationRef} open={navigationOpen} page={page} onNavigate={onNavigate}/>
+        <GameNavigation navRef={navigationRef} open={navigationOpen} page={page} onNavigate={onNavigate} onPointerEnter={hover.onPointerEnter} onPointerLeave={hover.onPointerLeave}/>
         {world}
       </div>
       {children}
     </main>
     <CoinFlightLayer/>
+    <Toaster/>
   </>;
 }

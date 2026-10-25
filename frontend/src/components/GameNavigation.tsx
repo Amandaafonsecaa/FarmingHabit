@@ -1,4 +1,4 @@
-import type { CSSProperties, Ref } from 'react';
+import type { CSSProperties, PointerEventHandler, Ref } from 'react';
 import { NavigationItem } from './NavigationItem';
 import type { AppPage } from '../types/navigation';
 
@@ -29,8 +29,10 @@ function NavGrass() {
   </svg>;
 }
 
-export function GameNavigation({ open, page, onNavigate, navRef }: { open: boolean; page: AppPage; onNavigate: (page: AppPage) => void; navRef?: Ref<HTMLElement> }) {
-  return <nav ref={navRef} id="game-navigation" inert={!open} className="game-navigation" aria-label="Navegação principal">
+export function GameNavigation({ open, page, onNavigate, navRef, onPointerEnter, onPointerLeave }: {
+  open: boolean; page: AppPage; onNavigate: (page: AppPage) => void; navRef?: Ref<HTMLElement>; onPointerEnter?: PointerEventHandler; onPointerLeave?: PointerEventHandler;
+}) {
+  return <nav ref={navRef} id="game-navigation" inert={!open} className="game-navigation" aria-label="Navegação principal" onPointerEnter={onPointerEnter} onPointerLeave={onPointerLeave}>
     <span className="nav-nails" aria-hidden="true"/>
     {FIREFLIES.map(([left, top, delay, duration], index) => <span key={index} className="nav-firefly" aria-hidden="true" style={{ left: `${left}%`, top: `${top}%`, animationDelay: `${delay}s, ${delay / 2}s`, '--firefly-duration': `${duration}s` } as CSSProperties}/>)}
     <NavVine/>

@@ -2,7 +2,7 @@ import { useEffect, useId, useRef, useState, type FormEvent, type ReactNode } fr
 import { PixelIcon, type PixelIconName } from '../PixelIcon';
 
 interface GameDialogProps {
-  title: string; icon: PixelIconName; intro: string; note: string; submitLabel: string;
+  title: string; icon: PixelIconName; intro: string; submitLabel: string;
   error: string; children: ReactNode; onClose: () => void;
   /** Valida e salva. Retorna true quando deu certo (a janela vai fechar) ou false para continuar editando */
   onSubmit: (data: FormData) => boolean | Promise<boolean>;
@@ -12,7 +12,7 @@ interface GameDialogProps {
  * Moldura padrão de todos os modais de "Adicionar": abre desdobrando como pergaminho, prende o foco,
  * trava o botão enquanto salva (evita criar em dobro com clique duplo) e devolve o foco ao fechar.
  */
-export function GameDialog({ title, icon, intro, note, submitLabel, error, children, onClose, onSubmit }: GameDialogProps) {
+export function GameDialog({ title, icon, intro, submitLabel, error, children, onClose, onSubmit }: GameDialogProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   // Ref trava na hora (antes do re-render); o state desabilita o botão visualmente
   const lockedRef = useRef(false);
@@ -47,7 +47,6 @@ export function GameDialog({ title, icon, intro, note, submitLabel, error, child
       <p className="text-sm">{intro}</p>
       {children}
       {error && <p role="alert" className="text-sm font-bold text-[#8c3027]">{error}</p>}
-      <p className="text-sm text-muted">{note}</p>
       <div className="flex justify-end gap-3 border-t border-line pt-3">
         <button type="button" className="pixel-button" onClick={onClose}>Cancelar</button>
         <button type="submit" className="pixel-button primary-button" disabled={saving} aria-busy={saving}>{saving ? 'Salvando...' : submitLabel}</button>

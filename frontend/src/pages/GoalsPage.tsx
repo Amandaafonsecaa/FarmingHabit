@@ -1,4 +1,5 @@
 import { useState, type CSSProperties } from 'react';
+import { toast } from '../lib/toast';
 import { MainLayout } from '../layouts/MainLayout';
 import { GoalsHero } from '../components/goals/GoalsHero';
 import { GoalCard } from '../components/goals/GoalCard';
@@ -31,7 +32,8 @@ export function GoalsPage({ onNavigate }: { onNavigate: (page: AppPage) => void 
   const today = useToday();
   const [view, setView] = useState<'today' | 'all'>('today');
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [announcement, setAnnouncement] = useState('');
+  // Avisos de ação aparecem como toast
+  const setAnnouncement = toast;
   const [boardRef, vineProgress] = useScrollProgress<HTMLDivElement>();
   const coins = usePlayerCoins();
   // Pendentes em cima, colhidas descem para o fim da lista
@@ -82,7 +84,7 @@ export function GoalsPage({ onNavigate }: { onNavigate: (page: AppPage) => void 
       </section>
       <ConsistencyCalendar goals={goals} log={log} today={today}/>
     </div>
-    <p role="status" className="world-status">{announcement || 'Toda semente precisa de tempo. Volte amanhã para regar.'}</p>
+    <p role="status" className="world-status">{'Toda semente precisa de tempo. Volte amanhã para regar.'}</p>
     {dialogOpen && <NewGoalDialog onSave={plant} onClose={()=>setDialogOpen(false)}/>}
   </MainLayout>;
 }

@@ -18,7 +18,7 @@ export function ProductCard({ reward, coins, index, wished, buying, pending, onB
   return <li className={`product-card ${affordable ? 'is-affordable' : ''} ${buying ? 'is-buying' : ''}`} style={{ animationDelay: `${index * 60}ms` } as CSSProperties}>
     <div className="product-display">
       <span className="price-tag" style={{ animationDelay: `${-index * 0.4}s` }}><PixelIcon name="coin" className="size-3"/>{reward.price}</span>
-      {reward.mock && <span className="product-badge">Exemplo</span>}
+      {!reward.fixed && <span className="product-badge">Sua</span>}
       <span className="product-item"><ItemIcon kind={itemKindFor(reward.name)} className="size-full"/></span>
       {affordable && <span className="product-sparkle" aria-hidden="true"/>}
       <span className="product-pedestal" aria-hidden="true"/>
@@ -26,6 +26,7 @@ export function ProductCard({ reward, coins, index, wished, buying, pending, onB
     </div>
     <div className="product-info">
       <h3 className="product-name">{reward.name}</h3>
+      {reward.description && <p className="product-description">{reward.description}</p>}
       {affordable
         ? <p className="product-status is-ready">✓ Dá para levar!</p>
         : <><p className="product-status">Faltam {reward.price - coins} moedas</p><ProgressBar value={coins / reward.price * 100} label={`Moedas para ${reward.name}`} className="h-2"/></>}

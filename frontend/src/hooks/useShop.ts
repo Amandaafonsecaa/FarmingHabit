@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { Reward } from '../types/world';
-import { claimReward, createReward, hideReward, listRewards, loadPlayer, type Player } from '../services/api';
+import { claimReward, createReward, grantRewards, hideReward, listRewards, loadPlayer, type Player } from '../services/api';
 import { WISH_KEY, readPurchases, recordPurchase, writePurchases, type Purchase } from '../lib/shop';
 import { PLAYER_EVENT } from '../lib/harvestRewards';
 
@@ -36,8 +36,13 @@ export function useShop() {
 
   async function buy(reward: Reward) {
     if (!player) throw new Error('Servidor indisponível.');
-    const { remainingCoins } = await claimReward(reward.id, player.id);
-    setPlayer(current => current && { ...current, coins: remainingCoins });
+    if (player.coins < reward.price) throw new Error('Moedas insuficientes.');
+    // Itens da vitrine fixa não existem no backend: descontamos as moedas direto no jogador
+    if (reward.fixed) setPlayer(await grantRewards(player, -reward.price, 0));
+    else {
+      const { remainingCoins } = await claimReward(reward.id, player.id);
+      setPlayer(current => current && { ...current, coins: remainingCoins });
+    }
     const purchase = recordPurchase(reward.id, reward.name, reward.price);
     setPurchases(readPurchases());
     if (wishId === reward.id) setWishId(null);

@@ -22,7 +22,6 @@ export function MissionDialog({ onSave, onClose }: { onSave: (item: Extract<NewI
     const title = String(data.get('title') ?? '').trim();
     const description = String(data.get('description') ?? '').trim();
     if (!title) return fail('Dê um nome para a missão.');
-    if (!description) return fail('Conte em poucas palavras o que é a missão.');
     const { xp, coins } = size === 'custom' ? { xp: Number(data.get('xp')), coins: Number(data.get('coins')) } : REWARDS[size];
     if (!Number.isInteger(xp) || xp < 1 || xp > 1000) return fail('O XP deve ser um número inteiro de 1 a 1000.');
     if (!Number.isInteger(coins) || coins < 0 || coins > 10000) return fail('As moedas devem ser um número inteiro de 0 a 10000.');
@@ -30,9 +29,9 @@ export function MissionDialog({ onSave, onClose }: { onSave: (item: Extract<NewI
     return await onSave({ kind: 'mission', title, description, xp, coins }) || fail('Não foi possível salvar. Confira se o servidor está rodando e tente de novo.');
   }
 
-  return <GameDialog title="Nova missão" icon="mission" intro="Viu algo curioso? Transforme em aventura." note="Salvo no servidor." submitLabel="Adicionar missão" error={error} onSubmit={submit} onClose={onClose}>
+  return <GameDialog title="Nova missão" icon="mission" intro="Viu algo curioso? Transforme em aventura." submitLabel="Adicionar missão" error={error} onSubmit={submit} onClose={onClose}>
     <label className="form-label" htmlFor="mission-title">Nome da missão<input id="mission-title" name="title" maxLength={60} autoFocus placeholder="Ex.: Descobrir que construção é aquela perto do trabalho"/></label>
-    <label className="form-label" htmlFor="mission-description">Descrição curta<textarea id="mission-description" name="description" rows={2} maxLength={160} placeholder="O que você quer descobrir ou explorar?"/></label>
+    <label className="form-label" htmlFor="mission-description">Descrição curta <span className="optional-tag">(opcional)</span><textarea id="mission-description" name="description" rows={2} maxLength={160} placeholder="O que você quer descobrir ou explorar?"/></label>
     <fieldset className="dialog-fieldset"><legend>Recompensa</legend>
       <ChoiceCards name="size" value={size} options={SIZES} onChange={setSize} compact/>
       {size === 'custom' && <div className="mt-3 grid grid-cols-2 gap-2">

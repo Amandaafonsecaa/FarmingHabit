@@ -55,7 +55,7 @@ export function NewGoalDialog({ onSave, onClose }: { onSave: (goal: NewTrackedGo
     return true;
   }
 
-  return <GameDialog title="Plantar nova meta" icon="leaf" intro="Uma nova semente para o seu canteiro." note="Salvo neste navegador." submitLabel="Plantar" error={error} onSubmit={submit} onClose={onClose}>
+  return <GameDialog title="Plantar nova meta" icon="leaf" intro="Uma nova semente para o seu canteiro." submitLabel="Plantar" error={error} onSubmit={submit} onClose={onClose}>
     <label className="form-label" htmlFor="goal-title">Nome da meta<input id="goal-title" name="title" maxLength={60} autoFocus placeholder="Ex.: Ler 20 páginas"/></label>
 
     <fieldset className="dialog-fieldset"><legend>Semente</legend>

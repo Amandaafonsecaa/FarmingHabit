@@ -26,7 +26,7 @@ export function RewardDialog({ onSave, onClose }: { onSave: (item: Extract<NewIt
     return await onSave({ kind: 'reward', title, price }) || fail('Não foi possível salvar. Confira se o servidor está rodando e tente de novo.');
   }
 
-  return <GameDialog title="Nova compra" icon="coin" intro="Um carinho para trocar pelas moedas que você colheu." note="Salvo no servidor." submitLabel="Adicionar compra" error={error} onSubmit={submit} onClose={onClose}>
+  return <GameDialog title="Nova compra" icon="coin" intro="Um carinho para trocar pelas moedas que você colheu." submitLabel="Adicionar compra" error={error} onSubmit={submit} onClose={onClose}>
     <label className="form-label" htmlFor="reward-title">Nome da recompensa<input id="reward-title" name="title" maxLength={60} autoFocus placeholder="Ex.: Café especial"/></label>
     <fieldset className="dialog-fieldset"><legend>Preço</legend>
       <ChoiceCards name="tier" value={tier} options={TIERS} onChange={setTier} compact/>

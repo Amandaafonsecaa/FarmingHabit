@@ -1,7 +1,7 @@
 import type { GoalLog, TrackedGoal } from '../types/goals';
 import { amountOn, dailyTarget, frequencyLabel, isHarvested, isScheduled, progressFor, toKey } from '../lib/goalLogic';
 import { useFlipList } from '../hooks/useFlipList';
-import { GamePanel, SeeAll } from './GamePanel';
+import { GamePanel } from './GamePanel';
 import { PixelIcon } from './PixelIcon';
 import { ProgressBar } from './ProgressBar';
 
@@ -38,6 +38,5 @@ export function GoalsPanel({ goals, log, today, onCheck, onOpen }: { goals: Trac
         <button type="button" className="pixel-button mt-1 shrink-0" onClick={event=>onCheck(goal, event.currentTarget)} aria-label={`${quantity ? `Somar ${quantity.step} ${quantity.unit}` : 'Colher'}: ${goal.title}`}>{quantity ? `+${quantity.step}` : 'Colher'}</button>
       </div></li>;
     })}</ul>
-    {(pending.length > 3 || goals.length > 0) && <SeeAll label={pending.length > 3 ? `Ver todas (+${pending.length - 3} pendentes)` : 'Ver todas as metas'} onOpen={onOpen}/>}
   </GamePanel>;
 }

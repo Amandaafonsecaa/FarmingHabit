@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type ChangeEvent, type FormEvent } from 'react';
+import { toast } from '../lib/toast';
 import { MainLayout } from '../layouts/MainLayout';
 import { SettingsHero } from '../components/settings/SettingsHero';
 import { PixelSwitch } from '../components/settings/PixelSwitch';
@@ -47,7 +48,8 @@ export function SettingsPage({ onNavigate }: { onNavigate: (page: AppPage) => vo
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [summary, setSummary] = useState(localSummary);
-  const [announcement, setAnnouncement] = useState('');
+  // Avisos de ação aparecem como toast
+  const setAnnouncement = toast;
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -255,6 +257,6 @@ export function SettingsPage({ onNavigate }: { onNavigate: (page: AppPage) => vo
         </div>
       </section>
     </div>
-    <p role="status" className="world-status">{announcement || 'Toda boa colheita começa com as ferramentas no lugar.'}</p>
+    <p role="status" className="world-status">{'Toda boa colheita começa com as ferramentas no lugar.'}</p>
   </MainLayout>;
 }

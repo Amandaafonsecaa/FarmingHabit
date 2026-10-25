@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
+import { toast } from '../lib/toast';
 import { GameWorld } from '../components/GameWorld';
 import { GoalsPanel } from '../components/GoalsPanel';
 import { MissionsPanel } from '../components/MissionsPanel';
 import { CoinsPanel } from '../components/CoinsPanel';
 import { SeedFab } from '../components/home/SeedFab';
 import type { GardenPlot } from '../components/WorldScenery';
-import { mockReward } from '../data/world';
 import { MissionDialog } from '../components/dialogs/MissionDialog';
 import { RewardDialog } from '../components/dialogs/RewardDialog';
 import { NewGoalDialog } from '../components/goals/NewGoalDialog';
@@ -16,7 +16,7 @@ import type { NewTrackedGoal, TrackedGoal } from '../types/goals';
 import type { ItemKind, Mission, NewItem, Reward } from '../types/world';
 import { MainLayout } from '../layouts/MainLayout';
 import { recordAdventure } from '../lib/diary';
-import { WISH_KEY, recordPurchase } from '../lib/shop';
+import { DEFAULT_REWARDS, WISH_KEY, recordPurchase } from '../lib/shop';
 import { flyCoins } from '../lib/coinFlight';
 import { PLAYER_EVENT, claimHarvest, creditPlayer, releaseHarvest, rewardLabel } from '../lib/harvestRewards';
 import type { Player } from '../services/api';
@@ -36,18 +36,18 @@ export function HomePage({ onNavigate }: { onNavigate: (page: AppPage) => void }
   const { accepted, abandon } = useAcceptedMissions();
   const [missions, setMissions] = useState<Mission[]>([]);
   const [rewards, setRewards] = useState<Reward[]>([]);
-  const [purchasedIds, setPurchasedIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
   const [pendingId, setPendingId] = useState<string | null>(null);
-  const [announcement, setAnnouncement] = useState('');
+  // Avisos de ação aparecem como toast
+  const setAnnouncement = toast;
   const [dialogKind, setDialogKind] = useState<ItemKind | null>(null);
   const [poppedId, setPoppedId] = useState<string | null>(null);
   const [perfectDate, setPerfectDate] = useState(() => { try { return localStorage.getItem(PERFECT_KEY); } catch { return null; } });
   const [celebrating, setCelebrating] = useState(false);
   const [wishId] = useState(() => { try { return localStorage.getItem(WISH_KEY); } catch { return null; } });
-  // A compra mockada só desconta localmente do saldo vindo do backend
-  const coins = (player?.coins ?? 0) - (purchasedIds.includes(mockReward.id) ? mockReward.price : 0);
+  const coins = player?.coins ?? 0;
+  const catalog = [...DEFAULT_REWARDS, ...rewards];
 
   // Horta: um canteiro por meta que cobra hoje (semanais já batidas na semana ficam de fora)
   const dueToday = goals.filter(goal => goal.frequency.kind === 'weekly'
@@ -150,19 +150,14 @@ export function HomePage({ onNavigate }: { onNavigate: (page: AppPage) => void }
     });
   }
 
+  // Vitrine fixa desconta direto no jogador; recompensas personalizadas usam o resgate do backend
   function buyReward(id: string) {
-    const reward = [mockReward, ...rewards].find(item => item.id === id);
-    if (!reward || !player || purchasedIds.includes(id) || coins < reward.price) return;
-    if (reward.mock) {
-      setPurchasedIds(current => [...current, id]);
-      setAnnouncement(`${reward.name} resgatado! Aproveite esse momento para você.`);
-      return;
-    }
+    const reward = catalog.find(item => item.id === id);
+    if (!reward || !player || coins < reward.price) return;
     run(id, reward.name, async () => {
-      const { remainingCoins } = await claimReward(id, player.id);
+      if (reward.fixed) setPlayer(await creditPlayer(-reward.price, 0));
+      else { const { remainingCoins } = await claimReward(id, player.id); setPlayer(current => current && { ...current, coins: remainingCoins }); }
       recordPurchase(id, reward.name, reward.price);
-      setPlayer(current => current && { ...current, coins: remainingCoins });
-      setPurchasedIds(current => [...current, id]);
       setAnnouncement(`${reward.name} foi para suas compras! Aproveite.`);
     });
   }
@@ -187,9 +182,9 @@ export function HomePage({ onNavigate }: { onNavigate: (page: AppPage) => void }
     <div className="functional-panel">
       <GoalsPanel goals={goals} log={log} today={today} onCheck={(goal, origin)=>harvest(goal, origin)} onOpen={()=>onNavigate('goals')}/>
       <MissionsPanel missions={missions} accepted={accepted} loading={loading} error={loadError} pendingId={pendingId} onComplete={completeFromHome} onOpen={()=>onNavigate('missions')}/>
-      <CoinsPanel coins={coins} rewards={[mockReward, ...rewards]} wishId={wishId} purchasedIds={purchasedIds} onBuy={buyReward} onOpen={()=>onNavigate('shop')}/>
+      <CoinsPanel coins={coins} rewards={catalog} wishId={wishId} onBuy={buyReward} onOpen={()=>onNavigate('shop')}/>
     </div>
-    <p role="status" className="world-status">{announcement || loadError || 'Toque nas plantinhas da horta para colher as metas de hoje.'}</p>
+    <p role="status" className="world-status">{loadError || 'Toque nas plantinhas da horta para colher as metas de hoje.'}</p>
     <SeedFab onPick={setDialogKind}/>
     {dialogKind === 'goal' && <NewGoalDialog onSave={plantGoal} onClose={()=>setDialogKind(null)}/>}
     {dialogKind === 'mission' && <MissionDialog onSave={addItem} onClose={()=>setDialogKind(null)}/>}

@@ -11,8 +11,3 @@ export function GamePanel({ id, title, icon, badge, badgeLabel, onOpen, children
     <div className="panel-content">{children}</div>
   </section>;
 }
-
-/** Link "ver todas" no fim dos painéis da Casa */
-export function SeeAll({ label, onOpen }: { label: string; onOpen: () => void }) {
-  return <button type="button" className="see-all" onClick={onOpen}>{label}<span aria-hidden="true">▶</span></button>;
-}

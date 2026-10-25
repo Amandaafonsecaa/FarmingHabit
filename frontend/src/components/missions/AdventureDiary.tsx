@@ -13,7 +13,7 @@ export function AdventureDiary({ entries, freshId }: { entries: Mission[]; fresh
             <span className="wax-seal" aria-hidden="true"/>
             <div className="min-w-0">
               <h3 className="diary-title">{mission.title}</h3>
-              <p className="diary-text">{mission.description}</p>
+              {mission.description && <p className="diary-text">{mission.description}</p>}
               <p className="diary-reward">{'★'.repeat(rankOf(mission).stars)} · +{mission.xp} XP · +{mission.coins} moedas</p>
             </div>
           </li>)}</ol>}

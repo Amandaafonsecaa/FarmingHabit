@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { toast } from '../lib/toast';
 import { MainLayout } from '../layouts/MainLayout';
 import { ShopHero } from '../components/shop/ShopHero';
 import { ProductCard } from '../components/shop/ProductCard';
@@ -8,7 +9,7 @@ import { RewardDialog } from '../components/dialogs/RewardDialog';
 import { ShopkeeperDialog } from '../components/shop/ShopkeeperDialog';
 import { PixelIcon } from '../components/PixelIcon';
 import { useShop } from '../hooks/useShop';
-import { mockReward } from '../data/world';
+import { DEFAULT_REWARDS } from '../lib/shop';
 import type { NewItem, Reward } from '../types/world';
 import type { AppPage } from '../types/navigation';
 
@@ -24,14 +25,13 @@ export function ShopPage({ onNavigate }: { onNavigate: (page: AppPage) => void }
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [freshId, setFreshId] = useState<string | null>(null);
   const [shakeKey, setShakeKey] = useState(0);
-  const [mockBought, setMockBought] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [announcement, setAnnouncement] = useState('');
+  // Avisos de ação aparecem como toast
+  const setAnnouncement = toast;
   const [talking, setTalking] = useState(false);
 
-  // O item de exemplo (o mesmo da Casa) só desconta nesta sessão e não vai para o baú
-  const coins = (shop.player?.coins ?? 0) - (mockBought ? mockReward.price : 0);
-  const catalog = [mockReward, ...shop.rewards];
+  const coins = shop.player?.coins ?? 0;
+  const catalog = [...DEFAULT_REWARDS, ...shop.rewards];
   const shown = catalog.filter(reward => filter === 'all' || (filter === 'ready' ? coins >= reward.price : coins < reward.price));
   const wish = catalog.find(reward => reward.id === shop.wishId) ?? null;
 
@@ -43,12 +43,6 @@ export function ShopPage({ onNavigate }: { onNavigate: (page: AppPage) => void }
 
   async function buy(reward: Reward) {
     if (pendingId || coins < reward.price) return;
-    if (reward.mock) {
-      setMockBought(true);
-      celebrate(reward);
-      setAnnouncement(`${reward.name}: compra de exemplo! Itens de exemplo não entram em Minhas compras.`);
-      return;
-    }
     setPendingId(reward.id);
     try {
       const purchase = await shop.buy(reward);
@@ -96,7 +90,7 @@ export function ShopPage({ onNavigate }: { onNavigate: (page: AppPage) => void }
           </div>}
           <ul className="product-grid">{shown.map((reward, index) => <ProductCard key={reward.id} reward={reward} coins={coins} index={index}
             wished={shop.wishId === reward.id} buying={buyingId === reward.id} pending={pendingId === reward.id}
-            onBuy={()=>buy(reward)} onWish={()=>shop.setWishId(shop.wishId === reward.id ? null : reward.id)} onHide={reward.mock ? undefined : ()=>hide(reward)}/>)}</ul>
+            onBuy={()=>buy(reward)} onWish={()=>shop.setWishId(shop.wishId === reward.id ? null : reward.id)} onHide={reward.fixed ? undefined : ()=>hide(reward)}/>)}</ul>
         </div>
       </section>
       <div className="shop-side">
@@ -104,7 +98,7 @@ export function ShopPage({ onNavigate }: { onNavigate: (page: AppPage) => void }
         <ChestPanel purchases={shop.purchases} freshId={freshId} onToggle={shop.toggleUsed}/>
       </div>
     </div>
-    <p role="status" className="world-status">{announcement || 'Cuidar de si também é uma recompensa.'}</p>
+    <p role="status" className="world-status">{'Cuidar de si também é uma recompensa.'}</p>
     {dialogOpen && <RewardDialog onSave={create} onClose={()=>setDialogOpen(false)}/>}
     {talking && <ShopkeeperDialog onClose={()=>setTalking(false)} context={{ name: shop.player?.name ?? 'fazendeira', coins, rewards: catalog, wish, lastPurchase: shop.purchases[0]?.title ?? null, hour: new Date().getHours() }}/>}
   </MainLayout>;

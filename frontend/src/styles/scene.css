@@ -67,9 +67,6 @@
 /* --- Painéis enxutos --- */
 .panel-empty { padding: 10px 2px; font-size: 13px; color: #765337; }
 .panel-empty.is-happy { font-weight: 900; color: #3f6b35; }
-.see-all { display: flex; width: 100%; align-items: center; justify-content: space-between; margin-top: 8px; padding: 8px 4px; border: 0; border-top: 1px dashed #d2ac71; background: none; color: #7a4a26; font: inherit; font-size: 12px; font-weight: 900; cursor: pointer; }
-.see-all span { font-size: 9px; transition: transform .2s cubic-bezier(.34, 1.56, .64, 1); }
-.see-all:hover { color: #3b2418; } .see-all:hover span { transform: translateX(4px); }
 .inline-link { padding: 0; border: 0; background: none; color: #bf5837; font: inherit; font-weight: 900; text-decoration: underline; cursor: pointer; }
 .harvest-fruits { display: inline-flex; align-items: center; gap: 3px; }
 .fruit { width: 11px; height: 11px; border: 2px solid #57311f; clip-path: polygon(30% 0, 70% 0, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0 70%, 0 30%); box-shadow: inset 2px 2px #ffffff66; animation: fruit-pop .45s cubic-bezier(.34, 1.56, .64, 1) backwards; }
@@ -148,3 +145,38 @@
  .hero-coin-hud { bottom: 104px; left: 12px; }
  .hero-coin-hud.is-map { bottom: 54px; }
 }
+
+/* ===== Toast: plaquinha de aviso pendurada no canto (vale para o site todo) ===== */
+.toaster { position: fixed; top: 16px; right: 16px; z-index: 10000; display: flex; flex-direction: column; align-items: flex-end; gap: 10px; width: min(380px, calc(100vw - 32px)); pointer-events: none; }
+.toast { position: relative; display: flex; width: 100%; align-items: center; gap: 10px; overflow: hidden; padding: 12px 12px 14px; pointer-events: auto; transform-origin: 50% 0; animation: toast-hang .55s cubic-bezier(.34, 1.56, .64, 1) backwards; }
+.toast::before, .toast::after { content: ''; position: absolute; top: 4px; width: 4px; height: 4px; background: #57311f; }
+.toast::before { left: 6px; } .toast::after { right: 6px; }
+.toast.is-leaving { animation: toast-leave .25s ease-in forwards; }
+.toast-icon { display: flex; width: 30px; height: 30px; flex-shrink: 0; align-items: center; justify-content: center; font-weight: 900; color: #fff1c7; background: #3f6b35; border: 2px solid #23401f; box-shadow: inset 2px 2px #72ad32; }
+.toast.is-error .toast-icon { background: #bf5837; border-color: #7a2e17; box-shadow: inset 2px 2px #e87a5c; }
+.toast.is-info .toast-icon { background: #e7b84b; border-color: #a86d1c; color: #57311f; box-shadow: inset 2px 2px #ffe38b; }
+.toast-message { flex: 1; min-width: 0; font-size: 13px; font-weight: bold; line-height: 1.4; color: #3b2418; overflow-wrap: anywhere; }
+.toast-close { width: 26px; height: 26px; flex-shrink: 0; border: 2px solid transparent; background: none; color: #7a4a26; font: inherit; font-weight: 900; cursor: pointer; }
+.toast-close:hover { border-color: #8a5838; background: #ffe2a4; }
+.toast-timer { position: absolute; left: 0; bottom: 0; height: 4px; width: 100%; background: #72ad32; transform-origin: left; animation: toast-timer var(--toast-life) linear forwards; }
+.toast.is-error .toast-timer { background: #bf5837; }
+.toast.is-info .toast-timer { background: #e7b84b; }
+@keyframes toast-hang { 0% { transform: translateY(-30px) rotate(-6deg); opacity: 0; } 60% { transform: translateY(0) rotate(2deg); opacity: 1; } 80% { transform: rotate(-1deg); } }
+@keyframes toast-leave { to { transform: translateY(-14px) scale(.95); opacity: 0; } }
+@keyframes toast-timer { to { transform: scaleX(0); } }
+
+/* --- Missões na Casa: cartaz de recompensa e "em jornada" --- */
+.bounty { position: relative; display: inline-flex; align-items: center; gap: 8px; margin-top: 8px; padding: 4px 10px 4px 6px; overflow: hidden; font-size: 12px; font-weight: 900; background: #fff3c4; border: 2px solid #a86d1c; box-shadow: inset 0 0 0 2px #ffe38b, 2px 2px 0 #7a4a2655; }
+.bounty::after { content: ''; position: absolute; top: -8px; bottom: -8px; left: -20px; width: 8px; background: #fffbe0cc; transform: rotate(20deg); animation: tile-shine 4s steps(10) infinite 1s; }
+.bounty-chest { position: relative; width: 16px; height: 12px; background: #a86b35; border: 2px solid #57311f; box-shadow: inset 0 3px #8a5838; }
+.bounty-chest::after { content: ''; position: absolute; left: 4px; top: 2px; width: 4px; height: 4px; background: #f2c453; }
+.bounty-coins { display: inline-flex; align-items: center; gap: 3px; color: #a86d1c; }
+.bounty-xp { color: #3f6b35; }
+.home-goal-row.is-traveling .item-icon { background: #f2c453; border-color: #a86d1c; color: #57311f; }
+.traveling-tag { display: flex; align-items: center; gap: 6px; margin-top: 3px; font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; color: #3f6b35; }
+
+/* --- Formulários e loja --- */
+.optional-tag { font-size: 12px; font-weight: normal; color: #8a6136; }
+.product-description { font-size: 11px; line-height: 1.4; color: #765337; }
+
+@media (max-width: 640px) { .toaster { right: 50%; transform: translateX(50%); align-items: stretch; } }

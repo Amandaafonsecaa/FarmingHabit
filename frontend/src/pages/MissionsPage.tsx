@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { toast } from '../lib/toast';
 import { MainLayout } from '../layouts/MainLayout';
 import { MissionsHero } from '../components/missions/MissionsHero';
 import { QuestScroll } from '../components/missions/QuestScroll';
@@ -25,7 +26,8 @@ export function MissionsPage({ onNavigate }: { onNavigate: (page: AppPage) => vo
   const [freshId, setFreshId] = useState<string | null>(null);
   const [highlightId, setHighlightId] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [announcement, setAnnouncement] = useState('');
+  // Avisos de ação aparecem como toast
+  const setAnnouncement = toast;
   const [treasure, setTreasure] = useState(readTreasure);
   const [openingChest, setOpeningChest] = useState<FoundChest | null>(null);
 
@@ -122,7 +124,7 @@ export function MissionsPage({ onNavigate }: { onNavigate: (page: AppPage) => vo
       </section>
       <div className="missions-side"><AdventureDiary entries={done} freshId={freshId}/><CollectionPanel collection={treasure.collection}/></div>
     </div>
-    <p role="status" className="world-status">{announcement || 'Toda grande descoberta começa com uma pequena curiosidade.'}</p>
+    <p role="status" className="world-status">{'Toda grande descoberta começa com uma pequena curiosidade.'}</p>
     {dialogOpen && <MissionDialog onSave={create} onClose={()=>setDialogOpen(false)}/>}
     {openingChest && <ChestOpening key={openingChest.id} chest={openingChest} remaining={unopened.filter(chest => chest.id !== openingChest.id).length} onOpen={openChest} onClose={()=>setOpeningChest(null)}/>}
   </MainLayout>;

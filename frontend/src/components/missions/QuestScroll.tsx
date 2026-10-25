@@ -21,7 +21,7 @@ export function QuestScroll({ mission, index, active, pending, celebrating, high
     <div className="quest-paper">
       <p className="quest-rank"><span aria-hidden="true">{'★'.repeat(rank.stars)}{'☆'.repeat(3 - rank.stars)}</span>{rank.name}</p>
       <h3 className="quest-title">{mission.title}</h3>
-      <p className="quest-description">{mission.description}</p>
+      {mission.description && <p className="quest-description">{mission.description}</p>}
       <div className="quest-rewards">
         <span className="quest-xp">+{mission.xp} XP</span>
         <span className="quest-coins"><PixelIcon name="coin" className="size-3"/>+{mission.coins}</span>

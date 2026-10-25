@@ -63,7 +63,7 @@ export async function listMissions(userId: string): Promise<Mission[]> {
 
 export async function createMission(userId: string, mission: NewMission): Promise<Mission> {
   const created = await request<ApiMission>('/missions', { method: 'POST', body: JSON.stringify({
-    title: mission.title, description: mission.description, xpReward: mission.xp, coinsReward: mission.coins, userId,
+    title: mission.title, ...(mission.description && { description: mission.description }), xpReward: mission.xp, coinsReward: mission.coins, userId,
   }) });
   return toMission(created);
 }
