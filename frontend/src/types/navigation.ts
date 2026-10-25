@@ -1,1 +1,1 @@
-export type AppPage = 'home' | 'goals';
+export type AppPage = 'home' | 'goals' | 'missions' | 'diary';

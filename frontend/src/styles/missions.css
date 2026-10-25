@@ -1,0 +1,198 @@
+/* ===== Aba Missões: mapa do tesouro, quadro de pergaminhos e diário de descobertas ===== */
+
+/* --- Mapa no topo --- */
+.missions-hero {
+ position: relative; isolation: isolate; overflow: hidden; min-height: 380px; padding: 18px;
+ border: 6px solid #52301f; border-bottom-width: 10px; background: #f0d49a;
+ box-shadow: inset 0 0 0 3px #efb96b, inset 0 0 0 12px #c9944f66, inset 0 0 0 22px #b07a3e2e;
+}
+.adventure-map { position: absolute; inset: 0; z-index: -1; width: 100%; height: 100%; }
+.adventure-map text { font-family: 'Courier New', monospace; }
+.map-caption { font-size: 11px; font-weight: bold; fill: #7a4a26; }
+.map-caption.is-mystery { font-style: italic; fill: #8a5838; }
+.map-trail { animation: trail-walk 1.4s linear infinite; }
+.compass-needle { transform-box: view-box; transform-origin: 0 0; animation: needle-wobble 4s ease-in-out infinite; }
+.map-caption.is-mystery { font-style: italic; }
+
+.map-explorer { transition: transform 1.6s cubic-bezier(.45, .05, .35, 1); }
+.explorer-bob { animation: farmer-bob 1.1s steps(1) infinite; }
+.explorer-alert { animation: bubble-bob 1.2s ease-in-out infinite; transform-box: fill-box; }
+
+.missions-hero-top { position: relative; display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 12px; padding-left: 56px; pointer-events: none; }
+.missions-hero-top > * { pointer-events: auto; }
+.missions-sign { padding: 14px 18px 16px; transform: rotate(-1deg); max-width: 340px; }
+.missions-sign .eyebrow { color: #7a4a26; font-size: 10px; }
+.missions-sign h1 { margin: 6px 0 4px; font-size: clamp(22px, 2.6vw, 32px); font-weight: 900; letter-spacing: -1.5px; line-height: 1.1; color: #3b2418; text-shadow: 2px 2px #ffd98d; }
+.missions-motto { margin-bottom: 12px; font-size: 12px; font-style: italic; color: #765337; }
+
+/* --- Jornada: paradas, marcos e cenário de cada capítulo --- */
+.adventure-map .stop-caption { font-size: 10px; font-weight: bold; fill: #57311f; paint-order: stroke; stroke: #fff1c7; stroke-width: 3px; }
+.journey-stop:not(.is-revealed) .stop-caption { fill: #8a5838; font-style: italic; }
+.landmark { transform-box: fill-box; transform-origin: 50% 100%; animation: landmark-pop .6s cubic-bezier(.34, 1.56, .64, 1) backwards; }
+.landmark.is-fresh { animation: landmark-pop .8s cubic-bezier(.34, 1.56, .64, 1) backwards, landmark-glow 1s steps(2) 3 .8s; }
+.landmark-fog { animation: fog-breathe 3s ease-in-out infinite alternate; }
+.fog-mark { font-size: 16px; font-weight: 900; fill: #bf5837; }
+.lm-spin { transform-box: fill-box; transform-origin: center; animation: lm-spin 4s linear infinite; }
+.lm-bob { animation: lm-bob 2s ease-in-out infinite alternate; }
+.lm-hop { animation: lm-hop 2.4s steps(1) infinite; }
+.lm-firefly, .map-fireflies rect { animation: sparkle-blink 1.6s steps(1) infinite; }
+.lm-firefly.is-late { animation-delay: -.8s; }
+.lm-blink { animation: lm-blink 4s steps(1) infinite; }
+.lm-glow { animation: lm-glow 2.2s steps(2) infinite alternate; }
+.lm-smoke { transform-box: fill-box; transform-origin: center; animation: smoke-rise 3.4s linear infinite; }
+.lm-flame { transform-box: fill-box; transform-origin: 50% 100%; animation: lm-flame .5s steps(2) infinite alternate; }
+.lm-sparkle { animation: sparkle-blink 1.2s steps(1) infinite; }
+.lm-wave { transform-box: fill-box; transform-origin: 0 100%; animation: lm-wave .8s ease-in-out infinite alternate; }
+.lm-flag, .map-flag { transform-box: fill-box; transform-origin: left center; animation: lm-flag .9s steps(3) infinite alternate; }
+.lm-zzz text { font-family: 'Courier New', monospace; font-size: 9px; font-weight: 900; fill: #3f7a2e; }
+.lm-zzz { animation: lm-zzz 2.6s ease-out infinite; }
+.lm-hearts { animation: lm-hearts 2.4s ease-out infinite; }
+.map-scenery { animation: scenery-in .7s ease-out backwards; }
+.map-snow rect { animation: snow-fall 6s linear infinite; }
+.map-bats { animation: bats-fly 14s ease-in-out infinite; }
+.exit-arrow { animation: lm-bob 1s ease-in-out infinite alternate; }
+.map-trail { animation: trail-walk 1.4s linear infinite; }
+/* A cada volta par, o mapa ganha tons de outono */
+.adventure-map.is-autumn .map-scenery { filter: sepia(.35) hue-rotate(-18deg) saturate(1.2); }
+
+.journey-chapter { font-size: 12px; font-weight: 900; color: #3f6b35; }
+.journey-heading { display: flex; align-items: center; gap: 8px; margin: 10px 0 12px; padding: 0; border: 0; background: none; font: inherit; font-size: 12px; color: #3b2418; text-align: left; cursor: pointer; }
+.journey-heading strong { text-decoration: underline dashed #bf5837; text-underline-offset: 3px; }
+.journey-heading:hover strong { color: #bf5837; }
+
+.chapter-tabs { position: absolute; left: 50%; bottom: 12px; z-index: 3; display: flex; gap: 6px; transform: translateX(-50%); max-width: calc(100% - 120px); }
+.chapter-tab { display: flex; align-items: center; gap: 6px; min-height: 34px; padding: 4px 10px 4px 4px; border: 2px solid #57311f; background: #f6e2b0; color: #3b2418; font: inherit; font-size: 11px; font-weight: 900; cursor: pointer; box-shadow: inset 1px 1px #fff1c7, 2px 2px 0 #42291666; white-space: nowrap; }
+.chapter-tab:disabled { cursor: default; opacity: .7; }
+.chapter-number { display: flex; width: 22px; height: 22px; align-items: center; justify-content: center; border: 2px solid #57311f; background: #e8ac59; font-size: 11px; }
+.chapter-tab.is-done .chapter-number { background: #72ad32; color: #fff1c7; }
+.chapter-tab.is-current .chapter-number { background: #f2c453; animation: chapter-pulse 1.6s steps(2) infinite; }
+.chapter-tab.is-viewing { background: #fff1c7; transform: translateY(-3px); box-shadow: inset 1px 1px #fff, 2px 5px 0 #42291666; }
+.chapter-tab:not(:disabled):hover { background: #ffe8b4; }
+
+.journey-banner { position: absolute; left: 50%; top: 50%; z-index: 5; min-width: 280px; max-width: calc(100% - 40px); padding: 16px 22px; text-align: center; transform: translate(-50%, -50%); animation: banner-in .6s cubic-bezier(.34, 1.56, .64, 1) backwards, banner-out .4s ease-in 3s forwards; }
+.journey-banner-title { margin-bottom: 4px; font-size: 18px; font-weight: 900; color: #bf5837; text-shadow: 1px 1px #fff1c7; }
+.journey-banner p:last-child { font-size: 12px; }
+
+/* --- Layout --- */
+.missions-layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; max-width: 1600px; margin: auto; padding: 18px 16px 12px; }
+@media (min-width: 1100px) {
+ .missions-layout { grid-template-columns: minmax(0, 1.55fr) minmax(320px, 1fr); align-items: start; }
+ .adventure-diary { position: sticky; top: 16px; }
+}
+
+/* --- Quadro de cortiça/madeira com pergaminhos --- */
+.quest-board {
+ flex: 1; padding: 22px 14px 18px;
+ background: #c98f52 radial-gradient(#8a5838 1px, transparent 1.5px) 0 0 / 14px 14px;
+ box-shadow: inset 0 0 0 3px #a86b35, inset 0 0 0 6px #e8ac59;
+}
+.quest-board-note { padding: 24px 12px; text-align: center; font-weight: bold; color: #3b2418; background: #fff1c7cc; border: 2px dashed #8a5838; }
+.quest-board-note.is-error { color: #8c3027; }
+.quest-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 26px 18px; }
+
+.quest-scroll { position: relative; transform: rotate(var(--tilt, 0deg)); transform-origin: 50% 0; transition: transform .2s cubic-bezier(.34, 1.56, .64, 1); animation: scroll-unroll .5s cubic-bezier(.34, 1.4, .64, 1) backwards; }
+.quest-scroll:hover, .quest-scroll:focus-within { transform: rotate(0) translateY(-4px); z-index: 2; }
+.quest-scroll:hover .quest-paper { box-shadow: inset 0 0 0 2px #f5c477, 5px 7px 0 #42291666; }
+.quest-scroll.is-highlighted { animation: scroll-swing .7s ease-in-out 2; }
+.quest-pin { position: absolute; top: -9px; left: 50%; z-index: 3; width: 14px; height: 14px; margin-left: -7px; background: #d9574a; border: 2px solid #7a2e17; box-shadow: inset 3px 3px #f2998a, 2px 3px 0 #3b241866; }
+.quest-scroll.is-active .quest-pin { background: #53922d; border-color: #23401f; box-shadow: inset 3px 3px #8cc65e, 2px 3px 0 #3b241866; }
+.quest-paper {
+ position: relative; padding: 18px 14px 12px; color: #3b2418;
+ background: #f8e7bf repeating-linear-gradient(0deg, transparent 0 5px, #c9a46a14 5px 6px);
+ border: 3px solid #8a5838; box-shadow: inset 0 0 0 2px #f5c477, 3px 4px 0 #42291655;
+ transition: box-shadow .15s steps(2);
+}
+/* Rolinhos do pergaminho em cima e embaixo */
+.quest-paper::before, .quest-paper::after { content: ''; position: absolute; left: -7px; right: -7px; height: 9px; background: #e3c38a; border: 3px solid #8a5838; box-shadow: inset 0 2px #f8e7bf; }
+.quest-paper::before { top: -9px; } .quest-paper::after { bottom: -9px; }
+.quest-scroll.is-active .quest-paper { background-color: #f3efc4; }
+.quest-rank { display: flex; align-items: center; gap: 6px; font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; color: #a86d1c; }
+.quest-rank > span { color: #e7b84b; letter-spacing: 0; text-shadow: 1px 1px #7a4a26; font-size: 13px; }
+.quest-title { margin-top: 6px; font-size: 15px; font-weight: 900; line-height: 1.25; overflow-wrap: anywhere; }
+.quest-description { margin-top: 6px; font-size: 12px; font-style: italic; line-height: 1.45; color: #5b3826; overflow-wrap: anywhere; }
+.quest-rewards { display: flex; gap: 12px; margin-top: 10px; padding-top: 8px; border-top: 1px dashed #c49a62; font-size: 12px; font-weight: 900; }
+.quest-xp { color: #3f6b35; }
+.quest-coins { display: inline-flex; align-items: center; gap: 4px; color: #a86d1c; }
+.quest-progress { display: flex; align-items: center; gap: 8px; margin-top: 8px; font-size: 11px; font-weight: 900; color: #3f6b35; }
+.footsteps { position: relative; display: inline-flex; gap: 3px; }
+.footsteps > span { width: 4px; height: 3px; background: #8a5838; animation: footstep 1.2s steps(1) infinite; }
+.footsteps > span:nth-child(even) { transform: translateY(3px); }
+.footsteps > span:nth-child(2) { animation-delay: .3s; } .footsteps > span:nth-child(3) { animation-delay: .6s; }
+.quest-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 12px; }
+.quest-actions .plot-remove { margin-left: auto; }
+.quest-go:hover:not(:disabled) svg { animation: compass-spin .8s steps(4) infinite; }
+
+/* Carimbo de "CUMPRIDA!" e despedida do pergaminho */
+.quest-stamp {
+ position: absolute; left: 50%; top: 44%; z-index: 4; padding: 6px 12px; white-space: nowrap;
+ font-size: 20px; font-weight: 900; letter-spacing: 2px; color: #bf5837;
+ border: 4px solid #bf5837; background: #fff1c7cc; box-shadow: inset 0 0 0 2px #fff1c7, inset 0 0 0 4px #bf5837;
+ transform: translate(-50%, -50%) rotate(-12deg); animation: stamp-down .4s cubic-bezier(.2, 1.6, .5, 1) backwards;
+}
+.quest-scroll.is-done { animation: scroll-thud .4s ease-out .1s, scroll-away .5s ease-in 1.2s forwards; }
+.quest-scroll .harvest-burst { left: 50%; top: 40%; }
+
+/* --- Diário de descobertas --- */
+.diary-page {
+ position: relative; flex: 1; min-height: 240px; padding: 14px 14px 14px 46px;
+ background: #fff8e1 repeating-linear-gradient(0deg, transparent 0 25px, #c9a46a55 25px 26px);
+}
+.diary-page::before { content: ''; position: absolute; top: 0; bottom: 0; left: 34px; width: 2px; background: #e8908033; border-left: 1px solid #d9574a66; }
+.diary-page::after { content: ''; position: absolute; top: 14px; bottom: 14px; left: 10px; width: 8px; background: repeating-linear-gradient(0deg, #8a5838 0 6px, transparent 6px 26px); }
+.diary-empty { padding-top: 6px; font-style: italic; color: #765337; }
+.diary-list { display: flex; flex-direction: column; gap: 12px; max-height: 520px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #a47545 #f6dfa6; }
+.diary-entry { display: flex; gap: 10px; align-items: flex-start; }
+.diary-entry.is-fresh > div { animation: ink-write .9s steps(18) backwards; }
+.diary-entry.is-fresh .wax-seal { animation: seal-press .45s cubic-bezier(.2, 1.6, .5, 1) backwards .8s; }
+.wax-seal { position: relative; flex-shrink: 0; width: 22px; height: 22px; margin-top: 2px; background: #bf5837; clip-path: polygon(30% 0, 70% 0, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0 70%, 0 30%); box-shadow: inset 3px 3px #e87a5c, inset -3px -3px #7a2e17; }
+.wax-seal::after { content: ''; position: absolute; left: 9px; top: 5px; width: 4px; height: 12px; background: #f2c453; box-shadow: -4px 4px #f2c453, 4px 4px #f2c453; }
+.diary-title { font-size: 13px; font-weight: 900; line-height: 1.3; overflow-wrap: anywhere; }
+.diary-text { margin-top: 2px; font-size: 11px; font-style: italic; color: #5b3826; overflow-wrap: anywhere; }
+.diary-reward { margin-top: 3px; font-size: 10px; font-weight: bold; color: #a86d1c; }
+
+/* --- Animações --- */
+@keyframes trail-walk { to { stroke-dashoffset: -28; } }
+@keyframes needle-wobble { 0%, 100% { transform: rotate(-14deg); } 30% { transform: rotate(10deg); } 60% { transform: rotate(-6deg); } 80% { transform: rotate(4deg); } }
+@keyframes scroll-unroll { from { transform: rotate(var(--tilt, 0deg)) scaleY(.1); opacity: 0; } }
+@keyframes scroll-swing { 0%, 100% { transform: rotate(var(--tilt, 0deg)); } 25% { transform: rotate(-5deg); } 60% { transform: rotate(4deg); } }
+@keyframes footstep { 0%, 100% { opacity: 1; } 50% { opacity: .2; } }
+@keyframes compass-spin { 25% { transform: rotate(90deg); } 50% { transform: rotate(180deg); } 75% { transform: rotate(270deg); } 100% { transform: rotate(360deg); } }
+@keyframes stamp-down { from { transform: translate(-50%, -50%) rotate(-12deg) scale(2.6); opacity: 0; } }
+@keyframes scroll-thud { 40% { transform: rotate(var(--tilt, 0deg)) translateY(3px) scale(.98); } }
+@keyframes scroll-away { to { transform: rotate(8deg) translate(40px, -20px) scale(.6); opacity: 0; } }
+@keyframes ink-write { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+@keyframes seal-press { from { transform: scale(2); opacity: 0; } }
+
+@keyframes bubble-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+@keyframes landmark-pop { from { transform: scale(0, .2); opacity: 0; } }
+@keyframes landmark-glow { 50% { filter: brightness(1.35) drop-shadow(0 0 0 #fff6c2); } }
+@keyframes fog-breathe { from { opacity: .75; transform: translateX(-2px); } to { opacity: 1; transform: translateX(2px); } }
+@keyframes lm-spin { to { transform: rotate(360deg); } }
+@keyframes lm-bob { from { transform: translateY(0); } to { transform: translateY(3px); } }
+@keyframes lm-hop { 0%, 60%, 100% { transform: none; } 70% { transform: translateY(-4px); } 80% { transform: none; } 88% { transform: translateY(-3px); } }
+@keyframes lm-blink { 0%, 92%, 100% { opacity: 1; } 94%, 98% { opacity: 0; } }
+@keyframes lm-glow { from { opacity: .75; } to { opacity: 1; } }
+@keyframes lm-flame { from { transform: scaleY(1); } to { transform: scaleY(.75) translateX(1px); } }
+@keyframes lm-wave { from { transform: rotate(-12deg); } to { transform: rotate(12deg); } }
+@keyframes lm-flag { from { transform: skewY(0); } to { transform: skewY(-10deg) scaleX(.88); } }
+@keyframes lm-zzz { 0% { transform: translate(0, 4px); opacity: 0; } 30% { opacity: 1; } 100% { transform: translate(6px, -10px); opacity: 0; } }
+@keyframes lm-hearts { 0% { transform: translateY(4px); opacity: 0; } 30% { opacity: 1; } 100% { transform: translateY(-12px); opacity: 0; } }
+@keyframes scenery-in { from { opacity: 0; transform: translateY(6px); } }
+@keyframes snow-fall { to { transform: translate(-30px, 340px); } }
+@keyframes bats-fly { 0%, 100% { transform: translate(0, 0); } 25% { transform: translate(80px, -20px); } 50% { transform: translate(160px, 10px); } 75% { transform: translate(60px, 24px); } }
+@keyframes chapter-pulse { 50% { background: #ffe38b; } }
+@keyframes banner-in { from { transform: translate(-50%, -50%) scale(.4) rotate(-4deg); opacity: 0; } }
+@keyframes banner-out { to { transform: translate(-50%, -60%) scale(.9); opacity: 0; } }
+
+/* --- Responsivo --- */
+@media (max-width: 767px) {
+ .missions-hero { min-height: 420px; padding: 70px 12px 12px; border-width: 4px; border-bottom-width: 8px; }
+ .missions-hero-top { padding-left: 0; }
+ .missions-sign { max-width: none; width: 100%; transform: none; }
+ .goals-stats { width: 100%; }
+ .missions-layout { padding: 14px 10px; gap: 14px; }
+ .quest-list { grid-template-columns: minmax(0, 1fr); }
+ .chapter-tabs { left: 10px; right: 10px; max-width: none; transform: none; overflow-x: auto; }
+ .chapter-name { display: none; }
+ .chapter-tab.is-viewing .chapter-name { display: inline; }
+}

@@ -12,6 +12,7 @@ import { amountOn, dailyTarget, toKey, todayStats } from '../lib/goalLogic';
 import type { NewTrackedGoal, TrackedGoal } from '../types/goals';
 import type { ItemKind, Mission, NewItem, Reward } from '../types/world';
 import { MainLayout } from '../layouts/MainLayout';
+import { recordAdventure } from '../lib/diary';
 import type { Player } from '../services/api';
 import type { AppPage } from '../types/navigation';
 import { claimReward, completeMission, createMission, createReward, deleteMission, listMissions, listRewards, loadPlayer, updateMission } from '../services/api';
@@ -89,6 +90,7 @@ export function HomePage({ onNavigate }: { onNavigate: (page: AppPage) => void }
         return;
       }
       const result = await completeMission(id, player.id);
+      recordAdventure(mission.title);
       replaceMission(result.mission);
       setPlayer(current=>current && { ...current, ...result.user });
       setAnnouncement(`${mission.title}: concluída! Você ganhou ${mission.xp} XP e ${mission.coins} moedas.`);

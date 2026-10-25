@@ -37,8 +37,8 @@ export function GameNavigation({ open, page, onNavigate, navRef }: { open: boole
     <ul className="game-nav-list">
       <NavigationItem index={0} label="Casa" icon="home" selected={page === 'home'} onSelect={()=>onNavigate('home')}/>
       <NavigationItem index={1} label="Metas" icon="target" selected={page === 'goals'} onSelect={()=>onNavigate('goals')}/>
-      <NavigationItem index={2} label="Missões" icon="mission"/>
-      <NavigationItem index={3} label="Diário" icon="book"/>
+      <NavigationItem index={2} label="Missões" icon="mission" selected={page === 'missions'} onSelect={()=>onNavigate('missions')}/>
+      <NavigationItem index={3} label="Diário" icon="book" selected={page === 'diary'} onSelect={()=>onNavigate('diary')}/>
       <NavigationItem index={4} label="Evolução" icon="growth"/>
       <NavigationItem index={5} label="Configurações" icon="settings"/>
     </ul>

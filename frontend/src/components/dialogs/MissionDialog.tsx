@@ -29,9 +29,9 @@ export function MissionDialog({ onSave, onClose }: { onSave: (item: Extract<NewI
     return await onSave({ kind: 'mission', title, description, xp, coins }) || fail('Não foi possível salvar. Confira se o servidor está rodando e tente de novo.');
   }
 
-  return <GameDialog title="Nova missão" icon="mission" intro="Um desafio para a sua jornada no sítio." note="Salvo no servidor." submitLabel="Adicionar missão" error={error} onSubmit={submit} onClose={onClose}>
-    <label className="form-label" htmlFor="mission-title">Nome da missão<input id="mission-title" name="title" maxLength={60} autoFocus placeholder="Ex.: Concluir meu primeiro projeto"/></label>
-    <label className="form-label" htmlFor="mission-description">Descrição curta<textarea id="mission-description" name="description" rows={2} maxLength={160} placeholder="O que precisa acontecer para cumprir?"/></label>
+  return <GameDialog title="Nova missão" icon="mission" intro="Viu algo curioso? Transforme em aventura." note="Salvo no servidor." submitLabel="Adicionar missão" error={error} onSubmit={submit} onClose={onClose}>
+    <label className="form-label" htmlFor="mission-title">Nome da missão<input id="mission-title" name="title" maxLength={60} autoFocus placeholder="Ex.: Descobrir que construção é aquela perto do trabalho"/></label>
+    <label className="form-label" htmlFor="mission-description">Descrição curta<textarea id="mission-description" name="description" rows={2} maxLength={160} placeholder="O que você quer descobrir ou explorar?"/></label>
     <fieldset className="dialog-fieldset"><legend>Recompensa</legend>
       <ChoiceCards name="size" value={size} options={SIZES} onChange={setSize} compact/>
       {size === 'custom' && <div className="mt-3 grid grid-cols-2 gap-2">
