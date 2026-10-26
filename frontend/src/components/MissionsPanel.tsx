@@ -19,7 +19,7 @@ export function MissionsPanel({ missions, accepted, loading, error, pendingId, o
   const open = missions.filter(mission => !mission.completed)
     .sort((a, b) => Number(accepted.includes(b.id)) - Number(accepted.includes(a.id)));
   const shown = open.slice(0, 3);
-  return <GamePanel id="missions" title="Missões" icon="mission" badge={`${open.length} em aberto`} badgeLabel={`${open.length} em aberto`} onOpen={onOpen}>
+  return <GamePanel id="missions" title="Missões" icon="mission" onOpen={onOpen}>
     {loading && <p className="panel-empty">Desenrolando os pergaminhos…</p>}
     {error && <p role="alert" className="text-sm font-bold text-[#8c3027]">{error}</p>}
     {!loading && !error && open.length === 0 && <p className="panel-empty">Nenhuma missão no quadro. Viu algo curioso? Toque na semente <strong>+</strong>.</p>}

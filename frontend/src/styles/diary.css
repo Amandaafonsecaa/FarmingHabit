@@ -25,6 +25,18 @@
 .cat-body { transform-box: fill-box; transform-origin: 50% 100%; animation: cat-breathe 2.6s ease-in-out infinite; }
 .cat-tail { transform-box: fill-box; transform-origin: 0 50%; animation: tail-swish 2.2s ease-in-out infinite alternate; }
 .cat-zzz { animation: lm-zzz 3s ease-out infinite; }
+/* Cutucar a gatinha: acorda, levanta a cabeça e mostra um balãozinho */
+.diary-room .sleepy-cat { pointer-events: auto; }
+.sleepy-cat.is-pokeable { cursor: pointer; }
+.sleepy-cat.is-pokeable:hover .talk-prompt, .diary-hero:has(.talk-sr-button:focus) .talk-prompt { opacity: 1; transform: none; }
+.sleepy-cat.is-pokeable:hover .cat-body, .sleepy-cat.is-pokeable:hover .cat-head { filter: brightness(1.08); }
+.cat-head { transform-box: fill-box; transform-origin: 50% 100%; transition: transform .2s cubic-bezier(.3, 1.6, .5, 1); }
+.sleepy-cat.is-awake .cat-head { transform: translateY(-4px); animation: cat-startle .35s cubic-bezier(.3, 1.6, .5, 1); }
+.sleepy-cat.is-awake .cat-tail { animation-duration: .5s; }
+.cat-bubble { transform-box: fill-box; transform-origin: 50% 100%; animation: cat-bubble-pop .3s cubic-bezier(.3, 1.8, .5, 1); }
+.diary-room .cat-bubble-text { font-size: 10px; fill: #3b2418; }
+@keyframes cat-startle { 0% { transform: translateY(0); } 50% { transform: translateY(-8px); } 100% { transform: translateY(-4px); } }
+@keyframes cat-bubble-pop { from { transform: scale(.3); opacity: 0; } }
 .sill-plant, .shelf-plant, .corner-plant { transform-box: fill-box; transform-origin: 50% 100%; animation: crop-sway 3.6s ease-in-out infinite alternate; }
 
 /* --- Layout --- */

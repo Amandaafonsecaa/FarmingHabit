@@ -1,34 +1,14 @@
 import { useCallback, useState } from 'react';
 import type { GoalLog, TrackedGoal } from '../../types/goals';
-import { WEEKDAY_NAMES, WEEK_ORDER, addDays, amountOn, dailyTarget, frequencyLabel, isDoneOn, isScheduled, nextScheduledName, progressFor, startOfWeek, streakFor, toKey, weekChecks } from '../../lib/goalLogic';
+import { amountOn, dailyTarget, frequencyLabel, isScheduled, nextScheduledName, progressFor, streakFor, toKey, weekChecks } from '../../lib/goalLogic';
 import { PixelIcon } from '../PixelIcon';
 import { ProgressBar } from '../ProgressBar';
-import { PlantGrowth } from './PlantGrowth';
 import { HarvestBurst, type Burst } from './HarvestBurst';
-import { HARVEST_REWARD, type HarvestReward } from '../../lib/harvestRewards';
+import type { HarvestReward } from '../../lib/harvestRewards';
 
 interface GoalCardProps {
   goal: TrackedGoal; log: GoalLog; today: Date;
   onSetAmount: (amount: number, origin?: Element) => HarvestReward | null; onRemove: () => void; onAnnounce: (message: string) => void;
-}
-
-/** Faixa seg–dom da semana atual: feito, falhou, hoje, agendado ou folga */
-function WeekStrip({ goal, log, today }: { goal: TrackedGoal; log: GoalLog; today: Date }) {
-  const monday = startOfWeek(today);
-  const todayKey = toKey(today);
-  return <ol className="week-strip" aria-label="Esta semana">
-    {WEEK_ORDER.map((weekday, index) => {
-      const date = addDays(monday, index);
-      const key = toKey(date);
-      const done = isDoneOn(goal, log, date);
-      const scheduled = goal.frequency.kind !== 'weekly' && isScheduled(goal, date);
-      const state = done ? 'done' : key === todayKey ? 'today' : !scheduled ? 'off' : key < todayKey ? 'missed' : 'planned';
-      const stateLabel = { done: 'cultivado', today: 'hoje', off: 'livre', missed: 'não feito', planned: 'agendado' }[state];
-      return <li key={weekday} className={`week-cell is-${state}`} title={`${WEEKDAY_NAMES[weekday]}: ${stateLabel}`}>
-        <span aria-hidden="true">{WEEKDAY_NAMES[weekday][0]}</span><span className="sr-only">{WEEKDAY_NAMES[weekday]}: {stateLabel}</span>
-      </li>;
-    })}
-  </ol>;
 }
 
 export function GoalCard({ goal, log, today, onSetAmount, onRemove, onAnnounce }: GoalCardProps) {
@@ -71,45 +51,35 @@ export function GoalCard({ goal, log, today, onSetAmount, onRemove, onAnnounce }
     else celebrate('small', `+${quantity.step} ${quantity.unit}`);
   }
 
-  const status = weekly ? `${Math.min(checks, weekly.timesPerWeek)}/${weekly.timesPerWeek} nesta semana`
-    : !scheduledToday ? `Descanso hoje · próxima: ${nextScheduledName(goal, today)}`
+  // Uma linha de status direta: o que falta hoje (ou na semana)
+  const status = !scheduledToday && !weekly ? `Descanso · próxima: ${nextScheduledName(goal, today)}`
+    : weekly ? `${Math.min(checks, weekly.timesPerWeek)}/${weekly.timesPerWeek} na semana`
     : quantity ? `${amount}/${target} ${quantity.unit} hoje`
-    : doneToday ? 'Colhido hoje' : 'Esperando a colheita de hoje';
+    : frequencyLabel(goal);
 
+  // Cartão compacto: nome, status, barra fina e a ação do dia
   return <li data-flip-id={goal.id} className={`goal-plot ${doneToday || progress >= 100 ? 'is-harvested' : ''} ${!scheduledToday ? 'is-resting' : ''}`}>
     <header className="goal-plot-header">
       <span className="item-icon"><PixelIcon name={goal.icon}/></span>
       <div className="min-w-0 flex-1">
-        <h3 className="item-title">{goal.title}</h3>
-        <p className="goal-frequency">{frequencyLabel(goal)}{quantity && ` · ${quantity.target} ${quantity.unit}/dia`}</p>
+        <h3 className="item-title">{goal.title}{(doneToday || progress >= 100) && <PixelIcon name="check" className="goal-done-check size-3"/>}</h3>
+        <p className="goal-frequency">{status}{streak > 0 && <span className="goal-streak" title="Sequência atual"> · <PixelIcon name="flame" className="size-2.5"/>{streak}<span className="sr-only"> {weekly ? 'semanas' : 'dias'} seguidos</span></span>}</p>
       </div>
-      {streak > 0 && <span className="streak-badge" title="Sequência atual"><PixelIcon name="flame" className="size-3"/>{streak}<span className="sr-only"> {weekly ? 'semanas' : 'dias'} seguidos</span><span aria-hidden="true">{weekly ? 'sem' : 'd'}</span></span>}
       <button type="button" className="plot-remove" onClick={onRemove} aria-label={`Arrancar a meta ${goal.title}`}><PixelIcon name="close" className="size-2.5"/></button>
     </header>
 
-    <div className="goal-plot-body">
-      <PlantGrowth progress={progress} label={goal.title} blooming={burst?.kind === 'big'}/>
-      <div className="min-w-0 flex-1">
-        <div className="mb-1 flex justify-between gap-2 text-xs font-bold"><span>{status}</span><span>{progress}%</span></div>
-        <ProgressBar value={progress} label={`Progresso: ${goal.title}`} className="h-3"/>
-        {weekly
-          ? <div className="week-pips" aria-hidden="true">{Array.from({ length: weekly.timesPerWeek }, (_, index) => <span key={index} className={index < checks ? 'is-filled' : ''}/>)}</div>
-          : <WeekStrip goal={goal} log={log} today={today}/>}
-      </div>
-    </div>
+    <ProgressBar value={progress} label={`Progresso: ${goal.title}`} className="goal-plot-bar h-3"/>
 
-    <footer className="goal-plot-actions">
-      {scheduledToday && !doneToday && <span className="reward-chip" title="Recompensa por cumprir hoje">+{HARVEST_REWARD.coins} 🪙</span>}
+    {scheduledToday || weekly ? <footer className="goal-plot-actions">
       {quantity ? <div className="quantity-stepper">
         <button type="button" className="pixel-button" disabled={!scheduledToday || amount === 0} onClick={event=>changeAmount(-1, event.currentTarget)} aria-label={`Tirar ${quantity.step} ${quantity.unit}`}><PixelIcon name="minus" className="size-2.5"/></button>
-        <output className="quantity-value" aria-live="polite">{amount}<small>/{target} {quantity.unit}</small></output>
         <button type="button" className="pixel-button harvest-button" disabled={!scheduledToday} onClick={event=>changeAmount(1, event.currentTarget)}><PixelIcon name="plus" className="size-2.5"/>{quantity.step} {quantity.unit}</button>
       </div>
       : <button type="button" className="pixel-button harvest-button" aria-pressed={doneToday} disabled={!scheduledToday} onClick={event=>toggleCheck(event.currentTarget)}>
-        <span className="harvest-hint"><PixelIcon name={doneToday ? 'check' : 'coin'} className="size-3"/></span>
-        {!scheduledToday ? 'Dia de descanso' : doneToday ? 'Colhido hoje' : weekly ? 'Marcar hoje' : 'Colher hoje'}
+        <PixelIcon name={doneToday ? 'check' : 'coin'} className="harvest-hint size-3"/>
+        {doneToday ? 'Feito hoje' : weekly ? 'Marcar hoje' : 'Colher hoje'}
       </button>}
-    </footer>
+    </footer> : null}
 
     {burst && <HarvestBurst key={burst.id} burst={burst} onDone={clearBurst}/>}
   </li>;

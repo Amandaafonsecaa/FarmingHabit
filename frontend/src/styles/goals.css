@@ -42,22 +42,14 @@
 .view-tab[aria-pressed="true"] { background: #3f6b35; border-color: #23401f; color: #fff1c7; box-shadow: inset 1px 1px #72ad32, 1px 2px #23401f; }
 .view-tab:active { transform: translateY(1px); }
 
-/* Trepadeira que cresce com a rolagem, na margem esquerda da lista */
-.goals-board { position: relative; padding-left: 34px; padding-bottom: 12px; }
-.goals-vine { position: absolute; top: 10px; bottom: 10px; left: 10px; width: 16px; pointer-events: none; }
-.vine-stem { position: absolute; top: 0; left: 6px; width: 4px; height: calc(var(--grow, 0) * 100%); background: repeating-linear-gradient(0deg, #53922d 0 6px, #3f6b35 6px 8px); transition: height .15s linear; }
-.vine-leaf { position: absolute; left: -2px; width: 8px; height: 6px; background: #72ad32; border: 1px solid #3f6b35; transform: scale(0); transform-origin: right center; transition: transform .35s cubic-bezier(.34, 1.56, .64, 1); }
-.vine-leaf.is-right { left: 10px; transform-origin: left center; }
-.vine-leaf.is-open { transform: scale(1); }
-.vine-flower { position: absolute; bottom: -6px; left: 2px; width: 12px; height: 12px; background: #f2c453; border: 2px solid #bf5837; box-shadow: inset 2px 2px #ffe38b; transform: scale(0); transition: transform .4s cubic-bezier(.34, 1.56, .64, 1); }
-.vine-flower.is-open { transform: scale(1); }
+.goals-board { position: relative; padding-bottom: 12px; }
 
 .goals-empty { padding: 28px 8px; text-align: center; }
-.goal-plots { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; padding-top: 6px; }
+.goal-plots { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; padding-top: 4px; }
 
 /* --- Card de plantação --- */
 .goal-plot {
- position: relative; display: flex; flex-direction: column; gap: 10px; padding: 12px;
+ position: relative; display: flex; flex-direction: column; gap: 8px; padding: 10px 12px 12px;
  border: 3px solid #57311f; background: #fff1c7;
  background-image: repeating-linear-gradient(0deg, transparent 0 3px, #ad69240d 3px 4px);
  box-shadow: inset 0 0 0 2px #f5c477, 3px 3px 0 #42291655;
@@ -75,17 +67,15 @@
 .plot-remove { display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; padding: 0; border: 2px solid transparent; background: none; color: #8a5838; cursor: pointer; }
 .plot-remove:hover { border-color: #8c3027; color: #8c3027; background: #f6c9a8; }
 .goal-plot-body { display: flex; align-items: center; gap: 12px; }
-.goal-plot-actions { display: flex; justify-content: flex-end; }
+.goal-plot-actions { display: flex; justify-content: stretch; }
+/* Cartão compacto: ação do dia ocupa a largura toda */
+.goal-plot-actions > .harvest-button, .goal-plot-actions .quantity-stepper { flex: 1; }
+.goal-plot-actions .harvest-button { justify-content: center; }
+.quantity-stepper .harvest-button { flex: 1; justify-content: center; }
+.goal-done-check { display: inline-block; margin-left: 6px; vertical-align: -1px; color: #3f6b35; }
+.goal-streak { color: #bf5837; white-space: nowrap; }
+.goal-streak svg { display: inline-block; vertical-align: -1px; margin-right: 2px; }
 
-.week-strip { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 3px; margin-top: 8px; }
-.week-cell { display: flex; align-items: center; justify-content: center; height: 20px; font-size: 10px; font-weight: bold; border: 2px solid #c49a62; background: #f6e2b0; color: #8a6136; }
-.week-cell.is-done { background: #72ad32; border-color: #3f6b35; color: #fff1c7; box-shadow: inset 1px 1px #c0e36b; }
-.week-cell.is-today { border-color: #bf5837; border-style: dashed; color: #bf5837; background: #fff1c7; }
-.week-cell.is-missed { background: #d9b47a; border-color: #9a7243; color: #6a4520; background-image: repeating-linear-gradient(45deg, transparent 0 3px, #9a724333 3px 4px); }
-.week-cell.is-off { opacity: .45; border-style: dotted; }
-.week-pips { display: flex; gap: 4px; margin-top: 8px; }
-.week-pips span { width: 16px; height: 16px; border: 2px solid #8a5838; background: #f6e2b0; }
-.week-pips span.is-filled { background: #f2c453; border-color: #a86d1c; box-shadow: inset 2px 2px #ffe38b; animation: pip-fill .35s cubic-bezier(.34, 1.56, .64, 1) backwards; }
 
 .harvest-button[aria-pressed="true"] { background: #b8d47a; border-color: #3f6b35; color: #23401f; box-shadow: inset 2px 2px #e4f3b0, inset -2px -2px #72ad32, 2px 3px #23401f; }
 .harvest-hint { display: inline-flex; color: #a86d1c; }
@@ -207,7 +197,6 @@
  .hero-stat dd { font-size: 22px; }
  .goals-layout { padding: 14px 10px; gap: 14px; }
  .goals-board { padding-left: 12px; }
- .goals-vine { display: none; }
  .goal-plots { grid-template-columns: minmax(0, 1fr); }
  .choice-options { grid-template-columns: minmax(0, 1fr); }
  .plant-growth.is-pot { width: 64px; height: 64px; }
@@ -220,7 +209,6 @@
 
 /* Recompensa por cumprir a meta hoje (some depois de colhida) */
 .goal-plot-actions { align-items: center; gap: 8px; }
-.reward-chip { margin-right: auto; padding: 2px 8px; font-size: 11px; font-weight: 900; color: #7a4a26; background: #fff1c7; border: 2px dashed #e7b84b; animation: chip-bob 2s ease-in-out infinite; }
 @keyframes chip-bob { 50% { transform: translateY(-2px); } }
 
 /* ===== Vendinha de metas (topo da aba) ===== */
@@ -247,7 +235,6 @@
 /* ===== Quadro "Metas": mesma altura do calendário; com mais metas, rola por dentro ===== */
 .goals-board-panel { position: relative; }
 .goals-board { flex: 1 1 0; min-height: 0; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #a47545 #f6dfa6; position: static; }
-.goals-board-panel .goals-vine { top: 72px; bottom: 16px; left: 18px; }
 @media (min-width: 1100px) { .goals-board-panel { contain: size; } }
 @media (max-width: 1099px) { .goals-board-panel { height: 520px; } }
 
@@ -260,7 +247,7 @@
 .calendar-rings { position: absolute; top: 24px; left: 6%; right: 6%; z-index: 3; display: flex; justify-content: space-between; pointer-events: none; }
 .calendar-rings span { width: 11px; height: 24px; border: 3px solid #8d8794; border-radius: 6px 6px 2px 2px; box-shadow: inset 1px 1px #d6d0da, 1px 1px 0 #3b241855; }
 .calendar-sheet { position: relative; z-index: 2; display: flex; flex: 1; flex-direction: column; padding-top: 16px; background: #fff8e1; border: 3px solid #57311f; box-shadow: inset 0 0 0 2px #f5c477, 3px 4px 0 #42291655; }
-.calendar-band { margin: 0 10px; padding: 10px 12px 12px; text-align: center; color: #fff1c7; background: #bf5837; box-shadow: inset 0 3px #e87a5c, inset 0 -3px #8c3a22; }
+.calendar-band { position: relative; margin: 0 10px; padding: 10px 12px 12px; text-align: center; color: #fff1c7; background: #bf5837; box-shadow: inset 0 3px #e87a5c, inset 0 -3px #8c3a22; }
 .calendar-band-label { display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 10px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; }
 .calendar-band-month { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 4px 0 2px; }
 .calendar-band-month p { display: flex; flex-direction: column; align-items: center; line-height: 1.1; }
@@ -273,6 +260,20 @@
 .calendar-band-summary { font-size: 11px; font-weight: bold; color: #ffe1a7; }
 .calendar-body { display: flex; flex: 1; flex-direction: column; padding: 12px 14px 14px; }
 .calendar-body .calendar-filter { margin-bottom: 12px; }
+/* Virar o calendário: o conjunto todo gira até ficar de lado, troca a face e volta */
+.wall-calendar { transform-origin: 50% 50%; }
+.wall-calendar.is-turning-out { animation: calendar-turn-out .26s ease-in forwards; }
+.wall-calendar.is-turning-in { animation: calendar-turn-in .34s cubic-bezier(.3, 1.4, .5, 1); }
+.calendar-flipper { position: relative; z-index: 2; display: flex; flex: 1; }
+.calendar-front { width: 100%; cursor: pointer; }
+.calendar-front .calendar-filter { cursor: auto; }
+.calendar-flipper.is-flipped .calendar-front { visibility: hidden; }
+.calendar-back { position: absolute; inset: 0; display: none; padding: 0; cursor: pointer;
+ background: repeating-linear-gradient(90deg, #c9a26b 0 6px, #c39b63 6px 8px); box-shadow: inset 0 0 0 2px #dcb983, 3px 4px 0 #42291655; }
+.calendar-flipper.is-flipped .calendar-back { display: block; }
+@keyframes calendar-turn-out { to { transform: perspective(1400px) rotateY(90deg); } }
+@keyframes calendar-turn-in { from { transform: perspective(1400px) rotateY(-90deg); } }
+.calendar-back:focus-visible { outline: 3px solid #3f6b35; outline-offset: 3px; }
 .calendar-pages { position: absolute; left: 8px; right: 8px; bottom: -8px; z-index: 1; height: 12px; background: #f3e2bb; border: 2px solid #8a5838; }
 .calendar-pages::after { content: ''; position: absolute; left: 6px; right: 6px; bottom: -8px; height: 8px; background: #e8d2a8; border: 2px solid #8a5838; }
 @media (max-width: 767px) { .goals-hero { min-height: 440px; } .calendar-band-month strong { font-size: 22px; } }
