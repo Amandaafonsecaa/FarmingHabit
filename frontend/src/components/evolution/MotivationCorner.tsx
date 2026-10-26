@@ -75,7 +75,7 @@ export function MotivationCorner({ motivation, onSave, disabled }: {
   return <section className="motivation-window pixel-frame" aria-labelledby="motivation-heading">
     <h2 id="motivation-heading" className="sr-only">Meu motivo</h2>
     <div className="motivation-stage">
-      <button type="button" className="motivation-pencil" disabled={disabled} onClick={open} aria-label="Editar meu motivo" title="Editar meu motivo">✎</button>
+      <button type="button" className={`motivation-pencil ${words.length ? '' : 'is-calling'}`} disabled={disabled} onClick={open} aria-label="Editar meu motivo" title="Editar meu motivo">✎</button>
       <svg className="motivation-art" viewBox="92 4 432 336" preserveAspectRatio="xMidYMax meet" shapeRendering="crispEdges">
         <defs>
           {/* Luz quente da luminária espalhando pela parede e pela mesa */}
@@ -129,7 +129,7 @@ export function MotivationCorner({ motivation, onSave, disabled }: {
             <span className="chalk-text" style={{ fontSize: chalkSize }}>{words.length
               // O espaço fica fora da palavra inclinada (dentro de um inline-block ele some)
               ? words.map((word, index) => <Fragment key={index}><span style={{ '--tilt': `${WOBBLE[index % WOBBLE.length]}deg` } as CSSProperties}>{word}</span>{' '}</Fragment>)
-              : 'escreva aqui o seu motivo…'}</span>
+              : <><span className="chalk-ask">Qual é o seu motivo?</span><span className="chalk-cta">toque para escrever ✎</span></>}</span>
           </button>
         </foreignObject>
 

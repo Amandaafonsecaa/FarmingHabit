@@ -3,10 +3,7 @@ import { MainLayout } from '../layouts/MainLayout';
 import { GymHero } from '../components/evolution/GymHero';
 import { WeekBoard } from '../components/evolution/WeekBoard';
 import { WeekBloomChart } from '../components/evolution/WeekBloomChart';
-import { MotivationCorner } from '../components/evolution/MotivationCorner';
 import { useGoalTracker, useToday } from '../hooks/useGoalTracker';
-import { useMotivation } from '../hooks/useMotivation';
-import { toast } from '../lib/toast';
 import { goalWeek } from '../lib/coach';
 import { listMissions, loadPlayer, type Player } from '../services/api';
 import type { Mission } from '../types/world';
@@ -15,14 +12,13 @@ import type { AppPage } from '../types/navigation';
 // Regra do backend: a cada 100 XP sobe 1 nível
 const XP_PER_LEVEL = 100;
 
-/** Evolução: a semana de relance e a motivação da pessoa, lado a lado, com o Coach Rocha na academia */
+/** Evolução: as áreas da vida e a semana de relance, com o Coach Rocha na academia */
 export function EvolutionPage({ onNavigate }: { onNavigate: (page: AppPage) => void }) {
   const { goals, log } = useGoalTracker();
   const today = useToday();
   const [player, setPlayer] = useState<Player | null>(null);
   const [offline, setOffline] = useState(false);
   const [missions, setMissions] = useState<Mission[]>([]);
-  const motivation = useMotivation(player?.id ?? null);
 
   useEffect(() => {
     let active = true;
@@ -43,10 +39,7 @@ export function EvolutionPage({ onNavigate }: { onNavigate: (page: AppPage) => v
     {offline && <p role="alert" className="world-status">Servidor indisponível: o nível aparece quando o backend voltar.</p>}
     <WeekBloomChart goals={goals} log={log} today={today} missions={missions}/>
     <div className="evolution-layout">
-      {/* A semana e o cantinho da motivação lado a lado */}
       <WeekBoard goals={goals} log={log} today={today}/>
-      <MotivationCorner motivation={motivation.motivation} disabled={!player}
-        onSave={async changes=>{ await motivation.save(changes); toast('Motivação salva! Ela vai estar no quadro todos os dias.'); }}/>
     </div>
     <p role="status" className="world-status">Cada pequeno passo também é crescimento.</p>
   </MainLayout>;

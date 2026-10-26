@@ -4,7 +4,7 @@ import type { Mission } from '../../types/world';
 import { readClaims } from '../../lib/harvestRewards';
 import { readTreasure } from '../../lib/treasure';
 import { GOAL_AREAS } from '../../lib/goalAreas';
-import { areasThisWeek, weekEarnings, type Earnings } from '../../lib/weekMetrics';
+import { areasThisWeek, weekEarnings, type AreaWeek, type Earnings } from '../../lib/weekMetrics';
 import { PixelIcon, type PixelIconName } from '../PixelIcon';
 import { useSettings } from '../../hooks/useSettings';
 
@@ -51,18 +51,23 @@ function RewardsScroll({ now, before, farmName }: { now: Earnings; before: Earni
 }
 
 /**
- * "Áreas da sua vida": ranking das áreas pela quantidade de atividades concluídas na semana
- * (a barra é proporcional a essa quantidade), e ao lado o pergaminho opcional com moedas e XP comparados à semana passada.
+ * "Áreas da sua vida": ranking das áreas pelo % de conclusão da semana (a barra é esse %; empates dividem a posição), e ao lado o pergaminho opcional com moedas e XP comparados à semana passada.
  */
 export function WeekBloomChart({ goals, log, today, missions }: { goals: TrackedGoal[]; log: GoalLog; today: Date; missions: Mission[] }) {
   const byArea = new Map(areasThisWeek(goals, log, today).map(area => [area.area, area]));
-  // Ranking pela quantidade concluída (empate: maior %); áreas sem nenhuma meta ficam no fim
-  const rows = GOAL_AREAS.map(({ value, label }) => ({ value, label, week: byArea.get(value) }))
-    .sort((a, b) => Number(!!b.week) - Number(!!a.week) || (b.week?.done ?? 0) - (a.week?.done ?? 0) || (b.week?.rate ?? 0) - (a.week?.rate ?? 0));
-  const ranked = rows.filter(row => row.week);
-  const maxDone = Math.max(1, ...ranked.map(row => row.week!.done));
-  const best = ranked[0]?.week?.done ? ranked[0].value : null;
-  const lowest = ranked.length > 1 && ranked[ranked.length - 1].value !== best ? ranked[ranked.length - 1].value : null;
+  // % de conclusão (inteiro, como é mostrado); sem nada a cumprir não há % (nunca divide por zero)
+  const percentOf = (week?: AreaWeek) => week && week.expected > 0 ? Math.round(week.done / week.expected * 100) : null;
+  // Ranking pelo %; no mesmo %, desempata só a ordem pela quantidade concluída. Sem atividades ficam no fim
+  const rows = GOAL_AREAS.map(({ value, label }) => ({ value, label, week: byArea.get(value), percent: percentOf(byArea.get(value)) }))
+    .sort((a, b) => Number(b.percent !== null) - Number(a.percent !== null) || (b.percent ?? 0) - (a.percent ?? 0) || (b.week?.done ?? 0) - (a.week?.done ?? 0));
+  const ranked = rows.filter(row => row.percent !== null);
+  // Mesmo % = mesma posição (1º, 1º, 3º...)
+  const positionOf = (percent: number) => ranked.findIndex(row => row.percent === percent) + 1;
+  const tiedAt = (percent: number) => ranked.filter(row => row.percent === percent).length > 1;
+  const top = ranked[0], bottom = ranked[ranked.length - 1];
+  // Destaques só quando a posição não está empatada
+  const best = top && top.percent! > 0 && !tiedAt(top.percent!) ? top.value : null;
+  const lowest = bottom && ranked.length > 1 && bottom.percent! < top.percent! && !tiedAt(bottom.percent!) ? bottom.value : null;
   const { now, before } = weekEarnings(today, readClaims(), readTreasure(), missions);
   const [settings] = useSettings();
 
@@ -71,23 +76,25 @@ export function WeekBloomChart({ goals, log, today, missions }: { goals: Tracked
       <header className="panel-heading"><h2 id="bloom-heading"><PixelIcon name="growth" className="size-5"/>Áreas da sua vida</h2><span className="panel-tag">ranking da semana</span></header>
       <div className="bloom-body">
         {!ranked.some(row => row.week!.done) && <p className="bloom-empty">Ainda não há dados suficientes nesta semana.</p>}
-        <ol className="bloom-rows">{rows.map(({ value, label, week }, index) => {
+        <ol className="bloom-rows">{rows.map(({ value, label, week, percent }, index) => {
           const { icon, color } = AREA_STYLE[value];
-          const percent = week?.expected ? Math.round(week.rate * 100) : null;
-          const position = week ? ranked.findIndex(row => row.value === value) + 1 : null;
-          return <li key={value} className={`bloom-row ${value === best ? 'is-best' : ''} ${!week ? 'is-idle' : ''}`} style={{ '--bar': color, '--delay': `${index * 70}ms` } as CSSProperties}>
-            <span className={`bloom-rank ${position && position <= 3 ? `is-top${position}` : ''}`} aria-label={position ? `${position}º lugar` : 'sem metas'}>{position ? `${position}º` : '–'}</span>
+          const position = percent === null ? null : positionOf(percent);
+          const tied = percent !== null && tiedAt(percent);
+          return <li key={value} className={`bloom-row ${value === best ? 'is-best' : ''} ${percent === null ? 'is-idle' : ''}`} style={{ '--bar': color, '--delay': `${index * 70}ms` } as CSSProperties}>
+            <span className={`bloom-rank ${position && position <= 3 ? `is-top${position}` : ''}`} aria-label={position ? `${position}º lugar${tied ? ', empatado' : ''}` : 'sem atividades'}>{position ? `${position}º` : '–'}</span>
             <span className="bloom-icon" aria-hidden="true"><PixelIcon name={icon} className="size-3"/></span>
             <span className="bloom-label">
               <strong>{label}</strong>
               {value === best && <em className="bloom-tag is-best">Melhor área da semana</em>}
               {value === lowest && <em className="bloom-tag is-low">Pode florescer mais</em>}
+              {tied && <em className="bloom-tag is-tie">Empate em aproveitamento</em>}
+              {percent === null && <em className="bloom-tag is-idle">Ainda sem atividades</em>}
             </span>
-            {/* Tamanho da barra = quantidade concluída (relativa à área que mais fez) */}
-            <span className="bloom-bar" role="img" aria-label={!week ? `${label}: sem metas` : `${label}: ${week.done} de ${week.expected} concluídas${percent === null ? '' : `, ${percent}%`}`}>
-              <span className="bloom-fill" style={{ width: `${(week?.done ?? 0) / maxDone * 100}%` }}/>
+            {/* Tamanho da barra = % de conclusão (2/2 e 1/1 ficam iguais: os dois são 100%) */}
+            <span className="bloom-bar" role="img" aria-label={percent === null ? `${label}: ainda sem atividades` : `${label}: ${week!.done} de ${week!.expected} concluídas, ${percent}%`}>
+              <span className="bloom-fill" style={{ width: `${percent ?? 0}%` }}/>
             </span>
-            <span className="bloom-count">{week ? `${week.done}/${week.expected}` : '0/0'}</span>
+            <span className="bloom-count">{percent === null ? '' : `${week!.done}/${week!.expected}`}</span>
             <span className="bloom-percent">{percent === null ? '—' : `${percent}%`}</span>
           </li>;
         })}</ol>
