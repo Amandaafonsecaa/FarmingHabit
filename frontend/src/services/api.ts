@@ -6,7 +6,7 @@ const API_URL = (import.meta.env.VITE_API_URL ?? 'http://localhost:3000').replac
 const USER_ID = import.meta.env.VITE_USER_ID || undefined;
 
 export interface Player { id: string; name: string; level: number; xp: number; coins: number; email?: string; createdAt?: string }
-interface ApiMission { id: string; title: string; description: string; xpReward: number; coinsReward: number; completed: boolean; userId: string | null }
+interface ApiMission { id: string; title: string; description: string; xpReward: number; coinsReward: number; completed: boolean; completedAt?: string | null; userId: string | null }
 interface ApiReward { id: string; title: string; description: string | null; key: string | null; price: number; available: boolean; userId: string | null }
 interface ApiPurchase { id: string; rewardId: string | null; title: string; price: number; createdAt: string; used: boolean; usedAt: string | null }
 const toPurchase = (item: ApiPurchase): Purchase => ({ id: item.id, rewardId: item.rewardId ?? '', title: item.title, price: item.price, date: toKey(new Date(item.createdAt)), used: item.used, usedAt: item.usedAt });
@@ -78,6 +78,7 @@ export async function resetPlayerData(id: string): Promise<Player> {
 const toMission = (mission: ApiMission): Mission => ({
   id: mission.id, title: mission.title, description: mission.description,
   xp: mission.xpReward, coins: mission.coinsReward, completed: mission.completed, rewarded: mission.completed,
+  completedAt: mission.completedAt ?? null,
 });
 
 export async function listMissions(userId: string): Promise<Mission[]> {

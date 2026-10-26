@@ -2,12 +2,14 @@ import { useEffect, useState } from 'react';
 import { MainLayout } from '../layouts/MainLayout';
 import { GymHero } from '../components/evolution/GymHero';
 import { WeekBoard } from '../components/evolution/WeekBoard';
+import { WeekBloomChart } from '../components/evolution/WeekBloomChart';
 import { MotivationCorner } from '../components/evolution/MotivationCorner';
 import { useGoalTracker, useToday } from '../hooks/useGoalTracker';
 import { useMotivation } from '../hooks/useMotivation';
 import { toast } from '../lib/toast';
 import { goalWeek } from '../lib/coach';
-import { loadPlayer, type Player } from '../services/api';
+import { listMissions, loadPlayer, type Player } from '../services/api';
+import type { Mission } from '../types/world';
 import type { AppPage } from '../types/navigation';
 
 // Regra do backend: a cada 100 XP sobe 1 nível
@@ -19,11 +21,18 @@ export function EvolutionPage({ onNavigate }: { onNavigate: (page: AppPage) => v
   const today = useToday();
   const [player, setPlayer] = useState<Player | null>(null);
   const [offline, setOffline] = useState(false);
+  const [missions, setMissions] = useState<Mission[]>([]);
   const motivation = useMotivation(player?.id ?? null);
 
   useEffect(() => {
     let active = true;
-    loadPlayer().then(user => { if (active) setPlayer(user); }).catch(() => { if (active) setOffline(true); });
+    (async () => {
+      const user = await loadPlayer();
+      if (active) setPlayer(user);
+      // Missões entram em moedas e XP da semana (pela data em que foram cumpridas)
+      const list = await listMissions(user.id);
+      if (active) setMissions(list);
+    })().catch(() => { if (active) setOffline(true); });
     return () => { active = false; };
   }, []);
 
@@ -32,6 +41,7 @@ export function EvolutionPage({ onNavigate }: { onNavigate: (page: AppPage) => v
   return <MainLayout page="evolution" onNavigate={onNavigate}
     world={<GymHero level={player?.level ?? 1} xpInLevel={(player?.xp ?? 0) % XP_PER_LEVEL} xpPerLevel={XP_PER_LEVEL} goals={goals} log={log} coach={coach}/>}>
     {offline && <p role="alert" className="world-status">Servidor indisponível: o nível aparece quando o backend voltar.</p>}
+    <WeekBloomChart goals={goals} log={log} today={today} missions={missions}/>
     <div className="evolution-layout">
       {/* A semana e o cantinho da motivação lado a lado */}
       <WeekBoard goals={goals} log={log} today={today}/>

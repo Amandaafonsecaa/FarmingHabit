@@ -1,4 +1,5 @@
-export interface Mission { id: string; title: string; description: string; xp: number; coins: number; completed: boolean; rewarded: boolean }
+/** completedAt: quando foi cumprida (ISO); null para pendentes ou cumpridas antes do campo existir */
+export interface Mission { id: string; title: string; description: string; xp: number; coins: number; completed: boolean; rewarded: boolean; completedAt?: string | null }
 /** fixed: item da vitrine fixa do armazém (não vem do backend e não sai da vitrine) */
 export interface Reward { id: string; name: string; price: number; icon: 'coffee' | 'book'; description?: string; fixed?: boolean }
 export type ItemKind = 'goal' | 'mission' | 'reward';

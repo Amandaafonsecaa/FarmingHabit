@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { GoalArea, GoalFrequency, GoalIcon, GoalMeasure, NewTrackedGoal, TrackedGoal, Weekday } from '../../types/goals';
 import { WEEKDAY_NAMES, WEEK_ORDER, fromKey } from '../../lib/goalLogic';
+import { GOAL_AREAS, areaOf } from '../../lib/goalAreas';
 import { PixelIcon } from '../PixelIcon';
 import { ChoiceCards, GameDialog } from '../dialogs/GameDialog';
 
@@ -15,11 +16,6 @@ const MEASURES: { value: GoalMeasure['kind']; label: string; hint: string }[] = 
   { value: 'quantity', label: 'Quantidade', hint: 'Ex.: 8 copos, 120 minutos.' },
 ];
 
-const AREAS: { value: GoalArea; label: string }[] = [
-  { value: 'saude', label: 'Saúde' }, { value: 'estudos', label: 'Estudos' }, { value: 'corpo', label: 'Corpo' },
-  { value: 'pessoal', label: 'Vida pessoal' }, { value: 'lazer', label: 'Lazer' },
-  { value: 'nenhuma', label: 'Sem categoria' },
-];
 
 const plantedOn = new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
 
@@ -34,7 +30,7 @@ export function NewGoalDialog({ goal, onSave, onClose }: { goal?: TrackedGoal; o
   const [measureKind, setMeasureKind] = useState<GoalMeasure['kind']>(goal?.measure.kind ?? 'check');
   const [days, setDays] = useState<Weekday[]>(goal?.frequency.kind === 'weekdays' ? goal.frequency.days : [1, 3, 5]);
   // Área que não existe mais na lista (ex.: a antiga "Outra") abre como "Sem categoria"
-  const [area, setArea] = useState<GoalArea>(AREAS.some(item => item.value === goal?.area) ? goal!.area! : 'nenhuma');
+  const [area, setArea] = useState<GoalArea>(areaOf(goal?.area));
   const [error, setError] = useState('');
 
   const toggleDay = (day: Weekday) => setDays(current => current.includes(day) ? current.filter(item => item !== day) : [...current, day]);
@@ -95,7 +91,7 @@ export function NewGoalDialog({ goal, onSave, onClose }: { goal?: TrackedGoal; o
     </fieldset>}
 
     <fieldset className="dialog-fieldset"><legend>Área da meta <span className="optional-tag">(opcional)</span></legend>
-      <div className="area-picker" role="radiogroup" aria-label="Área da meta">{AREAS.map(item => <button key={item.value} type="button" role="radio" aria-checked={area === item.value} className="day-toggle area-chip" onClick={()=>setArea(item.value)}>{item.label}</button>)}</div>
+      <div className="area-picker" role="radiogroup" aria-label="Área da meta">{GOAL_AREAS.map(item => <button key={item.value} type="button" role="radio" aria-checked={area === item.value} className="day-toggle area-chip" onClick={()=>setArea(item.value)}>{item.label}</button>)}</div>
     </fieldset>
   </GameDialog>;
 }

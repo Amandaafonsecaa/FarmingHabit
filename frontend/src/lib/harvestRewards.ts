@@ -8,7 +8,8 @@ export const WEEK_BONUS = { coins: 15, xp: 10 };
 export const PLAYER_EVENT = 'farminghabit:player';
 
 const KEY = 'farminghabit.harvest-rewards.v1';
-const readClaims = (): string[] => { try { const list = JSON.parse(localStorage.getItem(KEY) ?? '[]'); return Array.isArray(list) ? list : []; } catch { return []; } };
+/** Recompensas de metas já pagas: "AAAA-MM-DD:idDaMeta" (colheita do dia) e "AAAA-MM-DD:idDaMeta:semana" (bônus, com a segunda da semana) */
+export const readClaims = (): string[] => { try { const list = JSON.parse(localStorage.getItem(KEY) ?? '[]'); return Array.isArray(list) ? list : []; } catch { return []; } };
 const writeClaims = (list: string[]) => { try { localStorage.setItem(KEY, JSON.stringify(list.slice(-2000))); } catch { /* ignora */ } };
 
 export interface HarvestReward { coins: number; xp: number; weekBonus: boolean; claims: string[] }

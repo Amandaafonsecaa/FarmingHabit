@@ -39,6 +39,63 @@
 .coach-portrait-art { display: block; width: 100%; height: 100%; }
 .coach-portrait.is-talking .coach-portrait-art { animation: farmer-bob .36s steps(1) infinite; }
 
+/* --- "Áreas da sua vida": ranking num card e, ao lado, plaquinhas soltas fincadas na grama --- */
+.week-bloom { display: grid; grid-template-columns: minmax(0, 1fr) 260px; gap: 24px; align-items: center; max-width: 1600px; margin: auto; padding: 18px 16px 0; }
+.bloom-body { padding: 10px 14px 14px; background: #fff8e1; }
+.bloom-empty { margin-bottom: 8px; font-size: 12px; font-style: italic; color: #8a6136; }
+.bloom-rows { display: flex; flex-direction: column; gap: 4px; }
+.bloom-row { display: grid; grid-template-columns: 34px 26px minmax(110px, 190px) minmax(0, 1fr) 44px 46px; align-items: center; gap: 10px; padding: 6px 8px; border: 2px solid transparent; animation: plot-in .45s ease-out var(--delay) backwards; }
+.bloom-row + .bloom-row { border-top: 1px dashed #e0c79a; }
+.bloom-row.is-best { background: #fff1c7; border: 2px solid #f2c453; box-shadow: inset 0 0 0 1px #ffe38b; }
+/* Posição no ranking: pódio em ouro, prata e bronze */
+.bloom-rank { display: inline-flex; height: 26px; align-items: center; justify-content: center; font-size: 13px; font-weight: 900; color: #8a6136; background: #f3e2bb; border: 2px solid #c49a62; }
+.bloom-rank.is-top1 { color: #5b3a00; background: #f2c453; border-color: #a86d1c; box-shadow: inset 0 2px #ffe38b; }
+.bloom-rank.is-top2 { color: #3b3f5a; background: #d6dbe3; border-color: #8d8fa0; box-shadow: inset 0 2px #eef1f4; }
+.bloom-rank.is-top3 { color: #5b2f17; background: #e0a477; border-color: #a8623a; box-shadow: inset 0 2px #f2c7a3; }
+.bloom-icon { display: inline-flex; width: 24px; height: 24px; align-items: center; justify-content: center; color: #fff8e1; background: var(--bar); border: 2px solid #3b2418; }
+.bloom-label { display: flex; flex-direction: column; min-width: 0; }
+.bloom-label strong { font-size: 13px; font-weight: 900; color: #3b2418; overflow-wrap: anywhere; }
+.bloom-tag { font-size: 9px; font-style: normal; font-weight: 900; letter-spacing: .4px; }
+.bloom-tag.is-best { color: #a86d1c; }
+.bloom-tag.is-low { color: #3d7fa8; }
+/* Barra em pixel: trilho claro e preenchimento na cor da área, crescendo ao abrir */
+.bloom-bar { position: relative; display: block; height: 16px; background: #eadfc8; border: 2px solid #8a5838; box-shadow: inset 0 2px #d9cbb0; }
+.bloom-fill { display: block; height: 100%; background: var(--bar); box-shadow: inset 0 3px #ffffff55, inset 0 -3px #00000022; transform-origin: 0 50%; animation: bloom-grow .8s cubic-bezier(.34, 1.2, .64, 1) calc(var(--delay) + 150ms) backwards; }
+.bloom-count { font-size: 12px; font-weight: bold; text-align: right; color: #8a6136; }
+.bloom-percent { font-size: 15px; font-weight: 900; text-align: right; color: #3b2418; }
+.bloom-row.is-idle .bloom-label strong, .bloom-row.is-idle .bloom-percent, .bloom-row.is-idle .bloom-rank { color: #a3957d; }
+.bloom-row.is-idle .bloom-icon { filter: saturate(.3); opacity: .7; }
+/* Pergaminho secreto: fechado é só um rolo amarrado com selo; aberto desenrola com as recompensas da semana */
+.week-bloom { align-items: start; }
+.rewards-scroll { position: relative; width: 220px; margin: 8px auto 0; animation: plot-in .5s ease-out .4s backwards; }
+.scroll-paper { position: relative; display: flex; flex-direction: column; color: #3b2418; }
+.scroll-toggle { position: absolute; inset: 0 -6px; z-index: 4; padding: 0; border: 0; background: none; cursor: pointer; }
+.scroll-toggle:focus-visible { outline: 2px dashed #8a5838; outline-offset: 6px; }
+/* Rolos de papel em cima e embaixo */
+.scroll-rod { position: relative; z-index: 1; height: 14px; margin: 0 -6px; background: linear-gradient(#f3dfb4, #d9b47f 60%, #b98a55); border: 2px solid #8a5838; box-shadow: inset 0 2px #f8ead0, 2px 3px 0 #42291644; }
+.scroll-rod::before, .scroll-rod::after { content: ''; position: absolute; top: 2px; width: 6px; height: 6px; background: #c9995a; border: 2px solid #8a5838; }
+.scroll-rod::before { left: -6px; } .scroll-rod::after { right: -6px; }
+.scroll-rod.is-top { margin-bottom: -2px; } .scroll-rod.is-bottom { margin-top: -2px; }
+/* Fechado: só os rolos juntos, a fitinha e o selo; balança de leve no hover para convidar o clique */
+.scroll-ribbon { position: absolute; top: 0; bottom: 0; left: 50%; z-index: 2; width: 6px; margin-left: -3px; background: #bf5837; box-shadow: inset 2px 0 #e07a5a; transition: opacity .2s; }
+.scroll-seal { position: absolute; top: 50%; left: 50%; z-index: 3; width: 22px; height: 22px; margin: -11px 0 0 -11px; background: #a8321f; clip-path: polygon(30% 0, 70% 0, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0 70%, 0 30%); box-shadow: inset 3px 3px #d65a42, inset -3px -3px #6b1c10; transition: opacity .2s, transform .3s ease; }
+.rewards-scroll:not(.is-open):hover .scroll-paper { animation: scroll-wiggle .5s ease-in-out; }
+.rewards-scroll.is-open .scroll-ribbon, .rewards-scroll.is-open .scroll-seal { opacity: 0; transform: scale(.6); pointer-events: none; }
+/* Papel que desenrola */
+.scroll-body { display: grid; grid-template-rows: 0fr; background: #f3e0b5 radial-gradient(ellipse at 50% 40%, #f8ead0 0 45%, transparent 80%); box-shadow: inset 0 0 0 2px #d9b98a, inset 0 0 18px #c9995a66; transition: grid-template-rows .45s ease; }
+.rewards-scroll.is-open .scroll-body { grid-template-rows: 1fr; }
+.scroll-inner { display: flex; flex-direction: column; gap: 12px; overflow: hidden; padding: 0 18px; opacity: 0; transition: opacity .25s ease, padding .45s ease; }
+.rewards-scroll.is-open .scroll-inner { padding: 14px 18px; opacity: 1; transition-delay: .15s, 0s; }
+/* Letras de carta medieval */
+.scroll-entry { display: flex; flex-direction: column; align-items: center; text-align: center; font-family: 'MedievalSharp', 'IM Fell English', Georgia, serif; }
+.scroll-entry + .scroll-entry { padding-top: 10px; border-top: 1px solid #c9a46a88; }
+.scroll-label { font-size: 15px; letter-spacing: .5px; color: #6b4426; }
+.scroll-value { font-size: 30px; font-weight: normal; line-height: 1.1; color: #3b2418; text-shadow: 1px 1px 0 #ffffff66; }
+.scroll-note { margin-top: 2px; font-size: 11px; color: #3b2418; opacity: .45; }
+/* Carimbo com o nome da fazenda: tinta vermelha meio gasta, levemente torto */
+.scroll-stamp { align-self: flex-end; margin-top: 4px; padding: 4px 8px; max-width: 100%; transform: rotate(-6deg); border: 2px solid #a8321fcc; outline: 1px solid #a8321f88; outline-offset: 2px; }
+.scroll-stamp span { display: block; font-family: 'MedievalSharp', Georgia, serif; font-size: 12px; letter-spacing: 1px; text-transform: uppercase; color: #a8321f; opacity: .8; overflow-wrap: anywhere; text-align: center; }
+
 /* --- Layout --- */
 .evolution-layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; max-width: 1600px; margin: auto; padding: 18px 16px 12px; }
 /* Sua semana e Meu motivo lado a lado */
@@ -135,6 +192,10 @@
 @keyframes gym-second { to { transform: rotate(360deg); } }
 @keyframes gym-light { 50% { opacity: .12; } }
 @keyframes week-pop { from { transform: scale(0); } }
+@keyframes plot-in { from { opacity: 0; transform: translateY(10px); } }
+@keyframes bloom-grow { from { transform: scaleX(0); } }
+@keyframes scroll-wiggle { 25% { transform: rotate(-2deg); } 75% { transform: rotate(2deg); } }
+
 @keyframes cat-visit { 0% { transform: translateX(-420px); } 25%, 70% { transform: translateX(0); } 100% { transform: translateX(-420px); } }
 @keyframes cat-turn { 0%, 69.9% { transform: scaleX(1); } 70%, 100% { transform: scaleX(-1); } }
 @keyframes cat-tip { 0%, 26% { opacity: 0; transform: scale(.4); } 29% { opacity: 1; transform: scale(1.06); } 31%, 66% { opacity: 1; transform: scale(1); } 69%, 100% { opacity: 0; transform: scale(.8); } }
@@ -150,7 +211,11 @@
  .evolution-hero-top { padding-left: 0; }
  .evolution-sign { width: 100%; transform: none; }
  .evolution-layout { padding: 14px 10px; gap: 14px; }
- .week-goal { max-width: 120px; font-size: 12px; }
+ /* Celular: plaquinhas lado a lado embaixo do ranking; % e contagem ficam embaixo da barra */
+ .week-bloom { grid-template-columns: minmax(0, 1fr); gap: 18px; padding: 14px 10px 0; }
+ .bloom-row { grid-template-columns: 30px 24px minmax(0, 1fr) auto; grid-template-areas: 'rank icon label percent' 'bar bar bar count'; gap: 4px 8px; }
+ .bloom-rank { grid-area: rank; } .bloom-icon { grid-area: icon; } .bloom-label { grid-area: label; } .bloom-percent { grid-area: percent; } .bloom-bar { grid-area: bar; } .bloom-count { grid-area: count; }
+   .week-goal { max-width: 120px; font-size: 12px; }
  /* Colunas dos dias estreitas para os nomes das metas caberem */
  .week-table thead th:not(:first-child), .week-table td { width: 24px; }
  .week-table tbody th { min-width: 96px; }

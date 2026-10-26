@@ -14,7 +14,7 @@ export type GoalMeasure =
   | { kind: 'quantity'; target: number; unit: string; step: number };
 
 /** Área da vida que a meta cuida (opcional; metas antigas não têm e contam como "sem categoria") */
-export type GoalArea = 'saude' | 'estudos' | 'corpo' | 'pessoal' | 'lazer' | 'nenhuma';
+export type GoalArea = 'saude' | 'estudos' | 'pessoal' | 'lazer' | 'nenhuma';
 
 export interface TrackedGoal { id: string; title: string; icon: GoalIcon; frequency: GoalFrequency; measure: GoalMeasure; area?: GoalArea; createdOn: string }
 export type NewTrackedGoal = Omit<TrackedGoal, 'id' | 'createdOn'>;
