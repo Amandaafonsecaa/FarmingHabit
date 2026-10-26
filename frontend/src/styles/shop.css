@@ -1,7 +1,7 @@
 /* ===== Aba Loja: armazém do sítio ===== */
 
 /* --- Interior do armazém --- */
-.shop-hero { position: relative; isolation: isolate; overflow: hidden; min-height: max(360px, 25vw); padding: 18px; border: 6px solid #52301f; border-bottom-width: 10px; background: #e8c48a; box-shadow: inset 0 0 0 3px #efb96b; }
+.shop-hero { position: relative; isolation: isolate; overflow: hidden; min-height: max(360px, 27.5vw); padding: 18px; border: 6px solid #52301f; border-bottom-width: 10px; background: #e8c48a; box-shadow: inset 0 0 0 3px #efb96b; }
 .shop-scene { position: absolute; inset: 0; z-index: -1; width: 100%; height: 100%; }
 .shop-sign-text { font-family: 'Courier New', monospace; font-size: 20px; font-weight: 900; fill: #3b2418; letter-spacing: 3px; }
 .register-text { font-family: 'Courier New', monospace; font-size: 8px; font-weight: 900; fill: #3f6b35; }

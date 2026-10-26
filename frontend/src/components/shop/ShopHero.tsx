@@ -5,7 +5,7 @@ const JARS: [number, number, string][] = [[70, 150, '#ee6996'], [96, 150, '#f2c4
 /** Interior do armazém: placa balançando, sininho, prateleiras, caixa registradora e o gato Bigode no balcão */
 export function ShopHero({ coins, items, bought, onCreate, onTalk }: { coins: number | null; items: number; bought: number; onCreate: () => void; onTalk: () => void }) {
   return <section className="shop-hero" aria-labelledby="shop-title">
-    <svg className="shop-scene" viewBox="0 0 1000 320" preserveAspectRatio="xMidYMax slice" shapeRendering="crispEdges" aria-hidden="true">
+    <svg className="shop-scene" viewBox="0 0 1000 320" preserveAspectRatio="xMidYMin slice" shapeRendering="crispEdges" aria-hidden="true">
       {/* Papel de parede listrado, lambri e piso xadrez */}
       <rect width="1000" height="240" fill="#e8c48a"/>{Array.from({ length: 34 }, (_, i) => <rect key={i} x={i * 30} width="14" height="240" fill="#dcb377"/>)}
       <rect y="180" width="1000" height="60" fill="#9a6638"/><rect y="178" width="1000" height="4" fill="#6b4426"/>
@@ -58,7 +58,7 @@ export function ShopHero({ coins, items, bought, onCreate, onTalk }: { coins: nu
       <div className="shop-sign-board pixel-frame">
         <p className="eyebrow">Armazém do sítio</p>
         <h1 id="shop-title">Loja</h1>
-        <p className="missions-motto">Troque suas moedas por mimos de verdade.</p>
+        <p className="missions-motto">Quer algo específico? Crie o seu mimo!</p>
         <button type="button" className="pixel-button primary-button" onClick={onCreate}><PixelIcon name="plus" className="size-2.5"/>Nova recompensa</button>
       </div>
       <dl className="goals-stats">
