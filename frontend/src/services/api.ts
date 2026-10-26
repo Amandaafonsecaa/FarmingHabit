@@ -53,6 +53,19 @@ export async function updatePlayerName(id: string, name: string): Promise<Player
   return toPlayer(await request<Player>(`/users/${id}`, { method: 'PATCH', body: JSON.stringify({ name }) }));
 }
 
+// --- Motivação (quadro-negro e porta-retrato da Evolução) ---
+
+export interface Motivation { text: string; photo: string | null }
+
+export async function getMotivation(userId: string): Promise<Motivation> {
+  return request<Motivation>(`/users/${userId}/motivation`);
+}
+
+/** photo: string troca a foto, null remove, undefined mantém a atual */
+export async function saveMotivation(userId: string, motivation: { text: string; photo?: string | null }): Promise<Motivation> {
+  return request<Motivation>(`/users/${userId}/motivation`, { method: 'PUT', body: JSON.stringify(motivation) });
+}
+
 /** Apaga missões, compras e recompensas próprias e zera nível, XP e moedas; a conta continua */
 export async function resetPlayerData(id: string): Promise<Player> {
   return toPlayer(await request<Player>(`/users/${id}/data`, { method: 'DELETE' }));

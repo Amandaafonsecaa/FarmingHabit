@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { NpcDialog } from '../NpcDialog';
 import { ProgressBar } from '../ProgressBar';
-import { CoinHud } from '../home/CoinHud';
+import type { GoalLog, TrackedGoal } from '../../types/goals';
+import { StreakHud } from './StreakHud';
 import { coachChoices, coachGreeting, coachRespond, type CoachChoice, type CoachContext } from '../../lib/coach';
 
 const SKIN = '#5a3a2a', SKIN_LIGHT = '#7a5038', SKIN_DARK = '#3f281c', SHINE = '#93664a';
@@ -63,7 +64,7 @@ function CoachDialog({ context, onClose }: { context: CoachContext; onClose: () 
 }
 
 /** Topo da Evolução: academia com o Coach Rocha treinando; clicar nele abre a conversa */
-export function GymHero({ level, xpInLevel, xpPerLevel, coins, coach }: { level: number; xpInLevel: number; xpPerLevel: number; coins: number | null; coach: CoachContext }) {
+export function GymHero({ level, xpInLevel, xpPerLevel, goals, log, coach }: { level: number; xpInLevel: number; xpPerLevel: number; goals: TrackedGoal[]; log: GoalLog; coach: CoachContext }) {
   const [talking, setTalking] = useState(false);
   return <section className="evolution-hero gym-hero" aria-labelledby="evolution-title">
     <svg className="gym-scene" viewBox="0 0 1000 320" preserveAspectRatio="xMidYMin slice" shapeRendering="crispEdges" aria-hidden="true">
@@ -142,7 +143,8 @@ export function GymHero({ level, xpInLevel, xpPerLevel, coins, coach }: { level:
         <ProgressBar value={xpInLevel / xpPerLevel * 100} label="Experiência do nível" className="mt-1 h-2.5"/>
         <p className="evolution-xp">{xpInLevel} / {xpPerLevel} XP</p>
       </div>
-      <CoinHud coins={coins} className="hero-coin-hud"/>
+      {/* Aqui importa a constância, não o dinheiro: sequência no lugar das moedas */}
+      <StreakHud goals={goals} log={log} today={coach.today}/>
     </div>
     {talking && <CoachDialog context={coach} onClose={()=>setTalking(false)}/>}
   </section>;

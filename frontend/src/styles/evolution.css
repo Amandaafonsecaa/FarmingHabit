@@ -1,4 +1,4 @@
-/* ===== Aba Evolução: academia do Coach Rocha, a semana de relance, sequência e colheitas ===== */
+/* ===== Aba Evolução: academia do Coach Rocha, a semana de relance e a comparação com a semana passada ===== */
 
 /* --- Topo: a academia --- */
 .evolution-hero { position: relative; isolation: isolate; overflow: hidden; min-height: max(360px, 27.5vw); padding: 18px; border: 6px solid #52301f; border-bottom-width: 10px; background: #b5654a; box-shadow: inset 0 0 0 3px #efb96b; }
@@ -30,8 +30,10 @@
 
 /* --- Layout --- */
 .evolution-layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; max-width: 1600px; margin: auto; padding: 18px 16px 12px; }
-.evolution-main, .evolution-side { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
-@media (min-width: 1100px) { .evolution-layout { grid-template-columns: minmax(0, 1.6fr) minmax(320px, 1fr); align-items: start; } }
+@media (min-width: 900px) {
+ .evolution-layout { grid-template-columns: minmax(0, 1.4fr) minmax(300px, 1fr); }
+ .evolution-layout > .week-board { grid-column: 1 / -1; }
+}
 
 /* --- A semana de relance: uma bolinha da cor da meta em cada dia feito --- */
 .week-board-body { padding: 10px 14px 14px; background: #fff8e1; overflow-x: auto; }
@@ -41,6 +43,8 @@
 .week-table tbody th { padding: 7px 10px 7px 0; text-align: left; font-weight: normal; }
 .week-table tbody tr { border-top: 1px dashed #d2ac71; }
 .week-table td { padding: 7px 2px; text-align: center; }
+/* Colunas dos dias com largura fixa: na largura toda, as bolinhas não ficam soltas longe das metas */
+.week-table thead th:not(:first-child), .week-table td { width: 52px; }
 .week-table td.is-today { background: #f2c45322; }
 .week-goal { display: flex; align-items: center; gap: 8px; max-width: 220px; font-size: 13px; font-weight: 900; color: #3b2418; overflow-wrap: anywhere; }
 .week-swatch { width: 10px; height: 10px; flex-shrink: 0; background: var(--goal); border: 2px solid #3b2418; }
@@ -59,22 +63,59 @@
 .week-legend li { display: flex; align-items: center; gap: 6px; }
 .week-legend .week-dot { width: 12px; height: 12px; animation: none; }
 
-/* --- Gráfico --- */
-.harvest-chart { position: relative; padding: 10px 14px 4px; background: #fff8e1; }
-.harvest-chart svg { display: block; width: 100%; height: auto; overflow: visible; }
-.chart-axis { font-family: 'Courier New', monospace; font-size: 10px; font-weight: bold; fill: #765337; }
-.chart-axis.is-current { fill: #3b2418; }
-.chart-value { font-family: 'Courier New', monospace; font-size: 11px; font-weight: 900; fill: #3b2418; }
-.chart-bar { transform-box: fill-box; transform-origin: 50% 100%; transform: scaleY(0); transition: transform .7s cubic-bezier(.34, 1.3, .64, 1); }
-.harvest-chart.is-visible .chart-bar { transform: scaleY(1); }
-.chart-column.is-active .chart-bar rect:first-child { fill: #3f7a2e; }
-.chart-hit { cursor: pointer; outline: none; }
-.chart-hit:focus-visible { stroke: #3f6b35; stroke-width: 2; stroke-dasharray: 4 3; }
-.chart-tooltip { position: absolute; z-index: 3; display: flex; flex-direction: column; padding: 6px 10px; font-size: 11px; white-space: nowrap; pointer-events: none; transform: translate(-50%, -100%); }
-.chart-table { padding: 8px 14px 14px; font-size: 12px; }
-.chart-table summary { cursor: pointer; font-weight: bold; color: #7a4a26; }
-.chart-table table { width: 100%; margin-top: 8px; border-collapse: collapse; }
-.chart-table th, .chart-table td { padding: 4px 6px; text-align: left; border-bottom: 1px dashed #d2ac71; }
+/* --- Sequência no topo (no lugar das moedas) --- */
+.streak-hud { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px 4px 6px; color: #3b2418; }
+.streak-hud .streak-flame { width: 30px; height: 30px; filter: none; transform-origin: 50% 100%; animation: flame-dance 1.2s steps(2) infinite alternate; }
+.streak-hud:not(.is-lit) .streak-flame { animation-duration: 2.4s; }
+.streak-hud strong { font-size: 22px; font-weight: 900; line-height: 1; color: #e8762f; text-shadow: 2px 2px 0 #8c3a22; }
+.streak-hud:not(.is-lit) strong { color: #a3957d; text-shadow: 2px 2px 0 #6b6255; }
+.streak-hud span { font-size: 11px; font-weight: 900; color: #765337; text-transform: uppercase; letter-spacing: 1px; }
+
+/* --- Cantinho da motivação: quadro-negro com a frase e porta-retrato com a foto --- */
+.motivation-panel { display: flex; flex-direction: column; }
+.motivation-panel .panel-heading { flex-wrap: nowrap; }
+.motivation-edit { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; font-size: 11px; }
+.motivation-scene { position: relative; container-type: inline-size; aspect-ratio: 1000 / 520; overflow: hidden; background: #ead6b0; }
+.motivation-scene > svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+/* Posições em % do viewBox 1000×520: área escura do quadro e o vidro do porta-retrato */
+.motivation-board { position: absolute; left: 6.4%; top: 12.3%; width: 46.2%; height: 56.2%; display: flex; align-items: center; justify-content: center; padding: 3cqw; overflow-y: auto; border: 0; background: none; cursor: pointer; scrollbar-width: none; }
+.motivation-board span { font-size: clamp(11px, 3cqw, 26px); font-weight: 900; line-height: 1.3; text-align: center; color: #f4f1e8; text-shadow: 0 0 1px #ffffffaa, 1px 1px 0 #ffffff22; overflow-wrap: anywhere; letter-spacing: .5px; }
+.motivation-board.is-empty span { font-weight: bold; color: #f4f1e877; }
+.motivation-board:hover:not(:disabled) span, .motivation-board:focus-visible span { color: #ffffff; }
+.motivation-photo { position: absolute; left: 70.2%; top: 33.1%; width: 14.6%; height: 28.1%; display: flex; align-items: center; justify-content: center; padding: 0; border: 0; background: #fff1c7; cursor: pointer; overflow: hidden; }
+.motivation-photo img { width: 100%; height: 100%; object-fit: cover; image-rendering: auto; }
+.motivation-photo.is-empty span { font-size: clamp(9px, 1.8cqw, 14px); font-weight: 900; color: #a86d1c; }
+.motivation-photo:hover:not(:disabled), .motivation-board:hover:not(:disabled) { filter: drop-shadow(0 0 0 #ffe38b) brightness(1.06); }
+.motivation-board:focus-visible, .motivation-photo:focus-visible { outline: 3px dashed #f2c453; outline-offset: 2px; }
+.motivation-lamp { animation: gym-light 5s steps(2) infinite; }
+.motivation-steam { animation: lm-bob 1.4s steps(2) infinite alternate; }
+/* Campo de foto no modal */
+.motivation-photo-field { display: flex; align-items: center; gap: 12px; margin-top: 6px; }
+.motivation-photo-preview { display: flex; width: 72px; height: 72px; flex-shrink: 0; align-items: center; justify-content: center; overflow: hidden; color: #a86d1c; background: #fff1c7; border: 4px solid #f2c453; box-shadow: 0 0 0 2px #a86d1c; }
+.motivation-photo-preview img { width: 100%; height: 100%; object-fit: cover; }
+.motivation-upload { cursor: pointer; }
+
+/* --- Análise em post-its: arranca o de cima para ver o próximo --- */
+/* Post-its soltos, sem card por trás: ficam centralizados no espaço ao lado da comparação */
+.insight-notes { display: flex; align-items: center; justify-content: center; min-height: 260px; padding: 16px; }
+.notes-pad { position: relative; width: 230px; height: 220px; border: 0; background: none; cursor: pointer; outline: none; }
+.notes-pad:focus-visible .post-it:first-child { outline: 3px dashed #3b2418; outline-offset: 4px; }
+.post-it {
+ position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 22px 16px 18px;
+ text-align: center; color: #3b2418; background: #ffe98a; box-shadow: 3px 5px 0 #42291644;
+ clip-path: polygon(0 0, 100% 0, 100% 86%, 86% 100%, 0 100%);
+ transform: rotate(calc(-2deg + var(--depth, 0) * 3deg)) translate(calc(var(--depth, 0) * 3px), calc(var(--depth, 0) * 4px));
+ transition: transform .25s cubic-bezier(.34, 1.56, .64, 1);
+}
+/* Cantinho dobrado */
+.post-it::after { content: ''; position: absolute; right: 0; bottom: 0; width: 14%; height: 14%; background: linear-gradient(135deg, #00000022 50%, transparent 50%); }
+.post-it.is-pink { background: #ffc6d3; } .post-it.is-blue { background: #c4e4ff; } .post-it.is-green { background: #cdeeb0; } .post-it.is-end { background: #fff6d6; }
+.post-it-tape { position: absolute; top: -6px; left: 50%; width: 64px; height: 16px; margin-left: -32px; background: #ffffff99; box-shadow: inset 0 0 0 1px #ffffffaa; transform: rotate(-3deg); }
+.post-it-count { position: absolute; top: 10px; right: 12px; font-size: 10px; font-weight: 900; opacity: .55; }
+.post-it-big { font-size: 40px; font-weight: 900; line-height: 1; letter-spacing: -1px; }
+.post-it-text { max-width: 160px; font-size: 13px; font-weight: bold; line-height: 1.35; overflow-wrap: anywhere; }
+.notes-pad:hover .post-it:first-child:not(.is-tearing) { transform: rotate(-4deg) translateY(-3px); }
+.post-it.is-tearing { animation: note-tear .42s cubic-bezier(.5, 0, .75, 0) forwards; }
 
 /* --- Animações --- */
 @keyframes chicken-peck { 0%, 50%, 100% { transform: none; } 60%, 70% { transform: rotate(18deg) translateY(1px); } 80% { transform: none; } 86% { transform: rotate(14deg); } }
@@ -86,6 +127,7 @@
 @keyframes gym-second { to { transform: rotate(360deg); } }
 @keyframes gym-light { 50% { opacity: .12; } }
 @keyframes week-pop { from { transform: scale(0); } }
+@keyframes note-tear { 0% { transform: rotate(-2deg); } 30% { transform: rotate(-9deg) translate(-6px, -14px); } 100% { transform: rotate(22deg) translate(160px, 70px); opacity: 0; } }
 
 /* --- Responsivo --- */
 @media (max-width: 767px) {

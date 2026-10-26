@@ -321,21 +321,8 @@
 .wall-calendar .harvest-legend { margin-top: 10px; padding-top: 8px; }
 
 /* ===== Sequência (inspirada no Duolingo) ===== */
-.streak-panel { min-height: 0; padding: 14px 16px 16px; }
-.streak-hero { display: flex; align-items: center; gap: 14px; }
 .streak-flame { width: 72px; height: 72px; flex-shrink: 0; filter: drop-shadow(2px 3px 0 #42291644); }
 .streak-flame.is-lit { transform-origin: 50% 100%; animation: flame-dance 1.2s steps(2) infinite alternate; }
-.streak-count strong { font-size: 44px; font-weight: 900; line-height: 1; color: #e8762f; text-shadow: 2px 2px 0 #8c3a22; }
-.streak-panel:not(:has(.is-lit)) .streak-count strong { color: #a3957d; text-shadow: 2px 2px 0 #6b6255; }
-.streak-label { font-size: 14px; font-weight: 900; color: #3b2418; }
-.streak-message { margin-top: 4px; font-size: 11px; line-height: 1.4; color: #765337; }
-.streak-week { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; margin-top: 14px; padding: 10px 8px; background: #fff8e1; border: 2px solid #e0c79a; }
-.streak-day { display: flex; flex-direction: column; align-items: center; gap: 4px; }
-.streak-day-name { font-size: 10px; font-weight: 900; color: #8a6136; }
-.streak-day-dot { display: flex; width: 26px; height: 26px; align-items: center; justify-content: center; font-size: 12px; font-weight: 900; color: #fff1c7; background: #ece3cf; border: 2px solid #c9bfa8; }
-.streak-day.is-kept .streak-day-dot { background: #f2a33a; border-color: #a8432a; box-shadow: inset 2px 2px #ffe38b; animation: pip-fill .35s cubic-bezier(.34, 1.56, .64, 1) backwards; }
-.streak-day.is-today .streak-day-dot { border-style: dashed; border-color: #e8762f; background: #fff1c7; }
-.streak-day.is-future { opacity: .45; }
 @keyframes flame-dance { from { transform: scale(1, 1); } to { transform: scale(.94, 1.06); } }
 
 @media (max-width: 767px) { .planted-sign { width: 100%; } }
