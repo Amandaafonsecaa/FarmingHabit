@@ -27,7 +27,9 @@
 .cat-zzz { animation: lm-zzz 3s ease-out infinite; }
 /* Cutucar a gatinha: acorda, levanta a cabeça e mostra um balãozinho */
 .diary-room .sleepy-cat { pointer-events: auto; }
-.sleepy-cat.is-pokeable { cursor: pointer; }
+/* Cursor de dedinho cutucando (ponta do dedo é o clique) */
+.sleepy-cat.is-pokeable { cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' shape-rendering='crispEdges'%3E%3Cpath d='M7 1h4v9H7ZM5 9h14v11H5ZM2 12h4v4H2ZM4 2h2v1H4ZM2 5h2v1H2Z' fill='%233b2418'/%3E%3Cpath d='M8 2h2v8H8ZM6 10h12v9H6ZM3 13h3v2H3Z' fill='%23f6c9a0'/%3E%3Cpath d='M11 10h1v3h-1Zm3 0h1v3h-1Z' fill='%233b2418'/%3E%3Cpath d='M8 2h1v3H8Z' fill='%23fff1d6'/%3E%3C/svg%3E") 9 1, pointer; }
+.diary-room .talk-prompt-text { font-size: 9px; fill: #3b2418; }
 .sleepy-cat.is-pokeable:hover .talk-prompt, .diary-hero:has(.talk-sr-button:focus) .talk-prompt { opacity: 1; transform: none; }
 .sleepy-cat.is-pokeable:hover .cat-body, .sleepy-cat.is-pokeable:hover .cat-head { filter: brightness(1.08); }
 .cat-head { transform-box: fill-box; transform-origin: 50% 100%; transition: transform .2s cubic-bezier(.3, 1.6, .5, 1); }

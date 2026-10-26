@@ -1,12 +1,9 @@
 import type { Mood } from './diary';
 
-/** Pipoca, a gatinha do diário: só conversa depois de acordada 3 vezes em 1 minuto (fica liberado neste navegador) */
-export const CAT_KEY = 'farminghabit.diary-cat.v1';
+/** Pipoca, a gatinha do diário: só conversa depois de acordada 3 vezes em 1 minuto */
 export const WAKES_TO_UNLOCK = 3;
 export const WAKE_WINDOW_MS = 60_000;
 
-export function readCatUnlocked() { try { return localStorage.getItem(CAT_KEY) === '1'; } catch { return false; } }
-export function saveCatUnlocked() { try { localStorage.setItem(CAT_KEY, '1'); } catch { /* sem armazenamento: só não lembra */ } }
 
 export interface CatContext { written: number; streak: number; todayMood?: Mood }
 export type CatChoice = 'diary' | 'mood' | 'pet' | 'nap';

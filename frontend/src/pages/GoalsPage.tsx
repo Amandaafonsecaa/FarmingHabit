@@ -1,10 +1,9 @@
-import { useState } from 'react';
+import { useState, type CSSProperties, type UIEvent } from 'react';
 import { toast } from '../lib/toast';
 import { MainLayout } from '../layouts/MainLayout';
 import { GoalsHero } from '../components/goals/GoalsHero';
 import { GoalCard } from '../components/goals/GoalCard';
 import { ConsistencyCalendar } from '../components/goals/ConsistencyCalendar';
-import { StreakPanel } from '../components/goals/StreakPanel';
 import { NewGoalDialog } from '../components/goals/NewGoalDialog';
 import { PixelIcon } from '../components/PixelIcon';
 import { useGoalTracker, useToday } from '../hooks/useGoalTracker';
@@ -16,6 +15,17 @@ import { flyCoins } from '../lib/coinFlight';
 import { usePlayerCoins } from '../hooks/usePlayerCoins';
 import type { AppPage } from '../types/navigation';
 
+const VINE_LEAVES = [0.08, 0.2, 0.32, 0.44, 0.56, 0.68, 0.8, 0.92];
+
+/** Trepadeira lateral que cresce conforme a rolagem pela lista de metas */
+function GoalsVine({ progress }: { progress: number }) {
+  return <div className="goals-vine" aria-hidden="true" style={{ '--grow': progress } as CSSProperties}>
+    <span className="vine-stem"/>
+    {VINE_LEAVES.map((position, index) => <span key={position} className={`vine-leaf ${index % 2 ? 'is-right' : ''} ${progress >= position ? 'is-open' : ''}`} style={{ top: `${position * 100}%` }}/>)}
+    <span className={`vine-flower ${progress >= 0.98 ? 'is-open' : ''}`}/>
+  </div>;
+}
+
 export function GoalsPage({ onNavigate }: { onNavigate: (page: AppPage) => void }) {
   const { goals, log, setAmount, addGoal, removeGoal } = useGoalTracker();
   const today = useToday();
@@ -23,6 +33,12 @@ export function GoalsPage({ onNavigate }: { onNavigate: (page: AppPage) => void 
   const [dialogOpen, setDialogOpen] = useState(false);
   // Avisos de ação aparecem como toast
   const setAnnouncement = toast;
+  // A lista de metas rola por dentro do quadro; a trepadeira cresce com essa rolagem (cheia se não houver o que rolar)
+  const [vineProgress, setVineProgress] = useState(1);
+  function onBoardScroll(event: UIEvent<HTMLDivElement>) {
+    const { scrollTop, scrollHeight, clientHeight } = event.currentTarget;
+    setVineProgress(scrollHeight <= clientHeight ? 1 : Math.min(1, (scrollTop + clientHeight * 0.35) / (scrollHeight - clientHeight * 0.65)));
+  }
   const coins = usePlayerCoins();
   // Pendentes em cima, colhidas descem para o fim da lista
   const shown = sortByPending(view === 'today' ? goals.filter(goal => isScheduled(goal, today)) : goals, log, today);
@@ -71,7 +87,8 @@ export function GoalsPage({ onNavigate }: { onNavigate: (page: AppPage) => void 
             <button type="button" className="view-tab" aria-pressed={view === 'all'} onClick={()=>setView('all')}>Todas ({goals.length})</button>
           </div>
         </header>
-        <div className="panel-content goals-board">
+        <div className="panel-content goals-board" onScroll={onBoardScroll}>
+          <GoalsVine progress={vineProgress}/>
           {shown.length === 0
             ? <div className="goals-empty"><p className="item-title">{goals.length ? 'Nenhuma meta cobra hoje. Dia de descanso no sítio!' : 'Nenhuma meta ainda.'}</p>
                 {!goals.length && <button type="button" className="pixel-button primary-button mt-3" onClick={()=>setDialogOpen(true)}><PixelIcon name="plus" className="size-2.5"/>Criar a primeira meta</button>}</div>
@@ -79,7 +96,7 @@ export function GoalsPage({ onNavigate }: { onNavigate: (page: AppPage) => void 
                 onSetAmount={(amount, origin)=>updateAmount(goal, amount, origin)} onRemove={()=>uproot(goal.id, goal.title)} onAnnounce={setAnnouncement}/>)}</ul>}
         </div>
       </section>
-      <div className="goals-side"><ConsistencyCalendar goals={goals} log={log} today={today}/><StreakPanel goals={goals} log={log} today={today}/></div>
+      <div className="goals-side"><ConsistencyCalendar goals={goals} log={log} today={today}/></div>
     </div>
     <p role="status" className="world-status">{'Toda semente precisa de tempo. Volte amanhã para regar.'}</p>
     {dialogOpen && <NewGoalDialog onSave={plant} onClose={()=>setDialogOpen(false)}/>}

@@ -5,6 +5,7 @@ import { SkillsPanel } from '../components/evolution/SkillsPanel';
 import { AchievementsPanel } from '../components/evolution/AchievementsPanel';
 import { LevelRoad } from '../components/evolution/LevelRoad';
 import { WeeklyHarvestChart, type WeekHarvest } from '../components/evolution/WeeklyHarvestChart';
+import { StreakPanel } from '../components/goals/StreakPanel';
 import { PixelIcon } from '../components/PixelIcon';
 import { ProgressBar } from '../components/ProgressBar';
 import { useGoalTracker, useToday } from '../hooks/useGoalTracker';
@@ -84,7 +85,7 @@ export function EvolutionPage({ onNavigate }: { onNavigate: (page: AppPage) => v
     {offline && <p role="alert" className="world-status">Servidor indisponível: nível, moedas e missões aparecem quando o backend voltar.</p>}
     <div className="evolution-layout">
       <div className="evolution-main"><SkillsPanel skills={buildSkills(stats)}/><WeeklyHarvestChart weeks={weeks}/></div>
-      <div className="evolution-side"><LevelRoad level={level} xpInLevel={xpInLevel} xpPerLevel={XP_PER_LEVEL}/><AchievementsPanel achievements={achievements}/></div>
+      <div className="evolution-side"><StreakPanel goals={goals} log={log} today={today}/><LevelRoad level={level} xpInLevel={xpInLevel} xpPerLevel={XP_PER_LEVEL}/><AchievementsPanel achievements={achievements}/></div>
     </div>
     <p role="status" className="world-status">Cada pequeno passo também é crescimento.</p>
   </MainLayout>;

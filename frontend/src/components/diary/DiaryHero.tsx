@@ -2,18 +2,16 @@ import { useEffect, useRef, useState } from 'react';
 import type { Mood } from '../../lib/diary';
 import { MoodIcon } from './DiaryIcons';
 import { CatDialog } from './CatDialog';
-import { WAKES_TO_UNLOCK, WAKE_WINDOW_MS, readCatUnlocked, saveCatUnlocked } from '../../lib/diaryCat';
-import { toast } from '../../lib/toast';
+import { WAKES_TO_UNLOCK, WAKE_WINDOW_MS } from '../../lib/diaryCat';
 
 const AWAKE_MS = 2600;
 const WAKE_BUBBLES = ['Mrrr…', 'Miau?!', 'Miau! ♥'];
 
 /**
  * Pipoca, a gatinha do tapete: cutucar acorda (e ela volta a dormir logo depois).
- * Acordar 3 vezes em 1 minuto libera a conversa, que fica liberada neste navegador.
+ * Acordar 3 vezes em 1 minuto abre a conversa; ao fechar, ela volta a dormir e tudo recomeça.
  */
 function useSleepyCat() {
-  const [unlocked, setUnlocked] = useState(readCatUnlocked);
   const [awake, setAwake] = useState(false);
   const [bubble, setBubble] = useState('');
   const [talking, setTalking] = useState(false);
@@ -27,17 +25,14 @@ function useSleepyCat() {
   }
 
   function poke() {
-    if (unlocked) { window.clearTimeout(timer.current); setAwake(true); setBubble(''); setTalking(true); return; }
-    if (awake) return; // já acordada: só conta quando ela estava dormindo
+    if (awake || talking) return; // já acordada: só conta quando ela estava dormindo
     const now = Date.now();
     wakes.current = [...wakes.current.filter(time => now - time < WAKE_WINDOW_MS), now];
     const count = wakes.current.length;
     setAwake(true);
     setBubble(WAKE_BUBBLES[Math.min(count, WAKES_TO_UNLOCK) - 1]);
     if (count >= WAKES_TO_UNLOCK) {
-      saveCatUnlocked();
-      setUnlocked(true);
-      toast('A Pipoca acordou de vez! 😺 Agora dá pra conversar com ela.', 'info');
+      wakes.current = [];
       window.clearTimeout(timer.current);
       timer.current = window.setTimeout(() => { setBubble(''); setTalking(true); }, 900);
       return;
@@ -45,8 +40,9 @@ function useSleepyCat() {
     sleepLater();
   }
 
-  function stopTalking() { setTalking(false); sleepLater(); }
-  return { unlocked, awake, bubble, talking, poke, stopTalking };
+  // Fechou a conversa: volta a dormir e precisa de mais 3 cutucadas para conversar de novo
+  function stopTalking() { setTalking(false); wakes.current = []; window.clearTimeout(timer.current); setAwake(false); setBubble(''); }
+  return { awake, bubble, talking, poke, stopTalking };
 }
 
 /** Clima da janela: segue o humor do dia (chuva, tempestade, arco-íris...) */
@@ -116,7 +112,7 @@ export function DiaryHero({ todayMood, night, dateLabel, written, streak, monthM
 
       {/* Tapete e gatinho dormindo */}
       <rect x="150" y="282" width="320" height="30" fill="#bf5837"/><rect x="156" y="286" width="308" height="22" fill="#d9734f"/>{Array.from({ length: 10 }, (_, i) => <rect key={i} x={170 + i * 30} y="294" width="8" height="6" fill="#f2c453"/>)}
-      <g className={`sleepy-cat ${cat.awake ? 'is-awake' : ''} ${cat.unlocked ? 'npc-clickable' : 'is-pokeable'}`} onClick={cat.poke}>
+      <g className={`sleepy-cat ${cat.awake ? 'is-awake' : ''} is-pokeable`} onClick={cat.poke}>
         <rect x="252" y="236" width="112" height="56" fill="transparent"/>
         <g className="cat-tail"><rect x="330" y="282" width="24" height="5" fill="#e8954a"/><rect x="350" y="276" width="5" height="8" fill="#e8954a"/></g>
         <g className="cat-body"><rect x="274" y="272" width="60" height="16" fill="#e8954a"/><rect x="278" y="268" width="50" height="6" fill="#e8954a"/><rect x="282" y="276" width="40" height="3" fill="#c8743a"/><rect x="290" y="281" width="30" height="3" fill="#c8743a"/></g>
@@ -131,9 +127,9 @@ export function DiaryHero({ todayMood, night, dateLabel, written, streak, monthM
         {/* Balãozinho ao acordar */}
         {cat.bubble && <g key={cat.bubble} className="cat-bubble"><rect x="240" y="232" width="62" height="20" fill="#57311f"/><rect x="242" y="234" width="58" height="16" fill="#fff1c7"/><rect x="266" y="252" width="6" height="5" fill="#57311f"/>
           <text x="271" y="246" textAnchor="middle" className="cat-bubble-text">{cat.bubble}</text></g>}
-        {/* Aviso de interação no hover: "Cutucar" antes de liberar, "Conversar" depois */}
+        {/* Aviso de interação no hover: cutucar acorda (e, depois de liberada, ela conversa) */}
         {!cat.bubble && <g className="talk-prompt"><rect x="236" y="234" width="70" height="18" fill="#57311f"/><rect x="238" y="236" width="66" height="14" fill="#fff1c7"/><rect x="268" y="252" width="6" height="4" fill="#57311f"/>
-          <text x="271" y="247" textAnchor="middle" className="talk-prompt-text">{cat.unlocked ? 'Conversar' : 'Cutucar'}</text></g>}
+          <text x="271" y="247" textAnchor="middle" className="talk-prompt-text">Cutucar</text></g>}
       </g>
 
       {/* Planta grande no canto */}
@@ -142,7 +138,7 @@ export function DiaryHero({ todayMood, night, dateLabel, written, streak, monthM
     </svg>
 
     {/* Para teclado e leitores de tela: aparece só quando recebe foco */}
-    <button type="button" className="talk-sr-button sr-only focus:not-sr-only" onClick={cat.poke}>{cat.unlocked ? 'Conversar com a Pipoca' : 'Cutucar a gatinha'}</button>
+    <button type="button" className="talk-sr-button sr-only focus:not-sr-only" onClick={cat.poke}>Cutucar a gatinha</button>
     <div className="diary-hero-top">
       <div className="diary-sign pixel-frame">
         <p className="eyebrow">{dateLabel}</p>
