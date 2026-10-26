@@ -44,7 +44,13 @@
 /* --- Layout --- */
 .diary-layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; max-width: 1600px; margin: auto; padding: 18px 16px 12px; }
 .diary-aside { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
-@media (min-width: 1100px) { .diary-layout { grid-template-columns: minmax(0, 1.5fr) minmax(320px, 1fr); align-items: start; } }
+/* Livro e coluna ao lado sempre com a mesma altura: o que for mais alto puxa o outro */
+@media (min-width: 1100px) {
+ .diary-layout { grid-template-columns: minmax(0, 1.5fr) minmax(320px, 1fr); align-items: stretch; }
+ .diary-book { display: flex; flex-direction: column; }
+ .diary-book .book-spread { flex: 1; }
+ .diary-aside > :last-child { flex: 1; }
+}
 
 /* --- Livro aberto (capa de couro costurada) --- */
 .diary-book { position: relative; padding: 14px; background: #7a3e2a; border: 3px solid #3b2418; box-shadow: inset 0 0 0 3px #a8583a, inset 0 0 0 6px #5e2c1c, 4px 5px 0 #42291666; }
