@@ -1,15 +1,15 @@
 import { useEffect, useState } from 'react';
 import type { Reward } from '../types/world';
-import { claimReward, createReward, grantRewards, hideReward, listRewards, loadPlayer, type Player } from '../services/api';
-import { WISH_KEY, readPurchases, recordPurchase, writePurchases, type Purchase } from '../lib/shop';
+import { claimReward, createReward, hideReward, updateReward, deleteReward, listRewards, listPurchases, setPurchaseUsed, loadPlayer, type Player } from '../services/api';
+import { WISH_KEY, readWishes, type Purchase } from '../lib/shop';
 import { PLAYER_EVENT } from '../lib/harvestRewards';
 
-/** Vitrine (backend), saldo do jogador, baú de compras e item desejado (navegador) */
+/** Vitrine, saldo e compras no backend; somente os itens desejados ficam no navegador. */
 export function useShop() {
   const [player, setPlayer] = useState<Player | null>(null);
   const [rewards, setRewards] = useState<Reward[]>([]);
-  const [purchases, setPurchases] = useState<Purchase[]>(readPurchases);
-  const [wishId, setWishId] = useState<string | null>(() => { try { return localStorage.getItem(WISH_KEY); } catch { return null; } });
+  const [purchases, setPurchases] = useState<Purchase[]>([]);
+  const [wishIds, setWishIds] = useState<string[]>(readWishes);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -17,9 +17,9 @@ export function useShop() {
     let active = true;
     (async () => {
       const user = await loadPlayer();
-      const list = await listRewards(user.id);
+      const [list, history] = await Promise.all([listRewards(user.id), listPurchases(user.id)]);
       if (!active) return;
-      setPlayer(user); setRewards(list);
+      setPlayer(user); setRewards(list); setPurchases(history);
     })()
       .catch(reason => { if (active) setError(reason instanceof Error ? reason.message : 'Não foi possível falar com o servidor.'); })
       .finally(() => { if (active) setLoading(false); });
@@ -32,20 +32,20 @@ export function useShop() {
     return () => window.removeEventListener(PLAYER_EVENT, onPlayer);
   }, []);
 
-  useEffect(() => { try { if (wishId) localStorage.setItem(WISH_KEY, wishId); else localStorage.removeItem(WISH_KEY); } catch { /* ignora */ } }, [wishId]);
+  useEffect(() => { try { if (wishIds.length) localStorage.setItem(WISH_KEY, JSON.stringify(wishIds)); else localStorage.removeItem(WISH_KEY); } catch { /* ignora */ } }, [wishIds]);
+
+  const toggleWish = (id: string) => setWishIds(current => current.includes(id) ? current.filter(value => value !== id) : [...current, id]);
+  const dropWish = (id: string) => setWishIds(current => current.filter(value => value !== id));
 
   async function buy(reward: Reward) {
     if (!player) throw new Error('Servidor indisponível.');
     if (player.coins < reward.price) throw new Error('Moedas insuficientes.');
-    // Itens da vitrine fixa não existem no backend: descontamos as moedas direto no jogador
-    if (reward.fixed) setPlayer(await grantRewards(player, -reward.price, 0));
-    else {
-      const { remainingCoins } = await claimReward(reward.id, player.id);
-      setPlayer(current => current && { ...current, coins: remainingCoins });
-    }
-    const purchase = recordPurchase(reward.id, reward.name, reward.price);
-    setPurchases(readPurchases());
-    if (wishId === reward.id) setWishId(null);
+    const { remainingCoins, purchase } = await claimReward(reward.id, player.id);
+    const updatedPlayer = { ...player, coins: remainingCoins };
+    setPlayer(updatedPlayer);
+    window.dispatchEvent(new CustomEvent<Player>(PLAYER_EVENT, { detail: updatedPlayer }));
+    setPurchases(current => [purchase, ...current]);
+    dropWish(reward.id);
     return purchase;
   }
 
@@ -56,16 +56,34 @@ export function useShop() {
   }
 
   async function hide(id: string) {
-    await hideReward(id);
+    if (!player) throw new Error('Servidor indisponível.');
+    await hideReward(id, player.id);
     setRewards(current => current.filter(reward => reward.id !== id));
-    if (wishId === id) setWishId(null);
+    dropWish(id);
   }
 
-  function toggleUsed(id: string) {
-    const next = purchases.map(item => item.id === id ? { ...item, used: !item.used } : item);
-    writePurchases(next);
-    setPurchases(next);
+  async function edit(id: string, changes: { title: string; description: string; price: number }) {
+    if (!player) throw new Error('Servidor indisponível.');
+    const updated = await updateReward(id, player.id, changes);
+    setRewards(current => current.map(reward => reward.id === id ? updated : reward));
+  }
+  async function remove(id: string) {
+    if (!player) throw new Error('Servidor indisponível.');
+    await deleteReward(id, player.id);
+    setRewards(current => current.filter(reward => reward.id !== id));
+    dropWish(id);
   }
 
-  return { player, rewards, purchases, wishId, setWishId, loading, error, buy, create, hide, toggleUsed };
+  const [updatingIds, setUpdatingIds] = useState<string[]>([]);
+  async function toggleUsed(id: string) {
+    const item = purchases.find(purchase => purchase.id === id);
+    if (!player || !item || updatingIds.includes(id)) return;
+    setUpdatingIds(current => [...current, id]);
+    try {
+      const updated = await setPurchaseUsed(id, player.id, !item.used);
+      setPurchases(current => current.map(purchase => purchase.id === id ? updated : purchase));
+    } finally { setUpdatingIds(current => current.filter(value => value !== id)); }
+  }
+
+  return { player, rewards, purchases, wishIds, toggleWish, loading, error, updatingIds, edit, remove, buy, create, hide, toggleUsed };
 }

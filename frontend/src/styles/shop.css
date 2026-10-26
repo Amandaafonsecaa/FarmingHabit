@@ -14,6 +14,7 @@
 .register-drawer { animation: drawer-pop 6s steps(1) infinite; }
 .coin-glint { animation: sparkle-blink 1.6s steps(1) infinite; }
 .counter-bell { transform-box: fill-box; transform-origin: 50% 100%; animation: bell-ding 7s steps(1) infinite; }
+.shop-coin-hud { position: relative; z-index: 3; }
 .shop-hero-top { position: relative; display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 12px; padding-left: 56px; }
 .shop-sign-board { padding: 14px 18px 16px; transform: rotate(-1deg); max-width: 340px; }
 .shop-sign-board .eyebrow { color: #7a4a26; font-size: 10px; }
@@ -23,10 +24,35 @@
 /* --- Layout --- */
 .shop-layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; max-width: 1600px; margin: auto; padding: 18px 16px 12px; }
 .shop-side { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
-@media (min-width: 1100px) { .shop-layout { grid-template-columns: minmax(0, 1.55fr) minmax(320px, 1fr); align-items: start; } .shop-side { position: sticky; top: 16px; } }
+@media (min-width: 1100px) {
+ .shop-layout { grid-template-columns: minmax(0, 1.55fr) minmax(320px, 1fr); align-items: stretch; }
+ /* The side column determines row height; the catalog scrolls within that exact height. */
+ .shop-layout > .showcase-panel { contain: size; min-height: 0; max-height: none; }
+ .shop-side { align-self: start; }
+}
 
 /* --- Vitrine: prateleiras de madeira --- */
-.showcase { flex: 1; padding: 22px 14px 18px; background: #c98f52 repeating-linear-gradient(0deg, transparent 0 158px, #8a5838 158px 166px, #b07a4c 166px 168px, transparent 168px 200px); box-shadow: inset 0 0 0 3px #a86b35, inset 0 0 0 6px #e8ac59; }
+.showcase { flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; scroll-behavior: smooth; scroll-padding-block: 22px; scrollbar-gutter: stable; overscroll-behavior-y: auto; scrollbar-width: thin; scrollbar-color: #ad7138 #ecc68d; padding: 22px 14px 18px; background-color: #c98f52;
+ background-image:
+  linear-gradient(#c98f52 35%, #c98f5200),
+  linear-gradient(#c98f5200, #c98f52 65%),
+  radial-gradient(farthest-side at 50% 0, #42291655, #42291600),
+  radial-gradient(farthest-side at 50% 100%, #42291644, #42291600),
+  repeating-linear-gradient(0deg, transparent 0 158px, #8a5838 158px 166px, #b07a4c 166px 168px, transparent 168px 200px);
+ background-position: center top, center bottom, center top, center bottom, left top;
+ background-size: 100% 32px, 100% 32px, 100% 12px, 100% 12px, auto;
+ background-repeat: no-repeat, no-repeat, no-repeat, no-repeat, repeat;
+ background-attachment: local, local, scroll, scroll, local; box-shadow: inset 0 0 0 3px #a86b35, inset 0 0 0 6px #e8ac59; }
+/* Carved frame stays still while the shelves move inside it. */
+.showcase-panel { overflow: hidden; max-height: min(780px, 80svh); }
+.showcase-panel > .panel-heading { flex-shrink: 0; position: relative; z-index: 1; box-shadow: inset 0 2px #ffe1a1, 0 3px 0 #75432644; }
+.showcase:focus-visible { outline: 2px solid #ffe3a0; outline-offset: -8px; }
+.showcase::-webkit-scrollbar { width: 10px; }
+.showcase::-webkit-scrollbar-track { background: #ecc68d; border-left: 2px solid #a86b35; }
+.showcase::-webkit-scrollbar-thumb { background: linear-gradient(90deg, #bd8245, #e9b666 45%, #ad7138); border: 2px solid #ecc68d; border-radius: 2px; }
+.showcase::-webkit-scrollbar-thumb:hover { background: #9b6130; }
+.showcase .product-grid { padding: 4px 3px 8px; }
+@media (prefers-reduced-motion: reduce) { .showcase { scroll-behavior: auto; } }
 .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 18px; }
 .product-card { position: relative; display: flex; flex-direction: column; background: #fff8e1; border: 3px solid #8a5838; box-shadow: inset 0 0 0 2px #f5c477, 3px 4px 0 #42291655; animation: product-in .5s cubic-bezier(.34, 1.56, .64, 1) backwards; transition: transform .2s cubic-bezier(.34, 1.56, .64, 1), box-shadow .15s steps(2); }
 .product-card:hover { transform: translateY(-4px); box-shadow: inset 0 0 0 2px #f5c477, 4px 8px 0 #42291655; }
@@ -61,11 +87,13 @@
 .piggy-coins { font-size: 34px; font-weight: 900; line-height: 1; color: #a86d1c; text-shadow: 2px 2px #ffe8a8; }
 .piggy-coins small { font-size: 13px; color: #765337; text-shadow: none; }
 .wish-box { padding: 12px; background: #ffe3ea66; border: 2px dashed #e8789f; }
+.wish-list { max-height: 216px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #a47545 #f6dfa6; }
+.wish-entry { padding: 8px 0; border-bottom: 1px dashed #e8789f; }
+.wish-entry:last-child { padding-bottom: 0; border: 0; }
 .wish-item { display: flex; align-items: center; gap: 10px; margin-top: 6px; font-size: 14px; }
 .wish-icon { width: 34px; height: 34px; flex-shrink: 0; }
 .wish-meta { margin-top: 4px; font-size: 11px; font-weight: bold; color: #8a6136; }
 .wish-empty { font-size: 12px; font-style: italic; color: #8a6136; }
-.earn-button { align-self: flex-start; }
 
 /* --- Baú --- */
 .chest-body { display: flex; flex-direction: column; align-items: stretch; gap: 12px; padding: 16px; }
@@ -194,3 +222,17 @@
 /* No hover o brilho fica fixo: pausa a piscada (o Bigode continua respirando) */
 .shop-cat.is-clickable:hover { animation: cat-breathe 2.8s ease-in-out infinite; }
 .npc-clickable:hover { animation: none; }
+
+/* Edição integrada à prateleira, sem interferir em Comprar ou no coração. */
+.product-card { cursor: pointer; }
+.product-edit-trigger { position: absolute; inset: 0; z-index: 3; cursor: pointer; background: transparent; border: 0; }
+.product-edit-trigger span { position: absolute; bottom: 7px; left: 50%; transform: translate(-50%, 4px); opacity: 0; white-space: nowrap; padding: 3px 8px; font-size: 10px; font-weight: 900; color: #57311f; background: #fff1e0; border: 2px solid #a86b35; transition: opacity .18s, transform .18s; }
+.product-card:hover .product-edit-trigger span, .product-edit-trigger:focus-visible span { opacity: 1; transform: translate(-50%, 0); }
+.product-edit-trigger:focus-visible { outline: 3px solid #3f6b35; outline-offset: -6px; }
+.reward-editor-preview { display: flex; align-items: center; gap: 14px; padding: 12px; border: 2px solid #c49a62; background: #fff8e1; box-shadow: inset 0 2px #fffdf2; }
+.reward-editor-icon { width: 48px; height: 48px; flex-shrink: 0; }
+.reward-editor-preview strong { display: block; font-size: 14px; overflow-wrap: anywhere; }
+.reward-editor-preview p { margin-top: 4px; font-size: 11px; color: #765337; }
+.reward-editor-delete, .reward-editor-confirm { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 12px; background: #f7dfc5; border: 2px dashed #bd7f58; }
+.reward-editor-delete p, .reward-editor-confirm p { flex: 1 1 180px; font-size: 11px; line-height: 1.6; color: #765337; }
+@media (hover: none) { .product-edit-trigger span { opacity: 1; transform: translate(-50%, 0); } }

@@ -5,15 +5,14 @@ import { GamePanel } from './GamePanel';
 import { PixelIcon } from './PixelIcon';
 import { ProgressBar } from './ProgressBar';
 
-/** Metas da Casa: só as pendentes de hoje (até 3) */
+/** Metas da Casa: todas as pendentes de hoje, com rolagem na lista */
 export function GoalsPanel({ goals, log, today, onCheck, onOpen }: { goals: TrackedGoal[]; log: GoalLog; today: Date; onCheck: (goal: TrackedGoal, element: Element) => void; onOpen: () => void }) {
   const pending = goals.filter(goal => isScheduled(goal, today) && !isHarvested(goal, log, today));
-  const shown = pending.slice(0, 3);
-  const listRef = useFlipList<HTMLUListElement>(shown.map(goal => goal.id).join());
+  const listRef = useFlipList<HTMLUListElement>(pending.map(goal => goal.id).join());
   return <GamePanel id="goals" title="Metas" icon="leaf" onOpen={onOpen}>
     {goals.length === 0 && <p className="panel-empty">Nenhuma meta plantada ainda. Toque na semente <strong>+</strong> para plantar.</p>}
     {goals.length > 0 && pending.length === 0 && <p className="panel-empty is-happy">🌻 Tudo colhido por hoje!</p>}
-    <ul ref={listRef} className="panel-list home-goal-list">{shown.map(goal => {
+    <ul ref={listRef} className="panel-list home-goal-list">{pending.map(goal => {
       const progress = progressFor(goal, log, today);
       const quantity = goal.measure.kind === 'quantity' ? goal.measure : null;
       return <li key={goal.id} data-flip-id={goal.id} className="goal-row home-goal-row"><div className="flex items-start gap-2.5">

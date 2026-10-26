@@ -8,15 +8,16 @@ import { ItemIcon } from './ItemIcon';
 
 interface ProductCardProps {
   reward: Reward; coins: number; index: number; wished: boolean; buying: boolean; pending: boolean;
-  onBuy: () => void; onWish: () => void; onHide?: () => void;
+  onBuy: () => void; onWish: () => void; onEdit: () => void;
 }
 
 /** Produto na prateleira: etiqueta de preço balançando, item no pedestal e animação de "vai pra sacolinha" ao comprar */
-export function ProductCard({ reward, coins, index, wished, buying, pending, onBuy, onWish, onHide }: ProductCardProps) {
+export function ProductCard({ reward, coins, index, wished, buying, pending, onBuy, onWish, onEdit }: ProductCardProps) {
   const affordable = coins >= reward.price;
   const noop = useCallback(() => {}, []);
-  return <li className={`product-card ${affordable ? 'is-affordable' : ''} ${buying ? 'is-buying' : ''}`} style={{ animationDelay: `${index * 60}ms` } as CSSProperties}>
+  return <li className={`product-card ${affordable ? 'is-affordable' : ''} ${buying ? 'is-buying' : ''}`} onClick={event => { if (!(event.target as HTMLElement).closest('button')) onEdit(); }} style={{ animationDelay: `${index * 60}ms` } as CSSProperties}>
     <div className="product-display">
+      <button type="button" className="product-edit-trigger" onClick={onEdit} disabled={pending || buying} aria-label={`Editar ${reward.name}`}><span>Editar recompensa</span></button>
       <span className="price-tag" style={{ animationDelay: `${-index * 0.4}s` }}><PixelIcon name="coin" className="size-3"/>{reward.price}</span>
       {!reward.fixed && <span className="product-badge">Sua</span>}
       <span className="product-item"><ItemIcon kind={itemKindFor(reward.name)} className="size-full"/></span>
@@ -33,7 +34,7 @@ export function ProductCard({ reward, coins, index, wished, buying, pending, onB
       <div className="product-actions">
         <button type="button" className="pixel-button primary-button" disabled={!affordable || pending || buying} onClick={onBuy}>{buying ? 'Comprado!' : 'Comprar'}</button>
         <button type="button" className={`wish-button ${wished ? 'is-wished' : ''}`} aria-pressed={wished} onClick={onWish} aria-label={wished ? `Deixar de desejar ${reward.name}` : `Juntar moedas para ${reward.name}`} title="Juntar moedas para este">♥</button>
-        {onHide && <button type="button" className="plot-remove" disabled={pending} onClick={onHide} aria-label={`Tirar ${reward.name} da vitrine`}><PixelIcon name="close" className="size-2.5"/></button>}
+
       </div>
     </div>
   </li>;

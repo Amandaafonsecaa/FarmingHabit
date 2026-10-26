@@ -5,8 +5,8 @@ import { PixelIcon } from '../PixelIcon';
 import { ProgressBar } from '../ProgressBar';
 import { ItemIcon } from './ItemIcon';
 
-/** Cofrinho: saldo, porquinho que chacoalha ao gastar e o item que você está juntando moedas para comprar */
-export function PiggyPanel({ coins, wish, shakeKey, onEarn }: { coins: number; wish: Reward | null; shakeKey: number; onEarn: () => void }) {
+/** Cofrinho: saldo, porquinho que chacoalha ao gastar e os itens que você está juntando moedas para comprar */
+export function PiggyPanel({ coins, wishes, shakeKey }: { coins: number; wishes: Reward[]; shakeKey: number }) {
   const shown = useRollingNumber(coins);
   return <section className="world-panel pixel-frame piggy-panel" aria-labelledby="piggy-heading">
     <header className="panel-heading"><h2 id="piggy-heading"><PixelIcon name="coin" className="size-5"/>Cofrinho</h2></header>
@@ -18,15 +18,16 @@ export function PiggyPanel({ coins, wish, shakeKey, onEarn }: { coins: number; w
         </svg>
         <div><p className="piggy-label">Você tem</p><p className="piggy-coins" aria-live="polite">{shown}<small> moedas</small></p></div>
       </div>
-      {wish
+      {wishes.length > 0
         ? <div className="wish-box">
             <p className="piggy-label">♥ Juntando para</p>
-            <div className="wish-item"><span className="wish-icon"><ItemIcon kind={itemKindFor(wish.name)} className="size-full"/></span><strong>{wish.name}</strong></div>
-            <ProgressBar value={Math.min(100, coins / wish.price * 100)} label={`Progresso para ${wish.name}`} className="mt-2 h-3"/>
-            <p className="wish-meta">{coins >= wish.price ? 'Já dá para comprar! 🎉' : `${coins}/${wish.price} · faltam ${wish.price - coins}`}</p>
+            <ul className="wish-list">{wishes.map(wish => <li key={wish.id} className="wish-entry">
+              <div className="wish-item"><span className="wish-icon"><ItemIcon kind={itemKindFor(wish.name)} className="size-full"/></span><strong>{wish.name}</strong></div>
+              <ProgressBar value={Math.min(100, coins / wish.price * 100)} label={`Progresso para ${wish.name}`} className="mt-2 h-3"/>
+              <p className="wish-meta">{coins >= wish.price ? 'Já dá para comprar! 🎉' : `${coins}/${wish.price} · faltam ${wish.price - coins}`}</p>
+            </li>)}</ul>
           </div>
         : <p className="wish-empty">Toque no ♥ de um produto para juntar moedas para ele.</p>}
-      <button type="button" className="pixel-button earn-button" onClick={onEarn}><PixelIcon name="mission" className="size-3"/>Ganhar moedas: metas e missões</button>
     </div>
   </section>;
 }

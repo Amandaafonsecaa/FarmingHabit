@@ -17,7 +17,7 @@ import type { NewTrackedGoal, TrackedGoal } from '../types/goals';
 import type { ItemKind, Mission, NewItem, Reward } from '../types/world';
 import { MainLayout } from '../layouts/MainLayout';
 import { recordAdventure } from '../lib/diary';
-import { DEFAULT_REWARDS, WISH_KEY, recordPurchase } from '../lib/shop';
+import { readWishes } from '../lib/shop';
 import { flyCoins } from '../lib/coinFlight';
 import { PLAYER_EVENT, claimHarvest, creditPlayer, releaseHarvest, rewardLabel } from '../lib/harvestRewards';
 import type { Player } from '../services/api';
@@ -47,9 +47,9 @@ export function HomePage({ onNavigate }: { onNavigate: (page: AppPage) => void }
   const [confirming, setConfirming] = useState<Reward | null>(null);
   const [perfectDate, setPerfectDate] = useState(() => { try { return localStorage.getItem(PERFECT_KEY); } catch { return null; } });
   const [celebrating, setCelebrating] = useState(false);
-  const [wishId] = useState(() => { try { return localStorage.getItem(WISH_KEY); } catch { return null; } });
+  const [wishId] = useState(() => readWishes()[0] ?? null);
   const coins = player?.coins ?? 0;
-  const catalog = [...DEFAULT_REWARDS, ...rewards];
+  const catalog = rewards;
 
   // Horta: um canteiro por meta que cobra hoje (semanais já batidas na semana ficam de fora)
   const dueToday = goals.filter(goal => goal.frequency.kind === 'weekly'
@@ -158,13 +158,12 @@ export function HomePage({ onNavigate }: { onNavigate: (page: AppPage) => void }
     if (reward && player && coins >= reward.price) setConfirming(reward);
   }
 
-  // Vitrine fixa desconta direto no jogador; recompensas personalizadas usam o resgate do backend
+  // Todas as compras passam pela mesma transação no backend.
   async function purchase(reward: Reward): Promise<boolean> {
     if (!player) return false;
     try {
-      if (reward.fixed) setPlayer(await creditPlayer(-reward.price, 0));
-      else { const { remainingCoins } = await claimReward(reward.id, player.id); setPlayer(current => current && { ...current, coins: remainingCoins }); }
-      recordPurchase(reward.id, reward.name, reward.price);
+      const { remainingCoins } = await claimReward(reward.id, player.id);
+      setPlayer(current => current && { ...current, coins: remainingCoins });
       setAnnouncement(`${reward.name} foi para suas compras! Aproveite.`);
       setConfirming(null);
       return true;

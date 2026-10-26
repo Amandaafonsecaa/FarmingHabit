@@ -1,9 +1,10 @@
+import { CoinHud } from '../home/CoinHud';
 import { PixelIcon } from '../PixelIcon';
 
 const JARS: [number, number, string][] = [[70, 150, '#ee6996'], [96, 150, '#f2c453'], [122, 150, '#72ad32'], [148, 150, '#5fa8d3'], [70, 194, '#e8954a'], [96, 194, '#9b7fd4'], [122, 194, '#f2c453'], [148, 194, '#bf5837']];
 
 /** Interior do armazém: placa balançando, sininho, prateleiras, caixa registradora e o gato Bigode no balcão */
-export function ShopHero({ coins, items, bought, onCreate, onTalk }: { coins: number | null; items: number; bought: number; onCreate: () => void; onTalk: () => void }) {
+export function ShopHero({ coins, onCreate, onTalk }: { coins: number | null; onCreate: () => void; onTalk: () => void }) {
   return <section className="shop-hero" aria-labelledby="shop-title">
     <svg className="shop-scene" viewBox="0 0 1000 320" preserveAspectRatio="xMidYMin slice" shapeRendering="crispEdges" aria-hidden="true">
       {/* Papel de parede listrado, lambri e piso xadrez */}
@@ -61,11 +62,7 @@ export function ShopHero({ coins, items, bought, onCreate, onTalk }: { coins: nu
         <p className="missions-motto">Quer algo específico? Crie o seu mimo!</p>
         <button type="button" className="pixel-button primary-button" onClick={onCreate}><PixelIcon name="plus" className="size-2.5"/>Nova recompensa</button>
       </div>
-      <dl className="goals-stats">
-        <div className="hero-stat pixel-frame"><dt><span className="spin-coin"><PixelIcon name="coin" className="size-3"/></span>Moedas</dt><dd>{coins ?? '–'}</dd></div>
-        <div className="hero-stat pixel-frame"><dt>Na vitrine</dt><dd>{items}</dd></div>
-        <div className="hero-stat pixel-frame"><dt>Compras</dt><dd>{bought}</dd></div>
-      </dl>
+      <CoinHud coins={coins} className="shop-coin-hud"/>
     </div>
   </section>;
 }

@@ -1,11 +1,15 @@
 import type { Mission, Reward } from '../types/world';
+import type { Purchase } from '../lib/shop';
+import { toKey } from '../lib/goalLogic';
 
 const API_URL = (import.meta.env.VITE_API_URL ?? 'http://localhost:3000').replace(/\/+$/, '');
 const USER_ID = import.meta.env.VITE_USER_ID || undefined;
 
 export interface Player { id: string; name: string; level: number; xp: number; coins: number; email?: string; createdAt?: string }
 interface ApiMission { id: string; title: string; description: string; xpReward: number; coinsReward: number; completed: boolean; userId: string | null }
-interface ApiReward { id: string; title: string; price: number; available: boolean; userId: string | null }
+interface ApiReward { id: string; title: string; description: string | null; key: string | null; price: number; available: boolean; userId: string | null }
+interface ApiPurchase { id: string; rewardId: string | null; title: string; price: number; createdAt: string; used: boolean; usedAt: string | null }
+const toPurchase = (item: ApiPurchase): Purchase => ({ id: item.id, rewardId: item.rewardId ?? '', title: item.title, price: item.price, date: toKey(new Date(item.createdAt)), used: item.used, usedAt: item.usedAt });
 type PlayerStats = Pick<Player, 'id' | 'level' | 'xp' | 'coins'>;
 export interface NewMission { title: string; description: string; xp: number; coins: number }
 
@@ -90,7 +94,7 @@ export async function deleteMission(id: string): Promise<void> {
 
 // --- Recompensas ---
 
-const toReward = (reward: ApiReward): Reward => ({ id: reward.id, name: reward.title, price: reward.price, icon: 'book' });
+const toReward = (reward: ApiReward): Reward => ({ id: reward.id, name: reward.title, description: reward.description ?? undefined, price: reward.price, icon: 'book', fixed: Boolean(reward.key) });
 
 export async function listRewards(userId: string): Promise<Reward[]> {
   return (await request<ApiReward[]>(`/rewards${userQuery(userId)}`)).filter(reward=>reward.available).map(toReward);
@@ -101,11 +105,26 @@ export async function createReward(userId: string, title: string, price: number)
 }
 
 /** Tira da vitrine (o backend não apaga recompensas, só marca como indisponível) */
-export async function hideReward(id: string): Promise<void> {
-  await request<ApiReward>(`/rewards/${id}`, { method: 'PATCH', body: JSON.stringify({ available: false }) });
+export async function hideReward(id: string, userId: string): Promise<void> {
+  await request<ApiReward>(`/rewards/${id}`, { method: 'PATCH', body: JSON.stringify({ available: false, userId }) });
 }
 
-export async function claimReward(id: string, userId: string): Promise<{ remainingCoins: number }> {
-  const result = await request<{ user: { remainingCoins: number } }>(`/rewards/${id}/claim${userQuery(userId)}`, { method: 'POST' });
-  return result.user;
+export async function claimReward(id: string, userId: string): Promise<{ remainingCoins: number; purchase: Purchase }> {
+  const result = await request<{ user: { remainingCoins: number }; purchase: ApiPurchase }>(`/rewards/${encodeURIComponent(id)}/claim${userQuery(userId)}`, { method: 'POST' });
+  return { ...result.user, purchase: toPurchase(result.purchase) };
+}
+
+export async function listPurchases(userId: string): Promise<Purchase[]> {
+  return (await request<ApiPurchase[]>(`/purchases${userQuery(userId)}`)).map(toPurchase);
+}
+
+export async function setPurchaseUsed(id: string, userId: string, used: boolean): Promise<Purchase> {
+  return toPurchase(await request<ApiPurchase>(`/purchases/${id}${userQuery(userId)}`, { method: 'PATCH', body: JSON.stringify({ used }) }));
+}
+
+export async function updateReward(id: string, userId: string, changes: { title: string; price: number; description: string }): Promise<Reward> {
+  return toReward(await request<ApiReward>(`/rewards/${id}`, { method: 'PATCH', body: JSON.stringify({ ...changes, userId }) }));
+}
+export async function deleteReward(id: string, userId: string): Promise<void> {
+  await request<void>(`/rewards/${id}${userQuery(userId)}`, { method: 'DELETE' });
 }
