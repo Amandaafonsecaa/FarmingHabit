@@ -48,6 +48,8 @@ model Mission {
   xpReward    Int
   coinsReward Int
   completed   Boolean  @default(false)
+  /// Quando foi cumprida (preenchido ao cumprir, apagado ao desfazer); usado nas métricas semanais da Evolução
+  completedAt DateTime?
   userId      String?
   user        User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt   DateTime @default(now())
@@ -105,12 +107,13 @@ model RewardOverride {
 }
 
 /// Motivação principal do jogador (frase do quadro-negro e foto do porta-retrato na Evolução).
-/// Fica numa tabela própria para a foto não vir junto toda vez que o usuário é carregado.
+/// A foto fica no Supabase Storage (bucket privado "motivation-photos"); aqui guardamos só o caminho dela.
 model Motivation {
   userId    String   @id
   text      String   @default("")
-  /// Foto reduzida no navegador, guardada como data URL (JPEG)
-  photo     String?
+  /// Caminho do arquivo no bucket, sempre dentro da pasta do usuário: "<userId>/<arquivo>.jpg"
+  photoPath String?
+  createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   @@map("motivations")

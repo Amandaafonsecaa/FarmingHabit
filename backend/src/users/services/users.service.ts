@@ -8,10 +8,15 @@ import { UpdateUserDto } from '../dto/update-user.dto';
 import { UpdateMotivationDto } from '../dto/update-motivation.dto';
 import { PrismaService } from '../../prisma/prisma.service';
 import { Motivation, User } from '@prisma/client';
+import { randomUUID } from 'node:crypto';
+import { SupabaseStorageService } from '../../storage/supabase-storage.service';
+
+const MOTIVATION_BUCKET = 'motivation-photos';
+export interface MotivationView { text: string; photoUrl: string | null; createdAt: Date | null; updatedAt: Date | null }
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService, private readonly storage: SupabaseStorageService) {}
 
   async create(createUserDto: CreateUserDto): Promise<User> {
     return this.prisma.user.create({
@@ -70,24 +75,44 @@ export class UsersService {
     });
   }
 
-  /** Motivação do jogador; quem ainda não escreveu recebe uma vazia */
-  async getMotivation(userId: string): Promise<Pick<Motivation, 'text' | 'photo'>> {
+  /** Motivação do jogador (a foto vem como link temporário do bucket privado); quem ainda não escreveu recebe uma vazia */
+  async getMotivation(userId: string): Promise<MotivationView> {
     await this.findOne(userId);
     const motivation = await this.prisma.motivation.findUnique({ where: { userId } });
-    return { text: motivation?.text ?? '', photo: motivation?.photo ?? null };
+    return this.toView(motivation);
   }
 
-  /** Salva a frase e a foto (photo: null remove a foto; ausente mantém a atual) */
-  async saveMotivation(userId: string, dto: UpdateMotivationDto): Promise<Pick<Motivation, 'text' | 'photo'>> {
+  /** Salva a frase e a foto (photo: data URL troca a foto, null remove, ausente mantém a atual) */
+  async saveMotivation(userId: string, dto: UpdateMotivationDto): Promise<MotivationView> {
     await this.findOne(userId);
+    const current = await this.prisma.motivation.findUnique({ where: { userId } });
+    let photoPath: string | null | undefined;
+    if (dto.photo === null) photoPath = null;
+    else if (dto.photo) {
+      const [, mime, base64] = dto.photo.match(/^data:(image\/(?:jpeg|png|webp));base64,(.+)$/) ?? [];
+      if (!mime) throw new BadRequestException('A foto deve ser uma imagem JPEG, PNG ou WebP.');
+      // Sempre dentro da pasta do usuário: é o que as regras do bucket conferem
+      photoPath = `${userId}/${randomUUID()}.${mime.split('/')[1].replace('jpeg', 'jpg')}`;
+      await this.storage.upload(MOTIVATION_BUCKET, photoPath, Buffer.from(base64, 'base64'), mime);
+    }
     const text = dto.text.trim();
-    const photo = dto.photo === undefined ? undefined : dto.photo;
     const saved = await this.prisma.motivation.upsert({
       where: { userId },
-      create: { userId, text, photo: photo ?? null },
-      update: { text, ...(photo !== undefined && { photo }) },
+      create: { userId, text, photoPath: photoPath ?? null },
+      update: { text, ...(photoPath !== undefined && { photoPath }) },
     });
-    return { text: saved.text, photo: saved.photo };
+    // A foto antiga só sai do bucket depois que a nova já está salva
+    if (photoPath !== undefined && current?.photoPath && current.photoPath !== photoPath) await this.storage.remove(MOTIVATION_BUCKET, [current.photoPath]);
+    return this.toView(saved);
+  }
+
+  private async toView(motivation: Motivation | null): Promise<MotivationView> {
+    return {
+      text: motivation?.text ?? '',
+      photoUrl: motivation?.photoPath ? await this.storage.signedUrl(MOTIVATION_BUCKET, motivation.photoPath) : null,
+      createdAt: motivation?.createdAt ?? null,
+      updatedAt: motivation?.updatedAt ?? null,
+    };
   }
 
   /** Apaga tudo que o jogador criou ou conquistou, mas mantém a conta (nome e e-mail) */

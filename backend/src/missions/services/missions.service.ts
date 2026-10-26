@@ -77,6 +77,7 @@ export class MissionsService {
         }),
         ...(updateMissionDto.completed !== undefined && {
           completed: updateMissionDto.completed,
+          completedAt: updateMissionDto.completed ? new Date() : null,
         }),
       },
     });
@@ -103,6 +104,7 @@ export class MissionsService {
       where: { id },
       data: {
         completed: true,
+        completedAt: new Date(),
         userId: targetUserId,
       },
     });
@@ -140,7 +142,7 @@ export class MissionsService {
 
     const reopened = await this.prisma.mission.update({
       where: { id },
-      data: { completed: false },
+      data: { completed: false, completedAt: null },
     });
 
     const updatedUser = await this.usersService.revokeRewards(

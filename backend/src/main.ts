@@ -1,3 +1,5 @@
+// Carrega o .env (SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY...) antes de qualquer módulo ler process.env
+import 'dotenv/config';
 import { NestFactory } from '@nestjs/core';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import { ValidationPipe } from '@nestjs/common';
