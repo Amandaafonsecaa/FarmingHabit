@@ -13,7 +13,10 @@ export type GoalMeasure =
   | { kind: 'check' }
   | { kind: 'quantity'; target: number; unit: string; step: number };
 
-export interface TrackedGoal { id: string; title: string; icon: GoalIcon; frequency: GoalFrequency; measure: GoalMeasure; createdOn: string }
+/** Área da vida que a meta cuida (opcional; metas antigas não têm e contam como "sem categoria") */
+export type GoalArea = 'saude' | 'estudos' | 'corpo' | 'pessoal' | 'lazer' | 'nenhuma';
+
+export interface TrackedGoal { id: string; title: string; icon: GoalIcon; frequency: GoalFrequency; measure: GoalMeasure; area?: GoalArea; createdOn: string }
 export type NewTrackedGoal = Omit<TrackedGoal, 'id' | 'createdOn'>;
 
 /** Registro diário: data (AAAA-MM-DD) → id da meta → quantidade feita no dia */

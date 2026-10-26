@@ -132,7 +132,6 @@ export function GymHero({ level, xpInLevel, xpPerLevel, goals, log, coach }: { l
       <rect y="240" width="1000" height="80" fill="#3f4450"/>
       {Array.from({ length: 20 }, (_, i) => <rect key={i} x={i * 52} y="240" width="2" height="80" fill="#353a45"/>)}
       <rect y="276" width="1000" height="2" fill="#353a45"/><rect y="240" width="1000" height="3" fill="#2c2f36"/>
-      <rect x="380" y="282" width="240" height="30" fill="#5d6382"/><rect x="380" y="282" width="240" height="3" fill="#8a90b0"/>
 
       {/* Rack de halteres */}
       <g transform="translate(96 194)">

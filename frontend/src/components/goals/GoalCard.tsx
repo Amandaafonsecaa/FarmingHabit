@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useState, type MouseEvent } from 'react';
 import type { GoalLog, TrackedGoal } from '../../types/goals';
 import { WEEKDAY_NAMES, WEEK_ORDER, addDays, amountOn, dailyTarget, frequencyLabel, isDoneOn, isScheduled, nextScheduledName, progressFor, startOfWeek, streakFor, toKey, weekChecks } from '../../lib/goalLogic';
 import { PixelIcon } from '../PixelIcon';
@@ -10,6 +10,8 @@ import { HARVEST_REWARD, type HarvestReward } from '../../lib/harvestRewards';
 interface GoalCardProps {
   goal: TrackedGoal; log: GoalLog; today: Date;
   onSetAmount: (amount: number, origin?: Element) => HarvestReward | null; onRemove: () => void; onAnnounce: (message: string) => void;
+  /** Abre o modal de edição da meta */
+  onEdit: () => void;
 }
 
 /** Faixa seg–dom da semana atual: feito, falhou, hoje, agendado ou folga */
@@ -31,7 +33,9 @@ function WeekStrip({ goal, log, today }: { goal: TrackedGoal; log: GoalLog; toda
   </ol>;
 }
 
-export function GoalCard({ goal, log, today, onSetAmount, onRemove, onAnnounce }: GoalCardProps) {
+export function GoalCard({ goal, log, today, onSetAmount, onRemove, onAnnounce, onEdit }: GoalCardProps) {
+  // Clicar no card (fora dos botões) abre a edição
+  const editFromCard = (event: MouseEvent) => { if (!(event.target as Element).closest('button')) onEdit(); };
   const [burst, setBurst] = useState<Burst | null>(null);
   const clearBurst = useCallback(() => setBurst(null), []);
   const amount = amountOn(goal, log, toKey(today));
@@ -77,17 +81,17 @@ export function GoalCard({ goal, log, today, onSetAmount, onRemove, onAnnounce }
     : doneToday ? 'Colhido hoje' : 'Esperando a colheita de hoje';
 
   return <li data-flip-id={goal.id} className={`goal-plot ${doneToday || progress >= 100 ? 'is-harvested' : ''} ${!scheduledToday ? 'is-resting' : ''}`}>
-    <header className="goal-plot-header">
+    <header className="goal-plot-header is-editable" onClick={editFromCard}>
       <span className="item-icon"><PixelIcon name={goal.icon}/></span>
       <div className="min-w-0 flex-1">
-        <h3 className="item-title">{goal.title}</h3>
+        <h3 className="item-title"><button type="button" className="goal-edit-trigger" onClick={onEdit} aria-haspopup="dialog" aria-label={`Editar meta: ${goal.title}`}>{goal.title}</button></h3>
         <p className="goal-frequency">{frequencyLabel(goal)}{quantity && ` · ${quantity.target} ${quantity.unit}/dia`}</p>
       </div>
       {streak > 0 && <span className="streak-badge" title="Sequência atual"><PixelIcon name="flame" className="size-3"/>{streak}<span className="sr-only"> {weekly ? 'semanas' : 'dias'} seguidos</span><span aria-hidden="true">{weekly ? 'sem' : 'd'}</span></span>}
       <button type="button" className="plot-remove" onClick={onRemove} aria-label={`Arrancar a meta ${goal.title}`}><PixelIcon name="close" className="size-2.5"/></button>
     </header>
 
-    <div className="goal-plot-body">
+    <div className="goal-plot-body is-editable" onClick={editFromCard}>
       <PlantGrowth progress={progress} label={goal.title} blooming={burst?.kind === 'big'}/>
       <div className="min-w-0 flex-1">
         <div className="mb-1 flex justify-between gap-2 text-xs font-bold"><span>{status}</span><span>{progress}%</span></div>

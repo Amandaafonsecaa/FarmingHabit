@@ -174,6 +174,10 @@
 .day-picker { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; margin-top: 10px; }
 .day-toggle { min-height: 36px; padding: 0; border: 2px solid #8a5838; background: #f6e2b0; font: inherit; font-size: 11px; font-weight: bold; color: #5b3826; cursor: pointer; }
 .day-toggle[aria-pressed="true"] { background: #72ad32; border-color: #3f6b35; color: #fff1c7; box-shadow: inset 1px 1px #c0e36b; }
+/* Área da meta: chips compactos de escolha única, no mesmo estilo dos dias da semana */
+.area-picker { display: flex; flex-wrap: wrap; gap: 6px; }
+.area-chip { min-height: 32px; padding: 0 10px; }
+.area-chip[aria-checked="true"] { background: #72ad32; border-color: #3f6b35; color: #fff1c7; box-shadow: inset 1px 1px #c0e36b; }
 
 /* --- Animações --- */
 @keyframes sprout-pop { from { transform: scale(.2, 0); opacity: 0; } 60% { opacity: 1; } }
@@ -326,3 +330,9 @@
 @keyframes flame-dance { from { transform: scale(1, 1); } to { transform: scale(.94, 1.06); } }
 
 @media (max-width: 767px) { .planted-sign { width: 100%; } }
+
+/* Clicar na meta abre a edição: o nome continua com a mesma cara, só ganha cursor e sublinhado no hover */
+.goal-edit-trigger { padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; overflow-wrap: anywhere; }
+.goal-edit-trigger:hover { text-decoration: underline 2px #d2ac71; text-underline-offset: 3px; }
+.goal-edit-trigger:focus-visible { outline: 2px dashed #3f6b35; outline-offset: 2px; }
+.goal-plot .is-editable { cursor: pointer; }

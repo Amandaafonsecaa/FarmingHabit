@@ -27,10 +27,12 @@ function GoalsVine({ progress }: { progress: number }) {
 }
 
 export function GoalsPage({ onNavigate }: { onNavigate: (page: AppPage) => void }) {
-  const { goals, log, setAmount, addGoal, removeGoal } = useGoalTracker();
+  const { goals, log, setAmount, addGoal, updateGoal, removeGoal } = useGoalTracker();
   const today = useToday();
   const [view, setView] = useState<'today' | 'all'>('today');
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const editing = goals.find(goal => goal.id === editingId);
   // Avisos de ação aparecem como toast
   const setAnnouncement = toast;
   // A lista de metas rola por dentro do quadro; a trepadeira cresce com essa rolagem (cheia se não houver o que rolar)
@@ -93,12 +95,14 @@ export function GoalsPage({ onNavigate }: { onNavigate: (page: AppPage) => void 
             ? <div className="goals-empty"><p className="item-title">{goals.length ? 'Nenhuma meta cobra hoje. Dia de descanso no sítio!' : 'Nenhuma meta ainda.'}</p>
                 {!goals.length && <button type="button" className="pixel-button primary-button mt-3" onClick={()=>setDialogOpen(true)}><PixelIcon name="plus" className="size-2.5"/>Criar a primeira meta</button>}</div>
             : <ul ref={plotsRef} className="goal-plots">{shown.map(goal => <GoalCard key={goal.id} goal={goal} log={log} today={today}
-                onSetAmount={(amount, origin)=>updateAmount(goal, amount, origin)} onRemove={()=>uproot(goal.id, goal.title)} onAnnounce={setAnnouncement}/>)}</ul>}
+                onSetAmount={(amount, origin)=>updateAmount(goal, amount, origin)} onRemove={()=>uproot(goal.id, goal.title)} onAnnounce={setAnnouncement} onEdit={()=>setEditingId(goal.id)}/>)}</ul>}
         </div>
       </section>
       <div className="goals-side"><ConsistencyCalendar goals={goals} log={log} today={today}/></div>
     </div>
     <p role="status" className="world-status">{'Toda semente precisa de tempo. Volte amanhã para regar.'}</p>
     {dialogOpen && <NewGoalDialog onSave={plant} onClose={()=>setDialogOpen(false)}/>}
+    {editing && <NewGoalDialog key={editing.id} goal={editing} onClose={()=>setEditingId(null)}
+      onSave={changes=>{ updateGoal(editing.id, changes); setEditingId(null); setAnnouncement(`${changes.title}: meta atualizada!`); }}/>}
   </MainLayout>;
 }

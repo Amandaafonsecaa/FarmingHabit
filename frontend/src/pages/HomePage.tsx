@@ -31,7 +31,9 @@ const errorMessage = (error: unknown) => error instanceof Error ? error.message 
 export function HomePage({ onNavigate }: { onNavigate: (page: AppPage) => void }) {
   const [player, setPlayer] = useState<Player | null>(null);
   // Metas vêm do mesmo lugar que a aba Metas, para as duas telas mostrarem a mesma coisa
-  const { goals, log, setAmount, addGoal } = useGoalTracker();
+  const { goals, log, setAmount, addGoal, updateGoal } = useGoalTracker();
+  const [editingGoalId, setEditingGoalId] = useState<string | null>(null);
+  const editingGoal = goals.find(goal => goal.id === editingGoalId);
   const today = useToday();
   const todayKey = toKey(today);
   const { accepted, abandon } = useAcceptedMissions();
@@ -191,13 +193,15 @@ export function HomePage({ onNavigate }: { onNavigate: (page: AppPage) => void }
   return <MainLayout page="home" onNavigate={onNavigate} world={<GameWorld player={player} coins={player ? coins : null} today={today} plots={plots}
     onHarvest={harvestFromGarden} poppedId={poppedId} perfectDay={perfectDate === todayKey} celebrating={celebrating}/>}>
     <div className="functional-panel">
-      <GoalsPanel goals={goals} log={log} today={today} onCheck={(goal, origin)=>harvest(goal, origin)} onOpen={()=>onNavigate('goals')}/>
+      <GoalsPanel goals={goals} log={log} today={today} onCheck={(goal, origin)=>harvest(goal, origin)} onOpen={()=>onNavigate('goals')} onEdit={goal=>setEditingGoalId(goal.id)}/>
       <MissionsPanel missions={missions} accepted={accepted} loading={loading} error={loadError} pendingId={pendingId} onComplete={completeFromHome} onOpen={()=>onNavigate('missions')}/>
       <CoinsPanel coins={coins} rewards={catalog} wishId={wishId} onBuy={buyReward} onOpen={()=>onNavigate('shop')}/>
     </div>
     <p role="status" className="world-status">{loadError || 'Toque nas plantinhas da horta para colher as metas de hoje.'}</p>
     <SeedFab onPick={setDialogKind}/>
     {dialogKind === 'goal' && <NewGoalDialog onSave={plantGoal} onClose={()=>setDialogKind(null)}/>}
+    {editingGoal && <NewGoalDialog key={editingGoal.id} goal={editingGoal} onClose={()=>setEditingGoalId(null)}
+      onSave={changes=>{ updateGoal(editingGoal.id, changes); setEditingGoalId(null); setAnnouncement(`${changes.title}: meta atualizada!`); }}/>}
     {dialogKind === 'mission' && <MissionDialog onSave={addItem} onClose={()=>setDialogKind(null)}/>}
     {dialogKind === 'reward' && <RewardDialog onSave={addItem} onClose={()=>setDialogKind(null)}/>}
     {confirming && <ConfirmPurchaseDialog reward={confirming} coins={coins} onConfirm={()=>purchase(confirming)} onClose={()=>setConfirming(null)}/>}

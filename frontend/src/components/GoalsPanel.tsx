@@ -6,7 +6,7 @@ import { PixelIcon } from './PixelIcon';
 import { ProgressBar } from './ProgressBar';
 
 /** Metas da Casa: todas as pendentes de hoje, com rolagem na lista */
-export function GoalsPanel({ goals, log, today, onCheck, onOpen }: { goals: TrackedGoal[]; log: GoalLog; today: Date; onCheck: (goal: TrackedGoal, element: Element) => void; onOpen: () => void }) {
+export function GoalsPanel({ goals, log, today, onCheck, onOpen, onEdit }: { goals: TrackedGoal[]; log: GoalLog; today: Date; onCheck: (goal: TrackedGoal, element: Element) => void; onOpen: () => void; onEdit: (goal: TrackedGoal) => void }) {
   const pending = goals.filter(goal => isScheduled(goal, today) && !isHarvested(goal, log, today));
   const listRef = useFlipList<HTMLUListElement>(pending.map(goal => goal.id).join());
   return <GamePanel id="goals" title="Metas" icon="leaf" onOpen={onOpen}>
@@ -18,7 +18,7 @@ export function GoalsPanel({ goals, log, today, onCheck, onOpen }: { goals: Trac
       return <li key={goal.id} data-flip-id={goal.id} className="goal-row home-goal-row"><div className="flex items-start gap-2.5">
         <span className="item-icon"><PixelIcon name={goal.icon}/></span>
         <div className="min-w-0 flex-1">
-          <h3 className="item-title">{goal.title}</h3>
+          <h3 className="item-title"><button type="button" className="goal-edit-trigger" onClick={()=>onEdit(goal)} aria-haspopup="dialog" aria-label={`Editar meta: ${goal.title}`}>{goal.title}</button></h3>
           <p className="item-description">{frequencyLabel(goal)}{quantity && ` · ${amountOn(goal, log, toKey(today))}/${dailyTarget(goal)} ${quantity.unit}`}</p>
           <ProgressBar value={progress} label={`Progresso: ${goal.title}`} className="mt-2 h-2.5"/>
         </div>

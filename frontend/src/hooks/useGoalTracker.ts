@@ -69,6 +69,11 @@ export function useGoalTracker() {
     return created;
   }
 
+  /** Edita a meta (nome, semente, ritmo, medida e área); id, data de plantio e histórico continuam */
+  function updateGoal(goalId: string, changes: NewTrackedGoal) {
+    setState(current => ({ ...current, goals: current.goals.map(goal => goal.id === goalId ? { ...goal, ...changes } : goal) }));
+  }
+
   function removeGoal(goalId: string) {
     setState(current => ({
       goals: current.goals.filter(goal => goal.id !== goalId),
@@ -79,5 +84,5 @@ export function useGoalTracker() {
     }));
   }
 
-  return { goals: state.goals, log: state.log, setAmount, addGoal, removeGoal };
+  return { goals: state.goals, log: state.log, setAmount, addGoal, updateGoal, removeGoal };
 }
