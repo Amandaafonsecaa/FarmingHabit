@@ -336,11 +336,6 @@
 .streak-day.is-kept .streak-day-dot { background: #f2a33a; border-color: #a8432a; box-shadow: inset 2px 2px #ffe38b; animation: pip-fill .35s cubic-bezier(.34, 1.56, .64, 1) backwards; }
 .streak-day.is-today .streak-day-dot { border-style: dashed; border-color: #e8762f; background: #fff1c7; }
 .streak-day.is-future { opacity: .45; }
-.streak-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 12px 0 0; }
-.streak-stats div { padding: 6px 10px; background: #f6e2b0; border: 2px solid #c49a62; }
-.streak-stats dt { font-size: 10px; font-weight: 900; letter-spacing: 1px; text-transform: uppercase; color: #7a4a26; }
-.streak-stats dd { margin: 2px 0 0; font-size: 20px; font-weight: 900; color: #3b2418; }
-.streak-stats dd small { font-size: 11px; color: #765337; }
 @keyframes flame-dance { from { transform: scale(1, 1); } to { transform: scale(.94, 1.06); } }
 
 @media (max-width: 767px) { .planted-sign { width: 100%; } }

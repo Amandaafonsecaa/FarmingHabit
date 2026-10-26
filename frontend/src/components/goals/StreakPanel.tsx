@@ -1,5 +1,5 @@
 import type { GoalLog, TrackedGoal } from '../../types/goals';
-import { WEEKDAY_NAMES, WEEK_ORDER, addDays, harvestsBetween, startOfWeek, streakFor, toKey, todayStats, weekProgressFor } from '../../lib/goalLogic';
+import { WEEKDAY_NAMES, WEEK_ORDER, addDays, harvestsBetween, startOfWeek, streakFor, toKey } from '../../lib/goalLogic';
 
 const MILESTONES = [3, 7, 14, 30, 60, 100];
 
@@ -12,14 +12,9 @@ function StreakFlame({ lit }: { lit: boolean }) {
   </svg>;
 }
 
-/**
- * Sequência no estilo Duolingo: chama grande com os dias seguidos, a semana com os dias "acesos"
- * e, menores, as colhidas de hoje e o progresso da semana.
- */
+/** Sequência no estilo Duolingo: chama grande com os dias seguidos e a semana com os dias "acesos" */
 export function StreakPanel({ goals, log, today }: { goals: TrackedGoal[]; log: GoalLog; today: Date }) {
-  const { due, done } = todayStats(goals, log, today);
   const streak = goals.reduce((best, goal) => Math.max(best, goal.frequency.kind === 'weekly' ? 0 : streakFor(goal, log, today)), 0);
-  const weekPercent = goals.length ? Math.round(goals.reduce((sum, goal) => sum + weekProgressFor(goal, log, today), 0) / goals.length) : 0;
   const litToday = harvestsBetween(goals, log, today, today) > 0;
   const nextMilestone = MILESTONES.find(value => value > streak);
   const monday = startOfWeek(today);
@@ -49,9 +44,5 @@ export function StreakPanel({ goals, log, today }: { goals: TrackedGoal[]; log: 
         </li>;
       })}
     </ol>
-    <dl className="streak-stats">
-      <div><dt>Colhidas hoje</dt><dd>{done}<small>/{due}</small></dd></div>
-      <div><dt>Semana</dt><dd>{weekPercent}<small>%</small></dd></div>
-    </dl>
   </section>;
 }

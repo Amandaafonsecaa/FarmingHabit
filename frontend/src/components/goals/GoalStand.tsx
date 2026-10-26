@@ -1,16 +1,12 @@
 import { useState, type KeyboardEvent } from 'react';
-import type { GoalIcon, GoalLog, TrackedGoal } from '../../types/goals';
+import type { GoalLog, TrackedGoal } from '../../types/goals';
 import type { AvatarConfig } from '../../lib/avatar';
 import { progressFor, isDoneOn } from '../../lib/goalLogic';
+import { goalColor } from '../../lib/goalColors';
 import { FarmHouse } from '../FarmHouse';
 import { Tree } from '../WorldScenery';
 import { PixelAvatar } from '../PixelAvatar';
 
-// Cada tipo de meta vira uma verdura no caixote: [cor, brilho]
-const PRODUCE: Record<GoalIcon, [string, string]> = {
-  leaf: ['#72ad32', '#c0e36b'], book: ['#e8954a', '#ffc58a'], water: ['#5f86b8', '#a9c8ef'], flame: ['#df5438', '#ff9970'],
-  target: ['#e8762f', '#ffad6b'], sun: ['#f2c453', '#fff087'], coffee: ['#8a5838', '#c08a58'],
-};
 // Posições das verduras no caixote (de baixo para cima): enche conforme o progresso
 const HEAP: [number, number][] = [[5, -6], [15, -6], [25, -6], [35, -6], [10, -12], [20, -12], [30, -12], [20, -18]];
 const ITEM = 'M2 0h4v1h1v1h1v4h-1v1h-1v1H2V7H1V6H0V2h1V1h1Z';
@@ -83,7 +79,7 @@ export function GoalStand({ goals, log, today, onHarvest, onTalk }: GoalStandPro
     {crates.map((goal, index) => {
       const progress = progressFor(goal, log, today);
       const isDone = isDoneOn(goal, log, today);
-      const [color, light] = PRODUCE[goal.icon];
+      const [color, light] = goalColor(goal);
       return <g key={goal.id} transform={`translate(${crateX(index)} 196) scale(${CRATE_SCALE})`} className={`stand-crate ${isDone ? 'is-done' : ''}`} role="button" tabIndex={0} shapeRendering="crispEdges"
         aria-label={`${goal.title}: ${isDone ? 'colhida hoje' : `${progress}%. Colher`}`} onClick={event=>onHarvest(goal, event.currentTarget)} onKeyDown={event=>onKey(event, goal)}
         onMouseEnter={()=>setHovered(index)} onMouseLeave={()=>setHovered(null)} onFocus={()=>setHovered(index)} onBlur={()=>setHovered(null)}>
