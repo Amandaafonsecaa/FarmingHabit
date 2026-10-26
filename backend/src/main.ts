@@ -1,0 +1,44 @@
+import { NestFactory } from '@nestjs/core';
+import { ValidationPipe } from '@nestjs/common';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { AppModule } from './app.module';
+
+async function bootstrap() {
+  const app = await NestFactory.create(AppModule);
+
+  // Habilita CORS para conexão com o frontend
+  app.enableCors();
+
+  // Validação global com class-validator
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+    }),
+  );
+
+  // Configuração completa do Swagger
+  const swaggerConfig = new DocumentBuilder()
+    .setTitle('Gamified Habit Tracker API')
+    .setDescription(
+      'API REST para Habit Tracker gamificado com módulos de Usuários, Hábitos, Missões e Recompensas.',
+    )
+    .setVersion('1.0.0')
+    .addTag('users', 'Operações de usuários, perfis e progresso do jogador (Level, XP, Moedas)')
+    .addTag('habits', 'Gerenciamento de hábitos e acompanhamento percentual de progresso (0-100%)')
+    .addTag('missions', 'Desafios e missões com recompensas de XP e Moedas')
+    .addTag('rewards', 'Catálogo de itens e resgate de recompensas com moedas')
+    .addBearerAuth()
+    .build();
+
+  const document = SwaggerModule.createDocument(app, swaggerConfig);
+  SwaggerModule.setup('api', app, document);
+
+  const port = process.env.PORT ?? 3000;
+  await app.listen(port);
+  console.log(`🎮 Backend rodando em: http://localhost:${port}`);
+  console.log(`📚 Swagger disponível em: http://localhost:${port}/api`);
+}
+
+bootstrap();

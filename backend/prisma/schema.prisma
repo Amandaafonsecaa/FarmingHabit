@@ -1,0 +1,88 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id        String    @id @default(uuid())
+  name      String
+  email     String    @unique
+  level     Int       @default(1)
+  xp        Int       @default(0)
+  coins     Int       @default(0)
+  createdAt DateTime  @default(now())
+
+  habits    Habit[]
+  missions  Mission[]
+  rewards   Reward[]
+  purchases Purchase[]
+
+  @@map("users")
+}
+
+model Habit {
+  id        String   @id @default(uuid())
+  title     String
+  progress  Int      @default(0)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@map("habits")
+}
+
+model Mission {
+  id          String   @id @default(uuid())
+  title       String
+  description String
+  xpReward    Int
+  coinsReward Int
+  completed   Boolean  @default(false)
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+
+  @@map("missions")
+}
+
+model Reward {
+  id          String     @id @default(uuid())
+  title       String
+  description String?
+  price       Int
+  available   Boolean    @default(true)
+  /// Chave estável dos itens fixos da vitrine (ex.: "fixo-doce"); nula nas recompensas criadas pelo usuário
+  key         String?    @unique
+  userId      String?
+  user        User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime   @default(now())
+
+  purchases   Purchase[]
+
+  @@map("rewards")
+}
+
+/// Histórico de compras da loja: guarda título e preço do momento da compra
+model Purchase {
+  id        String    @id @default(uuid())
+  title     String
+  price     Int
+  used      Boolean   @default(false)
+  usedAt    DateTime?
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rewardId  String?
+  reward    Reward?   @relation(fields: [rewardId], references: [id], onDelete: SetNull)
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+  @@map("purchases")
+}
