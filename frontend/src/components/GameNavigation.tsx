@@ -43,7 +43,7 @@ export function GameNavigation({ open, page, onNavigate, navRef, onPointerEnter,
       <NavigationItem index={3} label="Loja" icon="coin" selected={page === 'shop'} onSelect={()=>onNavigate('shop')}/>
       <NavigationItem index={4} label="Diário" icon="book" selected={page === 'diary'} onSelect={()=>onNavigate('diary')}/>
       <NavigationItem index={5} label="Evolução" icon="growth" selected={page === 'evolution'} onSelect={()=>onNavigate('evolution')}/>
-      <NavigationItem index={6} label="Configurações" icon="settings" selected={page === 'settings'} onSelect={()=>onNavigate('settings')}/>
+      <NavigationItem index={6} label="Configurações" icon="settings" selected={page === 'settings'} onSelect={()=>onNavigate('settings')} atBottom/>
     </ul>
     <NavGrass/>
   </nav>;

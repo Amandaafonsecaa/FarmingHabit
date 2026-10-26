@@ -53,12 +53,14 @@
 .vine-flower-blink { animation: sparkle-blink 1.8s steps(1) infinite; }
 
 /* Gramado no pé */
-.nav-grass { position: relative; z-index: 1; flex-shrink: 0; width: calc(100% + 20px); height: 48px; margin: auto -10px 0; }
+.nav-grass { position: relative; z-index: 1; flex-shrink: 0; width: calc(100% + 20px); height: 48px; margin: 0 -10px; }
+/* Configurações no pé da gaveta, logo acima do gramado */
+.game-nav-list > .nav-item-bottom { margin-top: auto; padding-top: 8px; }
 .grass-blades { transform-box: fill-box; transform-origin: 50% 100%; animation: grass-wave 3s ease-in-out infinite alternate; }
 .nav-flower { transform-box: fill-box; transform-origin: 50% 100%; animation: flower-sway 2.4s ease-in-out infinite alternate; }
 
 /* --- Itens --- */
-.game-nav-list { position: relative; z-index: 2; display: flex; flex: 0 1 auto; flex-direction: column; justify-content: flex-start; gap: 8px; height: auto; overflow-y: auto; scrollbar-width: none; }
+.game-nav-list { position: relative; z-index: 2; display: flex; flex: 1 1 auto; flex-direction: column; justify-content: flex-start; gap: 8px; height: auto; overflow-y: auto; scrollbar-width: none; }
 .navigation-open .game-nav-list > li { animation: nav-item-in .55s cubic-bezier(.34, 1.56, .64, 1) backwards; animation-delay: calc(var(--i) * 65ms + 140ms); }
 .game-nav-item { position: relative; min-height: 72px; gap: 6px; padding: 4px 0; border: 0; background: none; cursor: pointer; color: #ffe1a7; }
 .game-nav-icon {
@@ -112,6 +114,7 @@
  .navigation-open .game-navigation { transform: none; }
  .nav-vine, .nav-grass, .nav-nails, .nav-firefly { display: none; }
  .game-nav-list { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 2px; overflow: visible; }
+ .game-nav-list > .nav-item-bottom { margin-top: 0; padding-top: 0; }
  .navigation-open .game-nav-list > li { animation-name: nav-item-up; }
  .game-nav-item { min-height: 82px; justify-content: flex-start; }
  .game-nav-icon { width: 36px; height: 36px; }
