@@ -1,10 +1,14 @@
 import { NestFactory } from '@nestjs/core';
+import type { NestExpressApplication } from '@nestjs/platform-express';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+
+  // A foto da motivação viaja como data URL: o limite padrão de 100 KB do corpo é pouco
+  app.useBodyParser('json', { limit: '1mb' });
 
   // Habilita CORS para conexão com o frontend
   app.enableCors();

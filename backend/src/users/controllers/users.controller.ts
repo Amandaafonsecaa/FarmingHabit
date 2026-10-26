@@ -4,6 +4,7 @@ import {
   Post,
   Patch,
   Delete,
+  Put,
   Body,
   Param,
   HttpStatus,
@@ -18,6 +19,7 @@ import {
 import { UsersService } from '../services/users.service';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { UpdateUserDto } from '../dto/update-user.dto';
+import { UpdateMotivationDto } from '../dto/update-motivation.dto';
 import { User } from '../entities/user.entity';
 
 @ApiTags('users')
@@ -106,6 +108,24 @@ export class UsersController {
     @Body() updateUserDto: UpdateUserDto,
   ): Promise<User> {
     return this.usersService.update(id, updateUserDto);
+  }
+
+  @Get(':id/motivation')
+  @ApiOperation({ summary: 'Buscar a motivação do jogador', description: 'Frase do quadro-negro e foto do porta-retrato (vazias se ainda não foram escritas).' })
+  @ApiParam({ name: 'id', description: 'ID do usuário' })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Motivação do jogador.' })
+  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Usuário não encontrado.' })
+  async getMotivation(@Param('id') id: string) {
+    return this.usersService.getMotivation(id);
+  }
+
+  @Put(':id/motivation')
+  @ApiOperation({ summary: 'Salvar a motivação do jogador', description: 'Grava a frase e, opcionalmente, a foto. Enviar photo: null remove a foto.' })
+  @ApiParam({ name: 'id', description: 'ID do usuário' })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Motivação salva.' })
+  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Frase longa demais ou foto inválida.' })
+  async saveMotivation(@Param('id') id: string, @Body() dto: UpdateMotivationDto) {
+    return this.usersService.saveMotivation(id, dto);
   }
 
   @Delete(':id/data')

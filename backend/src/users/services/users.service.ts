@@ -5,8 +5,9 @@ import {
 } from '@nestjs/common';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { UpdateUserDto } from '../dto/update-user.dto';
+import { UpdateMotivationDto } from '../dto/update-motivation.dto';
 import { PrismaService } from '../../prisma/prisma.service';
-import { User } from '@prisma/client';
+import { Motivation, User } from '@prisma/client';
 
 @Injectable()
 export class UsersService {
@@ -67,6 +68,26 @@ export class UsersService {
         ...(updateUserDto.coins !== undefined && { coins: updateUserDto.coins }),
       },
     });
+  }
+
+  /** Motivação do jogador; quem ainda não escreveu recebe uma vazia */
+  async getMotivation(userId: string): Promise<Pick<Motivation, 'text' | 'photo'>> {
+    await this.findOne(userId);
+    const motivation = await this.prisma.motivation.findUnique({ where: { userId } });
+    return { text: motivation?.text ?? '', photo: motivation?.photo ?? null };
+  }
+
+  /** Salva a frase e a foto (photo: null remove a foto; ausente mantém a atual) */
+  async saveMotivation(userId: string, dto: UpdateMotivationDto): Promise<Pick<Motivation, 'text' | 'photo'>> {
+    await this.findOne(userId);
+    const text = dto.text.trim();
+    const photo = dto.photo === undefined ? undefined : dto.photo;
+    const saved = await this.prisma.motivation.upsert({
+      where: { userId },
+      create: { userId, text, photo: photo ?? null },
+      update: { text, ...(photo !== undefined && { photo }) },
+    });
+    return { text: saved.text, photo: saved.photo };
   }
 
   /** Apaga tudo que o jogador criou ou conquistou, mas mantém a conta (nome e e-mail) */

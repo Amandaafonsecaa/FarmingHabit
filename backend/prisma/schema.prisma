@@ -25,6 +25,7 @@ model User {
   rewards   Reward[]
   purchases Purchase[]
   rewardOverrides RewardOverride[]
+  motivation Motivation?
 
   @@map("users")
 }
@@ -101,4 +102,16 @@ model RewardOverride {
   reward Reward @relation(fields: [rewardId], references: [id], onDelete: Cascade)
   @@id([userId, rewardId])
   @@map("reward_overrides")
+}
+
+/// Motivação principal do jogador (frase do quadro-negro e foto do porta-retrato na Evolução).
+/// Fica numa tabela própria para a foto não vir junto toda vez que o usuário é carregado.
+model Motivation {
+  userId    String   @id
+  text      String   @default("")
+  /// Foto reduzida no navegador, guardada como data URL (JPEG)
+  photo     String?
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@map("motivations")
 }
