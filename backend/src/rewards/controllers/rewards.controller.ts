@@ -8,6 +8,7 @@ import {
   Query,
   HttpStatus,
   HttpCode,
+  Delete,
   ParseUUIDPipe,
 } from '@nestjs/common';
 import {
@@ -110,6 +111,20 @@ export class RewardsController {
     @Body() updateRewardDto: UpdateRewardDto,
   ): Promise<Reward> {
     return this.rewardsService.update(id, updateRewardDto);
+  }
+
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({
+    summary:
+      'Apagar recompensa da vitrine pessoal, preservando compras anteriores',
+  })
+  @ApiQuery({ name: 'userId', required: true })
+  async remove(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Query('userId', new ParseUUIDPipe({ version: '4' })) userId: string,
+  ): Promise<void> {
+    await this.rewardsService.remove(id, userId);
   }
 
   @Post(':id/claim')

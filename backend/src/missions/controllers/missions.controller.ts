@@ -142,6 +142,23 @@ export class MissionsController {
     return this.missionsService.completeMission(id, userId);
   }
 
+  @Patch(':id/uncomplete')
+  @ApiOperation({
+    summary: 'Desfazer missão concluída',
+    description:
+      'Volta a missão para "em aberto" e devolve o XP e as moedas que ela tinha creditado (sem deixar o saldo negativo).',
+  })
+  @ApiParam({ name: 'id', description: 'ID da missão' })
+  @ApiQuery({ name: 'userId', required: true, description: 'ID do usuário que recebeu as recompensas' })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Missão desfeita.' })
+  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Missão ainda não concluída.' })
+  async uncompleteMission(
+    @Param('id') id: string,
+    @Query('userId') userId: string,
+  ) {
+    return this.missionsService.uncompleteMission(id, userId);
+  }
+
   @Delete(':id')
   @ApiOperation({
     summary: 'Remover missão',

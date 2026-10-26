@@ -1,3 +1,4 @@
+import { Transform } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsBoolean,
@@ -7,6 +8,8 @@ import {
   IsString,
   IsUUID,
   Min,
+  Max,
+  MaxLength,
 } from 'class-validator';
 
 export class CreateRewardDto {
@@ -14,6 +17,8 @@ export class CreateRewardDto {
     example: 'Skin: Regador Dourado',
     description: 'Título ou nome da recompensa / item cosmético',
   })
+  @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
+  @MaxLength(60)
   @IsString()
   @IsNotEmpty({ message: 'O título da recompensa é obrigatório' })
   title: string;
@@ -24,6 +29,7 @@ export class CreateRewardDto {
   })
   @IsOptional()
   @IsString()
+  @MaxLength(160)
   description?: string;
 
   @ApiProperty({
@@ -34,6 +40,7 @@ export class CreateRewardDto {
   })
   @IsInt({ message: 'O preço deve ser um valor inteiro' })
   @Min(0, { message: 'O preço não pode ser negativo' })
+  @Max(10000)
   price: number;
 
   @ApiPropertyOptional({

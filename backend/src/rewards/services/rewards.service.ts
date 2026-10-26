@@ -67,14 +67,40 @@ export class RewardsService implements OnModuleInit {
   }
 
   async findAll(userId?: string): Promise<Reward[]> {
-    return this.prisma.reward.findMany({
-      where: userId
-        ? {
-            OR: [{ userId }, { userId: null }],
-          }
-        : { userId: null },
+    const rewards = await this.prisma.reward.findMany({
+      where: userId ? { OR: [{ userId }, { userId: null }] } : { userId: null },
       orderBy: { createdAt: 'desc' },
     });
+    if (!userId) return rewards;
+    const overrides = await this.prisma.rewardOverride.findMany({
+      where: { userId },
+    });
+    return rewards.map((reward) =>
+      this.applyOverride(
+        reward,
+        overrides.find((item) => item.rewardId === reward.id),
+      ),
+    );
+  }
+
+  private applyOverride(
+    reward: Reward,
+    override?: {
+      title: string | null;
+      description: string | null;
+      price: number | null;
+      hidden: boolean;
+    } | null,
+  ): Reward {
+    return override
+      ? {
+          ...reward,
+          title: override.title ?? reward.title,
+          description: override.description ?? reward.description,
+          price: override.price ?? reward.price,
+          available: reward.available && !override.hidden,
+        }
+      : reward;
   }
 
   async findOne(id: string): Promise<Reward> {
@@ -91,14 +117,33 @@ export class RewardsService implements OnModuleInit {
 
   async update(id: string, updateRewardDto: UpdateRewardDto): Promise<Reward> {
     const reward = await this.findOne(id);
-    if (
-      reward.key ||
-      !reward.userId ||
-      reward.userId !== updateRewardDto.userId
-    ) {
+    const userId = updateRewardDto.userId;
+    if (!userId || (reward.userId && reward.userId !== userId))
       throw new NotFoundException(
-        'Recompensa personalizada não encontrada para este jogador.',
+        'Recompensa não encontrada para este jogador.',
       );
+    await this.usersService.findOne(userId);
+    if (!reward.userId) {
+      const data = {
+        ...(updateRewardDto.title !== undefined && {
+          title: updateRewardDto.title,
+        }),
+        ...(updateRewardDto.description !== undefined && {
+          description: updateRewardDto.description,
+        }),
+        ...(updateRewardDto.price !== undefined && {
+          price: updateRewardDto.price,
+        }),
+        ...(updateRewardDto.available !== undefined && {
+          hidden: !updateRewardDto.available,
+        }),
+      };
+      const override = await this.prisma.rewardOverride.upsert({
+        where: { userId_rewardId: { userId, rewardId: id } },
+        create: { userId, rewardId: id, ...data },
+        update: data,
+      });
+      return this.applyOverride(reward, override);
     }
 
     return this.prisma.reward.update({
@@ -118,6 +163,10 @@ export class RewardsService implements OnModuleInit {
     });
   }
 
+  async remove(id: string, userId: string): Promise<void> {
+    await this.update(id, { userId, available: false });
+  }
+
   /**
    * Compra: confere disponibilidade, dono e saldo, desconta as moedas e registra no histórico
    * numa única transação (sem compra pela metade se algo falhar).
@@ -128,11 +177,17 @@ export class RewardsService implements OnModuleInit {
       try {
         return await this.prisma.$transaction(
           async (tx) => {
-            const reward = await tx.reward.findFirst({
+            let reward = await tx.reward.findFirst({
               where: { OR: [{ id: rewardId }, { key: rewardId }] },
             });
             if (!reward)
               throw new NotFoundException('Recompensa não encontrada.');
+            if (!reward.userId) {
+              const override = await tx.rewardOverride.findUnique({
+                where: { userId_rewardId: { userId, rewardId: reward.id } },
+              });
+              reward = this.applyOverride(reward, override);
+            }
             if (!reward.available)
               throw new BadRequestException(
                 'Esta recompensa não está disponível no momento.',

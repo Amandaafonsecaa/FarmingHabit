@@ -103,7 +103,8 @@ A vitrine fixa é definida em `src/rewards/catalog.ts` e sincronizada por chave 
 
 - `GET /rewards?userId=<uuid>`: catálogo global e itens pessoais do jogador. O frontend mostra os disponíveis.
 - `POST /rewards`: cria item pessoal (`title`, `price`, `userId`, `description` opcional).
-- `PATCH /rewards/:id`: altera ou retira um item pessoal da vitrine; envie o `userId` proprietário no corpo. O catálogo fixo é gerenciado pelo servidor.
+- `PATCH /rewards/:id`: edita nome, descrição, preço ou disponibilidade; envie `userId` no corpo. Para itens fixos, grava uma personalização do jogador em `reward_overrides`; o catálogo global e os outros jogadores permanecem iguais.
+- `DELETE /rewards/:id?userId=<uuid>`: remove da vitrine desse jogador. Itens pessoais ficam indisponíveis; itens globais recebem uma personalização oculta. O histórico e as moedas não mudam.
 - `POST /rewards/:id/claim?userId=<uuid>`: compra por UUID ou chave fixa. O preço vem do banco. Débito e histórico são gravados numa transação serializável, com repetição limitada em conflitos de concorrência. Uma mesma recompensa pode ser comprada novamente.
 - `GET /purchases?userId=<uuid>`: histórico persistido, mais recente primeiro. Título e preço são fotografias do momento da compra, preservadas mesmo após editar/ocultar a recompensa.
 - `PATCH /purchases/:id?userId=<uuid>` com `{ "used": true }`: marca como aproveitado e grava `usedAt`. Enviar `false` desfaz e limpa a data; isso não devolve moedas. Repetir o mesmo estado preserva a data anterior.
@@ -134,3 +135,7 @@ npm run test:shop:integration
 Esse teste cria dois jogadores temporários, verifica compras concorrentes, histórico, propriedade e uso/desuso, sincroniza a vitrine fixa e remove apenas os próprios jogadores ao terminar. Não execute contra um banco que não permita criar dados temporários.
 
 Referências: [Prisma 6: configuração e conexão direta](https://docs.prisma.io/docs/orm/v6/reference/prisma-config-reference), [Supabase com Prisma](https://supabase.com/docs/guides/database/prisma).
+
+### Edição pela vitrine
+
+Clique no produto para abrir o modal de edição no mesmo `GameDialog` dos demais formulários. Comprar e Favoritar continuam ações independentes. Nome aceita até 60 caracteres, descrição até 160 e preço inteiro entre 0 e 10000. Apagar exige confirmação no modal; falhas preservam a edição. As compras futuras usam o preço personalizado do jogador e as anteriores mantêm seus valores originais. A migration `20261026010000_personal_reward_edits` cria apenas a tabela de personalizações, sem remover dados existentes.

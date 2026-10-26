@@ -1,3 +1,4 @@
+import { Transform } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsBoolean,
@@ -8,23 +9,29 @@ import {
   IsString,
   IsUUID,
   Min,
+  MaxLength,
 } from 'class-validator';
 
 export class CreateMissionDto {
   @ApiProperty({
     example: 'Primeira Colheita',
     description: 'Título da missão',
+    maxLength: 60,
   })
   @IsString()
+  @Transform(({ value }) => typeof value === 'string' ? value.trim() : value)
+  @MaxLength(60, { message: 'O título deve ter no máximo 60 caracteres' })
   @IsNotEmpty({ message: 'O título da missão é obrigatório' })
   title: string;
 
   @ApiPropertyOptional({
     example: 'Complete seu primeiro hábito diário para aprender a cultivar.',
     description: 'Descrição e objetivos da missão (opcional)',
+    maxLength: 160,
   })
   @IsOptional()
   @IsString()
+  @MaxLength(160, { message: 'A descrição deve ter no máximo 160 caracteres' })
   description?: string;
 
   @ApiProperty({

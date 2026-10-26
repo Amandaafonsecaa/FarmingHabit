@@ -66,7 +66,7 @@ export class MissionsService {
       where: { id },
       data: {
         ...(updateMissionDto.title && { title: updateMissionDto.title }),
-        ...(updateMissionDto.description && {
+        ...(updateMissionDto.description !== undefined && {
           description: updateMissionDto.description,
         }),
         ...(updateMissionDto.xpReward !== undefined && {
@@ -121,6 +121,37 @@ export class MissionsService {
         xpGained: mission.xpReward,
         coinsGained: mission.coinsReward,
       },
+      user: {
+        id: updatedUser.id,
+        level: updatedUser.level,
+        xp: updatedUser.xp,
+        coins: updatedUser.coins,
+      },
+    };
+  }
+
+  /** Desfaz uma missão cumprida: volta a ficar em aberto e o XP e as moedas que ela deu são devolvidos */
+  async uncompleteMission(id: string, targetUserId: string) {
+    const mission = await this.findOne(id);
+
+    if (!mission.completed) {
+      throw new BadRequestException('Esta missão ainda não foi concluída.');
+    }
+
+    const reopened = await this.prisma.mission.update({
+      where: { id },
+      data: { completed: false },
+    });
+
+    const updatedUser = await this.usersService.revokeRewards(
+      targetUserId,
+      mission.xpReward,
+      mission.coinsReward,
+    );
+
+    return {
+      message: 'Missão desfeita. As recompensas foram devolvidas.',
+      mission: reopened,
       user: {
         id: updatedUser.id,
         level: updatedUser.level,

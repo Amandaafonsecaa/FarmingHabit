@@ -69,6 +69,34 @@ export class UsersService {
     });
   }
 
+  /** Apaga tudo que o jogador criou ou conquistou, mas mantém a conta (nome e e-mail) */
+  async resetData(id: string): Promise<User> {
+    await this.findOne(id);
+    const [, , , , , user] = await this.prisma.$transaction([
+      this.prisma.purchase.deleteMany({ where: { userId: id } }),
+      this.prisma.rewardOverride.deleteMany({ where: { userId: id } }),
+      this.prisma.reward.deleteMany({ where: { userId: id } }),
+      this.prisma.mission.deleteMany({ where: { userId: id } }),
+      this.prisma.habit.deleteMany({ where: { userId: id } }),
+      this.prisma.user.update({ where: { id }, data: { level: 1, xp: 0, coins: 0 } }),
+    ]);
+    return user;
+  }
+
+  /** Devolve XP e moedas de uma missão desfeita (nunca deixa negativo) e recalcula o nível */
+  async revokeRewards(userId: string, xpToRemove: number, coinsToRemove: number): Promise<User> {
+    const user = await this.findOne(userId);
+    const newXp = Math.max(0, user.xp - xpToRemove);
+    return this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        xp: newXp,
+        coins: Math.max(0, user.coins - coinsToRemove),
+        level: Math.floor(newXp / 100) + 1,
+      },
+    });
+  }
+
   async addRewards(
     userId: string,
     xpToAdd: number,

@@ -95,6 +95,49 @@ async function main() {
     const fixed = await rewards.claimReward('fixo-episodio', other);
     assert.equal(fixed.purchase.price, 60);
     assert.equal((await purchases.findAll(other)).length, 1);
+    const fixedId = fixed.reward.id;
+    await rewards.update(fixedId, {
+      userId: owner,
+      title: 'Meu episódio',
+      price: 10,
+      description: 'Minha pausa',
+    });
+    assert.equal(
+      (await rewards.findAll(owner)).find((item) => item.id === fixedId).price,
+      10,
+    );
+    assert.equal(
+      (await rewards.findAll(other)).find((item) => item.id === fixedId).price,
+      60,
+    );
+    const personalized = await rewards.claimReward(fixedId, owner);
+    assert.equal(personalized.purchase.title, 'Meu episódio');
+    assert.equal(personalized.purchase.price, 10);
+    await rewards.remove(fixedId, owner);
+    assert.equal(
+      (await rewards.findAll(owner)).find((item) => item.id === fixedId)
+        .available,
+      false,
+    );
+    assert.equal(
+      (await rewards.findAll(other)).find((item) => item.id === fixedId)
+        .available,
+      true,
+    );
+    await rewards.syncCatalog();
+    await assert.rejects(
+      () => rewards.claimReward(fixedId, owner),
+      (error) => error.status === 400,
+    );
+    assert(
+      (await purchases.findAll(owner)).some(
+        (item) => item.id === personalized.purchase.id,
+      ),
+    );
+    await rewards.remove(reward.id, owner);
+    assert(
+      (await purchases.findAll(owner)).some((item) => item.id === purchase.id),
+    );
     console.log(
       'Supabase integration passed: catalog, concurrent balance protection, history snapshots, ownership, use/undo and unavailable rewards.',
     );

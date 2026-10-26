@@ -3,6 +3,7 @@ import {
   Get,
   Post,
   Patch,
+  Delete,
   Body,
   Param,
   HttpStatus,
@@ -105,5 +106,18 @@ export class UsersController {
     @Body() updateUserDto: UpdateUserDto,
   ): Promise<User> {
     return this.usersService.update(id, updateUserDto);
+  }
+
+  @Delete(':id/data')
+  @ApiOperation({
+    summary: 'Apagar os dados do jogador, mantendo a conta',
+    description:
+      'Remove missões, compras, hábitos e recompensas próprias do usuário e zera o progresso (Level 1, 0 XP, 0 Moedas). Nome e e-mail continuam.',
+  })
+  @ApiParam({ name: 'id', description: 'ID do usuário' })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Dados apagados; retorna o usuário zerado.', type: User })
+  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Usuário não encontrado.' })
+  async resetData(@Param('id') id: string): Promise<User> {
+    return this.usersService.resetData(id);
   }
 }

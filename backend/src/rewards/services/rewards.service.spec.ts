@@ -18,6 +18,7 @@ describe('Shop purchase transaction', () => {
   let service: RewardsService;
   beforeEach(() => {
     tx = {
+      rewardOverride: { findUnique: jest.fn().mockResolvedValue(null) },
       reward: { findFirst: jest.fn().mockResolvedValue(reward) },
       user: {
         findUnique: jest.fn().mockResolvedValue({ id: 'player', coins: 200 }),
@@ -27,14 +28,12 @@ describe('Shop purchase transaction', () => {
           .mockResolvedValue({ id: 'player', coins: 50, level: 1, xp: 0 }),
       },
       purchase: {
-        create: jest
-          .fn()
-          .mockResolvedValue({
-            id: 'purchase',
-            title: 'Café',
-            price: 150,
-            used: false,
-          }),
+        create: jest.fn().mockResolvedValue({
+          id: 'purchase',
+          title: 'Café',
+          price: 150,
+          used: false,
+        }),
       },
     };
     prisma = {
@@ -42,7 +41,12 @@ describe('Shop purchase transaction', () => {
         .fn()
         .mockImplementation((callback: any) => callback(tx)),
     };
-    service = new RewardsService(prisma as PrismaService, {} as UsersService);
+    service = new RewardsService(
+      prisma as PrismaService,
+      {
+        findOne: jest.fn().mockResolvedValue({ id: 'player' }),
+      } as unknown as UsersService,
+    );
   });
   it('debits the server price and snapshots a fixed item in the same serializable transaction', async () => {
     const result = await service.claimReward('fixo-cafe', 'player');
@@ -99,14 +103,74 @@ describe('Shop purchase transaction', () => {
     );
     expect(prisma.$transaction).toHaveBeenCalledTimes(1);
   });
-  it('cannot change fixed catalog items through personal reward updates', async () => {
+  it('stores fixed-item edits only for the selected player', async () => {
     prisma.reward = {
       findUnique: jest.fn().mockResolvedValue(reward),
       update: jest.fn(),
     };
-    await expect(
-      service.update('reward', { userId: 'player', price: 0 }),
-    ).rejects.toBeInstanceOf(NotFoundException);
+    prisma.rewardOverride = {
+      upsert: jest
+        .fn()
+        .mockResolvedValue({
+          title: 'Meu café',
+          price: 40,
+          description: '',
+          hidden: false,
+        }),
+    };
+    const updated = await service.update('reward', {
+      userId: 'player',
+      title: 'Meu café',
+      description: '',
+      price: 40,
+    });
+    expect(updated.title).toBe('Meu café');
+    expect(updated.price).toBe(40);
+    expect(updated.description).toBe('');
     expect(prisma.reward.update).not.toHaveBeenCalled();
+    expect(prisma.rewardOverride.upsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { userId_rewardId: { userId: 'player', rewardId: 'reward' } },
+      }),
+    );
+  });
+  it('charges the personal price and snapshots the personal title', async () => {
+    tx.rewardOverride.findUnique.mockResolvedValue({
+      title: 'Meu café',
+      price: 40,
+      description: '',
+      hidden: false,
+    });
+    await service.claimReward('reward', 'player');
+    expect(tx.purchase.create).toHaveBeenCalledWith({
+      data: {
+        title: 'Meu café',
+        price: 40,
+        userId: 'player',
+        rewardId: 'reward',
+      },
+    });
+  });
+  it('rejects buying a fixed item removed from this player’s showcase', async () => {
+    tx.rewardOverride.findUnique.mockResolvedValue({
+      title: null,
+      description: null,
+      price: null,
+      hidden: true,
+    });
+    await expect(
+      service.claimReward('reward', 'player'),
+    ).rejects.toBeInstanceOf(BadRequestException);
+    expect(tx.user.updateMany).not.toHaveBeenCalled();
+  });
+  it('rejects editing or deleting another player’s item', async () => {
+    prisma.reward = {
+      findUnique: jest
+        .fn()
+        .mockResolvedValue({ ...reward, key: null, userId: 'other' }),
+    };
+    await expect(service.remove('reward', 'player')).rejects.toBeInstanceOf(
+      NotFoundException,
+    );
   });
 });
