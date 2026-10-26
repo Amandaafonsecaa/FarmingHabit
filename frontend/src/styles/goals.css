@@ -225,6 +225,8 @@
 
 /* ===== Vendinha de metas (topo da aba) ===== */
 .goal-stand { position: absolute; inset: 0; z-index: -1; width: 100%; height: 100%; overflow: visible; }
+.goal-stand-front { z-index: 1; pointer-events: none; }
+.goal-stand-front .stand-vendor { pointer-events: auto; }
 .stand-sign-text { font-family: 'Courier New', monospace; font-size: 12px; font-weight: 900; letter-spacing: 1px; fill: #3b2418; }
 .stand-chalk { font-family: 'Courier New', monospace; font-size: 12px; font-weight: 900; fill: #fff6dd; }
 .stand-crate { cursor: pointer; outline: none; }
@@ -282,7 +284,9 @@
    e a escala é min(largura/1000, altura/330). Com o topo em 380px de altura isso dá min(3.8cqw, 43.8px). */
 .goals-hero { container-type: inline-size; }
 @media (min-width: 768px) { .goals-hero { height: 380px; min-height: 0; } }
-.goals-hero-top { flex: 1; align-items: stretch; }
+.goals-hero-top { flex: 1; align-items: stretch; pointer-events: none; }
+/* A área da placa cobre a cena: só a placa recebe cliques, o resto passa para o Seu Zé e os caixotes */
+.goals-hero-top .goals-sign { pointer-events: auto; }
 .planted-sign { display: flex; flex-direction: column; align-self: stretch; width: min(360px, 100%); }
 .planted-sign-posts { position: relative; flex: 1; min-height: 24px; margin: -3px 30px min(3.8cqw, 43.8px); }
 .planted-sign-posts::before, .planted-sign-posts::after { content: ''; position: absolute; top: 0; bottom: 0; width: 12px; background: repeating-linear-gradient(0deg, #8a5838 0 14px, #7a4a2a 14px 16px); border: 2px solid #57311f; box-shadow: inset 3px 0 #b07a4c; }

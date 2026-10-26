@@ -36,15 +36,15 @@ export function GoalStand({ goals, log, today, onHarvest, onTalk }: GoalStandPro
   const crateX = (index: number) => COUNTER_CENTER - (slots * CRATE_STEP) / 2 + index * CRATE_STEP + 4;
   const onKey = (event: KeyboardEvent, goal: TrackedGoal) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onHarvest(goal, event.currentTarget); } };
 
-  return <svg className="goal-stand" viewBox="0 0 1000 330" preserveAspectRatio="xMidYMax meet" role="group" aria-label={`Vendinha de metas: ${done} de ${goals.length} metas de hoje colhidas`}>
-    {/* Fundo: morros e a fazenda principal em segundo plano (com névoa para dar profundidade) */}
+  return <>
+  <svg className="goal-stand" viewBox="0 0 1000 330" preserveAspectRatio="xMidYMax meet" role="group" aria-label={`Vendinha de metas: ${done} de ${goals.length} metas de hoje colhidas`}>
+    {/* Fundo: morros e a fazenda principal em segundo plano */}
     <g className="stand-background" shapeRendering="crispEdges">
       <path d="M-2000 214q300-50 620-18t620-6 620 4 620-10 1120 20V400H-2000Z" fill="#7dbf8e"/>
       <path d="M-2000 240q400-28 800-8t800-4 800 4 1600 0V400H-2000Z" fill="#8fd36a"/>
       {[[40, 175, .42], [120, 188, .38], [230, 178, .4], [720, 168, .44], [930, 172, .42], [990, 186, .38]].map(([x, y, scale], index) => <Tree key={index} x={x} y={y} scale={scale} delay={-index * 0.8}/>)}
       <g transform="translate(640 82) scale(.42)"><FarmHouse/></g>
       <g fill="#efe0b6" stroke="#b8a27c" strokeWidth="1.5">{Array.from({ length: 14 }, (_, index) => <path key={index} d={`M${700 + index * 22} 238v18h4v-18Z`}/>)}<path d="M700 244h300v3H700Z"/></g>
-      <rect x="-2000" y="0" width="5000" height="330" fill="#d6eef8" opacity=".28"/>
     </g>
 
     {/* Estrada e grama da frente */}
@@ -77,14 +77,6 @@ export function GoalStand({ goals, log, today, onHarvest, onTalk }: GoalStandPro
 
       {/* Lousinha com o placar do dia */}
       <g transform="translate(712 236)"><path d="M4 40l6-40M38 40l-6-40" stroke="#57311f" strokeWidth="3"/><rect x="0" y="0" width="42" height="30" fill="#3f4a3c" stroke="#8a5838" strokeWidth="3"/><text x="21" y="20" textAnchor="middle" className="stand-chalk">{done}/{goals.length}</text></g>
-    </g>
-
-    {/* Seu Zé, o vendedor, em pé ao lado da banca: clicar abre a conversa (como o Bigode na Loja) */}
-    <g className="stand-vendor npc-clickable" onClick={onTalk} shapeRendering="crispEdges">
-      <ellipse cx="283" cy="292" rx="24" ry="5" fill="#3b2418" opacity=".18"/>
-      <g className="vendor-body"><foreignObject x="248" y="212" width="72" height="80"><PixelAvatar avatar={VENDOR} className="h-full w-full"/></foreignObject></g>
-      <g className="talk-prompt"><rect x="248" y="190" width="70" height="18" fill="#57311f"/><rect x="250" y="192" width="66" height="14" fill="#fff1c7"/><rect x="279" y="208" width="8" height="4" fill="#57311f"/>
-        <rect x="254" y="195" width="8" height="6" fill="#bf5837"/><rect x="256" y="201" width="2" height="2" fill="#bf5837"/><text x="289" y="203" textAnchor="middle" className="talk-prompt-text">Conversar</text></g>
     </g>
 
     {/* Caixotes (um por meta) */}
@@ -126,5 +118,16 @@ export function GoalStand({ goals, log, today, onHarvest, onTalk }: GoalStandPro
         <text x="0" y="0" textAnchor="middle" className="crate-plaque-text">{label}</text>
       </g>;
     })()}
-  </svg>;
+  </svg>
+  {/* Camada da frente (mesmo enquadramento): o Seu Zé fica na frente das estacas da placa */}
+  <svg className="goal-stand goal-stand-front" viewBox="0 0 1000 330" preserveAspectRatio="xMidYMax meet">
+    {/* Seu Zé, o vendedor, em pé ao lado da banca: clicar abre a conversa (como o Bigode na Loja) */}
+    <g className="stand-vendor npc-clickable" onClick={onTalk} shapeRendering="crispEdges">
+      <ellipse cx="283" cy="292" rx="24" ry="5" fill="#3b2418" opacity=".18"/>
+      <g className="vendor-body"><foreignObject x="248" y="220" width="72" height="80"><PixelAvatar avatar={VENDOR} className="h-full w-full"/></foreignObject></g>
+      <g className="talk-prompt"><rect x="248" y="198" width="70" height="18" fill="#57311f"/><rect x="250" y="200" width="66" height="14" fill="#fff1c7"/><rect x="279" y="216" width="8" height="4" fill="#57311f"/>
+        <rect x="254" y="203" width="8" height="6" fill="#bf5837"/><rect x="256" y="209" width="2" height="2" fill="#bf5837"/><text x="289" y="211" textAnchor="middle" className="talk-prompt-text">Conversar</text></g>
+    </g>
+  </svg>
+  </>;
 }

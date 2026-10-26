@@ -23,7 +23,6 @@ export function GoalsHero({ goals, log, today, coins, onPlant, onHarvest }: { go
     : isScheduled(goal, today));
 
   return <section className="goals-hero" aria-labelledby="goals-title">
-    <div className="world-cloud left-[38%] top-[18%]" aria-hidden="true"/><div className="world-cloud right-[12%] top-[34%]" aria-hidden="true"/>
     <div className="goals-hero-top">
       {/* Placa plantada no chão: as estacas descem até a grama da cena */}
       <div className="planted-sign">

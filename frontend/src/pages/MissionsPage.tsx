@@ -15,7 +15,7 @@ import { CollectionPanel } from '../components/missions/CollectionPanel';
 import { flyCoins } from '../lib/coinFlight';
 import type { AppPage } from '../types/navigation';
 
-const CELEBRATION_MS = 1700;
+const CELEBRATION_MS = 2700;
 const errorMessage = (error: unknown) => error instanceof Error ? error.message : 'Não foi possível falar com o servidor.';
 
 export function MissionsPage({ onNavigate }: { onNavigate: (page: AppPage) => void }) {
@@ -101,7 +101,7 @@ export function MissionsPage({ onNavigate }: { onNavigate: (page: AppPage) => vo
   }
 
   return <MainLayout page="missions" onNavigate={onNavigate}
-    world={<MissionsHero completed={completedCount} openCount={stillOpen.length} opened={treasure.opened} unopened={unopened.length} onOpenChest={showChest} coins={board.player?.coins ?? null}
+    world={<MissionsHero completed={completedCount} loading={board.loading} openCount={stillOpen.length} opened={treasure.opened} unopened={unopened.length} onOpenChest={showChest} coins={board.player?.coins ?? null}
       traveling={stillOpen.filter(mission => accepted.includes(mission.id)).length} activeMission={stillOpen.find(mission => accepted.includes(mission.id)) ?? null}
       onCreate={()=>setDialogOpen(true)} onFocusMission={focusQuest}/>}>
     <div className="missions-layout">

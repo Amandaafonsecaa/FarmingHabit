@@ -5,7 +5,7 @@ import type { LandmarkId } from '../../lib/journey';
 const INK = '#57311f';
 const s = { stroke: INK, strokeWidth: 1.5 } as const;
 
-const GLYPHS: Record<LandmarkId, ReactNode> = {
+export const GLYPHS: Record<LandmarkId, ReactNode> = {
   // --- Vale do Sítio ---
   windmill: <>
     <path d="M-8-30h16V0H-8Z" fill="#e8c48a" {...s}/><path d="M-3-10h6V0h-6Z" fill="#8a5838"/><path d="M-11-30h22l-4-6h-14Z" fill="#bf5837" {...s}/>
@@ -108,14 +108,3 @@ const GLYPHS: Record<LandmarkId, ReactNode> = {
     <g className="lm-hearts"><path d="M14-48h2v1h1v-1h2v3h-1v1h-1v1h-1v-1h-1v-1h-1Z" fill="#e8576f"/><path d="M-18-40h2v1h1v-1h2v3h-1v1h-1v1h-1v-1h-1v-1h-1Z" fill="#f29ac0"/></g>
   </>,
 };
-
-/** Parada da jornada: o marco aparece (com um "pop") quando é alcançado; antes disso, névoa e "?" */
-export function JourneyStop({ x, y, landmark, name, revealed, fresh }: { x: number; y: number; landmark: LandmarkId; name: string; revealed: boolean; fresh: boolean }) {
-  return <g transform={`translate(${x} ${y})`} className={`journey-stop ${revealed ? 'is-revealed' : ''}`}>
-    <ellipse cx="0" cy="2" rx="16" ry="5" fill="#57311f" opacity=".18"/>
-    {revealed
-      ? <g key="revealed" className={`landmark ${fresh ? 'is-fresh' : ''}`} shapeRendering="crispEdges">{GLYPHS[landmark]}</g>
-      : <g key="hidden" className="landmark-fog"><circle cx="0" cy="-14" r="14" fill="none" stroke="#8a5838" strokeWidth="1.5" strokeDasharray="2 3"/><path d="M-16-10h10v-6h12v6h10v6h-32Z" fill="#fff8e6" opacity=".9"/><text className="fog-mark" x="0" y="-16" textAnchor="middle">?</text></g>}
-    <text className="stop-caption" x="0" y="16" textAnchor="middle">{revealed ? name : '???'}</text>
-  </g>;
-}
