@@ -9,10 +9,10 @@ import { useSettings } from '../hooks/useSettings';
 import { useProfile } from '../hooks/useProfile';
 import { CharacterCreator } from '../components/profile/CharacterCreator';
 import { PixelAvatar } from '../components/PixelAvatar';
-import { LOCAL_KEYS, exportBackup, importBackup } from '../lib/settings';
+import { ACCOUNT_KEYS, LOCAL_KEYS, exportBackup, importBackup } from '../lib/settings';
 import { JOURNEY_LENGTH } from '../lib/journey';
 import { HARVEST_REWARD, WEEK_BONUS } from '../lib/harvestRewards';
-import { loadPlayer, updatePlayerName, type Player } from '../services/api';
+import { loadPlayer, resetPlayerData, updatePlayerName, type Player } from '../services/api';
 import type { AppPage } from '../types/navigation';
 
 type Section = 'profile' | 'appearance' | 'data' | 'about';
@@ -118,10 +118,17 @@ export function SettingsPage({ onNavigate }: { onNavigate: (page: AppPage) => vo
     setAnnouncement('Metas de exemplo removidas. Agora o canteiro é todo seu!');
   }
 
-  function wipeLocal() {
-    if (!window.confirm('Apagar metas, diário, aventuras e preferências deste navegador? Missões, moedas e nível no servidor continuam.')) return;
+  // Apaga todo o progresso (servidor e navegador), mas mantém a conta: nome, e-mail, personagem e preferências
+  async function wipeAll() {
+    if (!window.confirm('Apagar missões, compras, metas, diário, baús e coleção, e zerar nível, XP e moedas? Sua conta, seu personagem e suas preferências continuam.')) return;
     if (!window.confirm('Tem certeza? Isso não pode ser desfeito (a menos que você tenha um backup).')) return;
-    LOCAL_KEYS.forEach(key => localStorage.removeItem(key));
+    try {
+      if (player) await resetPlayerData(player.id);
+    } catch (error) {
+      setAnnouncement(`Não foi possível apagar os dados do servidor: ${error instanceof Error ? error.message : 'erro desconhecido'}`);
+      return;
+    }
+    LOCAL_KEYS.filter(key => !ACCOUNT_KEYS.includes(key)).forEach(key => localStorage.removeItem(key));
     // Canteiro vazio de propósito: sem isso, as metas de exemplo voltariam
     localStorage.setItem(GOALS_KEY, JSON.stringify({ goals: [], log: {} }));
     window.location.reload();
@@ -230,8 +237,8 @@ export function SettingsPage({ onNavigate }: { onNavigate: (page: AppPage) => vo
               </SettingsRow>
             </SettingsGroup>
             <SettingsGroup title="Zona do espantalho" tone="danger" footer="Faça um backup antes. Não dá para desfazer.">
-              <SettingsRow label="Apagar dados do navegador" description="Remove metas, diário, aventuras e preferências deste navegador.">
-                <button type="button" className="pixel-button danger-button" onClick={wipeLocal}>Apagar tudo</button>
+              <SettingsRow label="Apagar todos os dados" description="Remove missões, compras, metas, diário, baús e coleção, e zera nível, XP e moedas. Sua conta, seu personagem e suas preferências continuam.">
+                <button type="button" className="pixel-button danger-button" disabled={!player} onClick={()=>{ void wipeAll(); }}>Apagar tudo</button>
               </SettingsRow>
             </SettingsGroup>
           </>}

@@ -1,13 +1,9 @@
 import { CHAPTERS, STOPS_PER_CHAPTER, journeyState } from './journey';
 import { CHEST_STOPS, COLLECTIBLES } from './treasure';
-import type { AvatarConfig } from './avatar';
 
 /** O que o Capitão Bússola (guia da guilda, no mapa das Missões) sabe na hora da conversa */
 export interface GuideContext { name: string; completed: number; openMissions: number; traveling: number; unopened: number; found: number }
 export type GuideChoice = 'where' | 'missions' | 'map' | 'chests' | 'bye';
-
-/** Velho aventureiro de cabelo grisalho e óculos */
-export const GUIDE: AvatarConfig = { skin: 3, hairStyle: 'short', hairColor: 5, outfit: 'shirt', outfitColor: 4, hat: 'none', detail: 'glasses' };
 
 const pick = <T,>(list: T[]) => list[Math.floor(Math.random() * list.length)];
 

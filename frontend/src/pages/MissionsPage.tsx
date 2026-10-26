@@ -3,10 +3,11 @@ import { toast } from '../lib/toast';
 import { MainLayout } from '../layouts/MainLayout';
 import { MissionsHero } from '../components/missions/MissionsHero';
 import { QuestScroll } from '../components/missions/QuestScroll';
+import { EditMissionDialog } from '../components/dialogs/EditMissionDialog';
 import { MissionDialog } from '../components/dialogs/MissionDialog';
 import { PixelIcon } from '../components/PixelIcon';
 import { useAcceptedMissions, useMissionBoard } from '../hooks/useMissionBoard';
-import type { NewItem } from '../types/world';
+import type { Mission, NewItem } from '../types/world';
 import { recordAdventure } from '../lib/diary';
 import { foundChests, readTreasure, rollLoot, saveOpenedChest, type FoundChest } from '../lib/treasure';
 import { ChestOpening } from '../components/missions/ChestOpening';
@@ -23,6 +24,7 @@ export function MissionsPage({ onNavigate }: { onNavigate: (page: AppPage) => vo
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [celebratingId, setCelebratingId] = useState<string | null>(null);
   const [highlightId, setHighlightId] = useState<string | null>(null);
+  const [editing, setEditing] = useState<Mission | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   // Avisos de ação aparecem como toast
   const setAnnouncement = toast;
@@ -115,6 +117,7 @@ export function MissionsPage({ onNavigate }: { onNavigate: (page: AppPage) => vo
           </div>}
           {open.length > 0 && <ul className="quest-list">{open.map((mission, index) => <QuestScroll key={mission.id} mission={mission} index={index}
             completed={mission.completed && mission.id !== celebratingId} active={accepted.includes(mission.id)} pending={pendingId === mission.id} celebrating={celebratingId === mission.id} highlighted={highlightId === mission.id}
+            onOpen={()=>{ if (!pendingId && !celebratingId) setEditing(mission); }}
             onAccept={()=>{ accept(mission.id); setAnnouncement(`${mission.title}: pé na estrada! Boa aventura.`); }}
             onAbandon={()=>{ abandon(mission.id); setAnnouncement(`${mission.title}: fica para outro dia.`); }}
             onComplete={origin=>complete(mission.id, mission.title, mission.xp, mission.coins, origin)}
@@ -124,6 +127,7 @@ export function MissionsPage({ onNavigate }: { onNavigate: (page: AppPage) => vo
             <p className="quest-divider"><span>Cumpridas · {done.length}</span></p>
             <ul className="quest-list">{done.map((mission, index) => <QuestScroll key={mission.id} mission={mission} index={index + open.length}
             completed={mission.completed && mission.id !== celebratingId} active={accepted.includes(mission.id)} pending={pendingId === mission.id} celebrating={celebratingId === mission.id} highlighted={highlightId === mission.id}
+            onOpen={()=>{ if (!pendingId && !celebratingId) setEditing(mission); }}
             onAccept={()=>{ accept(mission.id); setAnnouncement(`${mission.title}: pé na estrada! Boa aventura.`); }}
             onAbandon={()=>{ abandon(mission.id); setAnnouncement(`${mission.title}: fica para outro dia.`); }}
             onComplete={origin=>complete(mission.id, mission.title, mission.xp, mission.coins, origin)}
@@ -134,6 +138,9 @@ export function MissionsPage({ onNavigate }: { onNavigate: (page: AppPage) => vo
       <div className="missions-side"><CollectionPanel collection={treasure.collection}/></div>
     </div>
     <p role="status" className="world-status">{'Toda grande descoberta começa com uma pequena curiosidade.'}</p>
+    {editing && <EditMissionDialog key={editing.id} mission={editing} active={accepted.includes(editing.id)} onClose={()=>setEditing(null)}
+      onSave={async changes=>{ await board.edit(editing.id, changes); setAnnouncement(`${changes.title}: missão atualizada!`); }}
+      onUncomplete={async ()=>{ await board.uncomplete(editing.id); setAnnouncement(`${editing.title}: missão desfeita. -${editing.xp} XP e -${editing.coins} moedas.`); }}/>}
     {dialogOpen && <MissionDialog onSave={create} onClose={()=>setDialogOpen(false)}/>}
     {openingChest && <ChestOpening key={openingChest.id} chest={openingChest} remaining={unopened.filter(chest => chest.id !== openingChest.id).length} onOpen={openChest} onClose={()=>setOpeningChest(null)}/>}
   </MainLayout>;

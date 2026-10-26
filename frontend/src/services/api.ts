@@ -53,6 +53,11 @@ export async function updatePlayerName(id: string, name: string): Promise<Player
   return toPlayer(await request<Player>(`/users/${id}`, { method: 'PATCH', body: JSON.stringify({ name }) }));
 }
 
+/** Apaga missões, compras e recompensas próprias e zera nível, XP e moedas; a conta continua */
+export async function resetPlayerData(id: string): Promise<Player> {
+  return toPlayer(await request<Player>(`/users/${id}/data`, { method: 'DELETE' }));
+}
+
 // --- Missões ---
 
 // O backend não guarda "rewarded"; uma missão concluída já teve as recompensas creditadas
@@ -85,6 +90,12 @@ export async function updateMission(id: string, changes: Partial<NewMission & { 
 
 export async function completeMission(id: string, userId: string): Promise<{ mission: Mission; user: PlayerStats }> {
   const result = await request<{ mission: ApiMission; user: PlayerStats }>(`/missions/${id}/complete${userQuery(userId)}`, { method: 'PATCH' });
+  return { mission: toMission(result.mission), user: result.user };
+}
+
+/** Desfaz uma missão cumprida: volta para o quadro e o servidor devolve o XP e as moedas */
+export async function uncompleteMission(id: string, userId: string): Promise<{ mission: Mission; user: PlayerStats }> {
+  const result = await request<{ mission: ApiMission; user: PlayerStats }>(`/missions/${id}/uncomplete${userQuery(userId)}`, { method: 'PATCH' });
   return { mission: toMission(result.mission), user: result.user };
 }
 

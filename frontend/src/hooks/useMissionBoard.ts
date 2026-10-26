@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { Mission } from '../types/world';
 import type { NewMission, Player } from '../services/api';
-import { completeMission, createMission, deleteMission, grantRewards, listMissions, loadPlayer } from '../services/api';
+import { completeMission, uncompleteMission, updateMission, createMission, deleteMission, grantRewards, listMissions, loadPlayer } from '../services/api';
 
 /** Missões e jogador vindos do backend, com as ações do quadro de aventuras */
 export function useMissionBoard() {
@@ -29,10 +29,23 @@ export function useMissionBoard() {
     setMissions(current => [created, ...current]);
   }
 
+  async function edit(id: string, changes: NewMission) {
+    const updated = await updateMission(id, changes);
+    setMissions(current => current.map(mission => mission.id === id ? updated : mission));
+  }
+
   /** Conclui no backend: credita XP e moedas e devolve o saldo atualizado do jogador */
   async function complete(id: string) {
     if (!player) throw new Error('Servidor indisponível.');
     const result = await completeMission(id, player.id);
+    setMissions(current => current.map(mission => mission.id === id ? result.mission : mission));
+    setPlayer(current => current && { ...current, ...result.user });
+  }
+
+  /** Desfaz no backend: a missão volta a ficar em aberto e o XP e as moedas saem do saldo */
+  async function uncomplete(id: string) {
+    if (!player) throw new Error('Servidor indisponível.');
+    const result = await uncompleteMission(id, player.id);
     setMissions(current => current.map(mission => mission.id === id ? result.mission : mission));
     setPlayer(current => current && { ...current, ...result.user });
   }
@@ -48,7 +61,7 @@ export function useMissionBoard() {
     setPlayer(await grantRewards(player, coins, xp));
   }
 
-  return { player, missions, loading, error, create, complete, remove, grant };
+  return { player, missions, loading, error, create, edit, complete, uncomplete, remove, grant };
 }
 
 // "Partir em aventura" ainda não existe no backend: guardamos quais missões estão em andamento neste navegador

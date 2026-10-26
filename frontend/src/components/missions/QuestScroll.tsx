@@ -8,20 +8,19 @@ const TILTS = [-1.6, 1.2, -0.8, 1.8];
 
 interface QuestScrollProps {
   mission: Mission; index: number; completed: boolean; active: boolean; pending: boolean; celebrating: boolean; highlighted: boolean;
-  onAccept: () => void; onAbandon: () => void; onComplete: (origin: Element) => void; onRemove: () => void;
+  onOpen: () => void; onAccept: () => void; onAbandon: () => void; onComplete: (origin: Element) => void; onRemove: () => void;
 }
 
 /** Pergaminho preso no quadro com tachinha: patente, recompensa e o caminho Partir → Cumprir; cumprido, fica com o carimbo */
-export function QuestScroll({ mission, index, completed, active, pending, celebrating, highlighted, onAccept, onAbandon, onComplete, onRemove }: QuestScrollProps) {
+export function QuestScroll({ mission, index, completed, active, pending, celebrating, highlighted, onOpen, onAccept, onAbandon, onComplete, onRemove }: QuestScrollProps) {
   const rank = rankOf(mission);
   const noop = useCallback(() => {}, []);
   return <li id={`quest-${mission.id}`} className={`quest-scroll ${active && !completed ? 'is-active' : ''} ${celebrating ? 'is-done' : ''} ${completed ? 'is-completed' : ''} ${highlighted ? 'is-highlighted' : ''}`}
     style={{ '--tilt': `${TILTS[index % TILTS.length]}deg`, animationDelay: `${index * 70}ms` } as CSSProperties}>
     <span className="quest-pin" aria-hidden="true"/>
-    <div className="quest-paper">
+    <div className="quest-paper" onClick={event=>{ if (!(event.target as Element).closest('button')) onOpen(); }}>
       <p className="quest-rank"><span aria-hidden="true">{'★'.repeat(rank.stars)}{'☆'.repeat(3 - rank.stars)}</span>{rank.name}</p>
-      <h3 className="quest-title">{mission.title}</h3>
-      {mission.description && <p className="quest-description">{mission.description}</p>}
+      <h3 className="quest-title" title={mission.title}><button type="button" className="quest-details-trigger" onClick={onOpen} aria-haspopup="dialog" aria-label={`Ver e editar missão: ${mission.title}`} disabled={pending || celebrating}>{mission.title}</button></h3>
       <div className="quest-rewards">
         <span className="quest-xp">+{mission.xp} XP</span>
         <span className="quest-coins"><PixelIcon name="coin" className="size-3"/>+{mission.coins}</span>

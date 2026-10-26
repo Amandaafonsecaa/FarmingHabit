@@ -102,7 +102,7 @@
 .quest-pin { position: absolute; top: -9px; left: 50%; z-index: 3; width: 14px; height: 14px; margin-left: -7px; background: #d9574a; border: 2px solid #7a2e17; box-shadow: inset 3px 3px #f2998a, 2px 3px 0 #3b241866; }
 .quest-scroll.is-active .quest-pin { background: #53922d; border-color: #23401f; box-shadow: inset 3px 3px #8cc65e, 2px 3px 0 #3b241866; }
 .quest-paper {
- position: relative; padding: 18px 14px 12px; color: #3b2418;
+ position: relative; display: flex; flex-direction: column; height: 150px; min-width: 0; padding: 10px 10px 8px; color: #3b2418;
  background: #f8e7bf repeating-linear-gradient(0deg, transparent 0 5px, #c9a46a14 5px 6px);
  border: 3px solid #8a5838; box-shadow: inset 0 0 0 2px #f5c477, 3px 4px 0 #42291655;
  transition: box-shadow .15s steps(2);
@@ -113,17 +113,17 @@
 .quest-scroll.is-active .quest-paper { background-color: #f3efc4; }
 .quest-rank { display: flex; align-items: center; gap: 6px; font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; color: #a86d1c; }
 .quest-rank > span { color: #e7b84b; letter-spacing: 0; text-shadow: 1px 1px #7a4a26; font-size: 13px; }
-.quest-title { margin-top: 6px; font-size: 15px; font-weight: 900; line-height: 1.25; overflow-wrap: anywhere; }
-.quest-description { margin-top: 6px; font-size: 12px; font-style: italic; line-height: 1.45; color: #5b3826; overflow-wrap: anywhere; }
-.quest-rewards { display: flex; gap: 12px; margin-top: 10px; padding-top: 8px; border-top: 1px dashed #c49a62; font-size: 12px; font-weight: 900; }
+.quest-title { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; flex-shrink: 0; height: 2.5em; margin-top: 6px; font-size: 15px; font-weight: 900; line-height: 1.25; overflow-wrap: anywhere; }
+.quest-description { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; line-clamp: 3; overflow: hidden; min-height: 0; max-height: 4.35em; flex-shrink: 1; margin-top: 6px; font-size: 12px; font-style: italic; line-height: 1.45; color: #5b3826; overflow-wrap: anywhere; }
+.quest-rewards { display: flex; flex-shrink: 0; gap: 12px; margin-top: auto; padding-top: 8px; border-top: 1px dashed #c49a62; font-size: 12px; font-weight: 900; }
 .quest-xp { color: #3f6b35; }
 .quest-coins { display: inline-flex; align-items: center; gap: 4px; color: #a86d1c; }
-.quest-progress { display: flex; align-items: center; gap: 8px; margin-top: 8px; font-size: 11px; font-weight: 900; color: #3f6b35; }
+.quest-progress { flex-shrink: 0; display: flex; align-items: center; gap: 8px; margin-top: 8px; font-size: 11px; font-weight: 900; color: #3f6b35; }
 .footsteps { position: relative; display: inline-flex; gap: 3px; }
 .footsteps > span { width: 4px; height: 3px; background: #8a5838; animation: footstep 1.2s steps(1) infinite; }
 .footsteps > span:nth-child(even) { transform: translateY(3px); }
 .footsteps > span:nth-child(2) { animation-delay: .3s; } .footsteps > span:nth-child(3) { animation-delay: .6s; }
-.quest-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 12px; }
+.quest-actions { flex-shrink: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 12px; }
 .quest-actions .plot-remove { margin-left: auto; }
 .quest-go:hover:not(:disabled) svg { animation: compass-spin .8s steps(4) infinite; }
 
@@ -372,3 +372,23 @@
  .world-title { order: 3; width: 100%; justify-content: space-between; }
  .missions-hero .chest-alert { bottom: 12px; right: 12px; }
 }
+
+/* Pergaminhos compactos: ações sempre dentro dos 150px. */
+.quest-paper .quest-rank { flex-shrink: 0; font-size: 9px; line-height: 14px; }
+.quest-paper .quest-title { margin-top: 3px; font-size: 13px; line-height: 1.2; height: 2.4em; }
+.quest-paper .quest-description { margin-top: 3px; -webkit-line-clamp: 1; line-clamp: 1; max-height: 1.4em; font-size: 11px; line-height: 1.4; }
+.quest-paper .quest-rewards { padding-top: 4px; font-size: 11px; line-height: 15px; }
+.quest-paper .quest-progress { margin-top: 2px; font-size: 9px; line-height: 12px; }
+.quest-paper .quest-actions { flex-wrap: nowrap; gap: 4px; margin-top: 4px; }
+.quest-paper .quest-actions .pixel-button { min-height: 26px; min-width: 0; padding: 4px 5px; font-size: 10px; line-height: 1.1; }
+.quest-paper .quest-actions .primary-button { flex: 1; }
+.quest-paper .quest-actions .plot-remove { flex-shrink: 0; width: 24px; height: 26px; }
+
+.quest-paper { cursor: pointer; }
+.quest-details-trigger { display: block; width: 100%; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; }
+.quest-details-trigger:focus-visible { outline: 2px dashed #3f6b35; outline-offset: -2px; }
+.quest-scroll .quest-stamp { pointer-events: none; }
+.mission-detail-status { display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: #e5e9ba; border: 2px solid #9ba15a; color: #3f6b35; font-size: 12px; font-weight: bold; }
+
+/* Desfazer missão cumprida (no modal de detalhes) */
+.mission-undo { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; padding-top: 10px; border-top: 1px dashed #c49a62; }

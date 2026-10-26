@@ -14,6 +14,7 @@ const SIZES: { value: Size; label: string; hint: string }[] = [
 
 /** Nova missão: nome, descrição e o tamanho da recompensa (XP + moedas) */
 export function MissionDialog({ onSave, onClose }: { onSave: (item: Extract<NewItem, { kind: 'mission' }>) => Promise<boolean>; onClose: () => void }) {
+  const [titleLength, setTitleLength] = useState(0);
   const [size, setSize] = useState<Size>('medium');
   const [error, setError] = useState('');
   const fail = (message: string) => { setError(message); return false; };
@@ -22,6 +23,8 @@ export function MissionDialog({ onSave, onClose }: { onSave: (item: Extract<NewI
     const title = String(data.get('title') ?? '').trim();
     const description = String(data.get('description') ?? '').trim();
     if (!title) return fail('Dê um nome para a missão.');
+    if (title.length > 60) return fail('O título deve ter no máximo 60 caracteres.');
+    if (description.length > 160) return fail('A descrição deve ter no máximo 160 caracteres.');
     const { xp, coins } = size === 'custom' ? { xp: Number(data.get('xp')), coins: Number(data.get('coins')) } : REWARDS[size];
     if (!Number.isInteger(xp) || xp < 1 || xp > 1000) return fail('O XP deve ser um número inteiro de 1 a 1000.');
     if (!Number.isInteger(coins) || coins < 0 || coins > 10000) return fail('As moedas devem ser um número inteiro de 0 a 10000.');
@@ -30,7 +33,7 @@ export function MissionDialog({ onSave, onClose }: { onSave: (item: Extract<NewI
   }
 
   return <GameDialog title="Nova missão" icon="mission" intro="Viu algo curioso? Transforme em aventura." submitLabel="Adicionar missão" error={error} onSubmit={submit} onClose={onClose}>
-    <label className="form-label" htmlFor="mission-title">Nome da missão<input id="mission-title" name="title" maxLength={60} autoFocus placeholder="Ex.: Descobrir que construção é aquela perto do trabalho"/></label>
+    <label className="form-label" htmlFor="mission-title">Nome da missão<input id="mission-title" name="title" maxLength={60} onChange={event=>setTitleLength(event.target.value.length)} aria-describedby="mission-title-limit" autoFocus placeholder="Ex.: Descobrir que construção é aquela perto do trabalho"/><small id="mission-title-limit" className="text-right text-xs font-normal text-muted">{titleLength}/60 caracteres</small></label>
     <label className="form-label" htmlFor="mission-description">Descrição curta <span className="optional-tag">(opcional)</span><textarea id="mission-description" name="description" rows={2} maxLength={160} placeholder="O que você quer descobrir ou explorar?"/></label>
     <fieldset className="dialog-fieldset"><legend>Recompensa</legend>
       <ChoiceCards name="size" value={size} options={SIZES} onChange={setSize} compact/>

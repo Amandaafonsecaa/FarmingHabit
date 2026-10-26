@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { NpcDialog } from '../NpcDialog';
-import { PixelAvatar } from '../PixelAvatar';
-import { GUIDE, GUIDE_CHOICES, guideGreeting, guideRespond, type GuideChoice, type GuideContext } from '../../lib/guildGuide';
+import { GuideWarrior } from './GuideWarrior';
+import { GUIDE_CHOICES, guideGreeting, guideRespond, type GuideChoice, type GuideContext } from '../../lib/guildGuide';
 
 /** Retrato do Capitão Bússola (mesmo enquadramento do Seu Zé) */
 function GuidePortrait({ talking }: { talking: boolean }) {
-  return <div className={`vendor-portrait guide-portrait ${talking ? 'is-talking' : ''}`} aria-hidden="true"><PixelAvatar avatar={GUIDE} className="vendor-portrait-avatar"/></div>;
+  return <div className={`vendor-portrait guide-portrait ${talking ? 'is-talking' : ''}`} aria-hidden="true"><GuideWarrior className="vendor-portrait-avatar"/></div>;
 }
 
 /** Conversa com o Capitão Bússola, que explica missões, mapa e baús */
