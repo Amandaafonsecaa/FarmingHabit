@@ -98,12 +98,55 @@
 .scroll-stamp { align-self: flex-end; margin-top: 4px; padding: 4px 8px; max-width: 100%; transform: rotate(-6deg); border: 2px solid #a8321fcc; outline: 1px solid #a8321f88; outline-offset: 2px; }
 .scroll-stamp span { display: block; font-family: 'MedievalSharp', Georgia, serif; font-size: 12px; letter-spacing: 1px; text-transform: uppercase; color: #a8321f; opacity: .8; overflow-wrap: anywhere; text-align: center; }
 
+/* --- Caderno de espiral da semana: uma página vista de frente, espiral na esquerda, vira em 3D ao clicar --- */
+.notebook { display: flex; min-width: 0; }
+.nb-body { position: relative; display: flex; flex: 1; min-height: 300px; padding-left: 22px; }
+/* Espiral de arame na borda esquerda, atravessando os furinhos da folha */
+.nb-spiral { position: absolute; top: 10px; bottom: 10px; left: 0; z-index: 6; width: 40px; pointer-events: none;
+ background: radial-gradient(ellipse 15px 5.5px at 22px 50%, transparent 9px, #5d6382 9.5px, #d6dbe3 11px, #8d8fa0 12.5px, transparent 13px) 0 0 / 40px 20px repeat-y;
+ filter: drop-shadow(1px 2px 0 #1c1a2266); }
+.nb-stack { position: relative; display: block; flex: 1; padding: 0; border: 0; background: none; cursor: pointer; perspective: 1600px; outline: none; }
+.nb-stack:focus-visible .is-base { outline: 3px dashed #f2c453; outline-offset: 4px; }
+/* Folha: papel quente com pauta, furinhos da espiral e uma pilha de folhas por baixo */
+.nb-sheet { position: absolute; inset: 0; display: flex; overflow: hidden;
+ background: #fbf3e1 repeating-linear-gradient(0deg, transparent 0 25px, #b9cbd8aa 25px 26px) 0 10px;
+ box-shadow: inset 6px 0 6px -4px #c9b99488; }
+.nb-sheet::before { content: ''; position: absolute; top: 4px; bottom: 4px; left: 6px; width: 8px; background: radial-gradient(circle, #e8d9bd 2.5px, transparent 3px) 0 0 / 8px 20px repeat-y; }
+.nb-sheet.is-base { box-shadow: inset 6px 0 6px -4px #c9b99488, 2px 2px 0 #efe4cc, 4px 4px 0 #e2d4b6, 6px 6px 0 #3b241833; }
+/* Conteúdo sempre centralizado; rabiscos espalhados em volta */
+.nb-content { position: relative; display: flex; flex: 1; align-items: center; justify-content: center; padding: 26px 30px; text-align: center; }
+.nb-text { max-width: 78%; font-family: 'Caveat', 'Segoe Print', cursive; font-size: 28px; font-weight: 600; line-height: 1.15; color: #3b2418; }
+.nb-text mark { color: inherit; background: none; text-decoration: underline wavy #bf583799; text-underline-offset: 5px; }
+.nb-scene { display: flex; align-items: center; justify-content: center; }
+.nb-scene-row { display: flex; align-items: flex-end; justify-content: center; gap: 4px; }
+.nb-scene-row .sketch { width: 92px; height: 92px; }
+.nb-doodle { position: absolute; opacity: .75; pointer-events: none; }
+.nb-doodle .sketch { width: 52px; height: 52px; }
+.nb-doodle.at-tl { top: 10px; left: 22px; } .nb-doodle.at-tr { top: 10px; right: 12px; }
+.nb-doodle.at-bl { bottom: 8px; left: 22px; } .nb-doodle.at-br { bottom: 8px; right: 12px; }
+.nb-doodle.at-top { top: 4px; left: 50%; transform: translateX(-50%); } .nb-doodle.at-bottom { bottom: 2px; left: 50%; transform: translateX(-50%); }
+.nb-doodle.at-left { top: 50%; left: 18px; transform: translateY(-50%); } .nb-doodle.at-right { top: 50%; right: 8px; transform: translateY(-50%); }
+.is-drawing .nb-doodle { opacity: .5; }
+.sketch { display: block; overflow: visible; }
+/* Dica de clique: o cantinho de baixo levanta um pouco no hover */
+.nb-corner { position: absolute; right: 0; bottom: 0; z-index: 4; width: 0; height: 0; background: linear-gradient(135deg, #fbf3e1 50%, #d9c9a8 50%, #efe2c6 100%); box-shadow: -2px -2px 3px #3b241822; transition: width .25s ease, height .25s ease; }
+.nb-stack:hover .nb-corner, .nb-stack:focus-visible .nb-corner { width: 26px; height: 26px; }
+/* Folha virando pela espiral: frente e verso, leve curvatura e luz/sombra passando */
+.nb-turn { position: absolute; inset: 0; z-index: 3; transform-style: preserve-3d; transform-origin: 0 50%; pointer-events: none; }
+.nb-turn .nb-sheet { backface-visibility: hidden; }
+.nb-turn .is-back { transform: rotateY(180deg); background-color: #f6ecd6; }
+.nb-turn .is-front::after, .nb-turn .is-back::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(90deg, #00000000 40%, #3b241833 100%); opacity: 0; animation: turn-light .9s ease-in-out forwards; }
+.nb-turn.is-next { animation: sheet-turn-next .9s cubic-bezier(.45, .05, .3, 1) forwards; }
+.nb-turn.is-prev { animation: sheet-turn-prev .9s cubic-bezier(.45, .05, .3, 1) forwards; }
+/* Sombra que a folha joga na página de baixo enquanto passa */
+.nb-turn-shadow { position: absolute; inset: 0; z-index: 2; pointer-events: none; background: linear-gradient(90deg, #3b241840, transparent 60%); opacity: 0; animation: turn-shadow .9s ease-in-out forwards; }
+
 /* --- Layout --- */
 .evolution-layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; max-width: 1600px; margin: auto; padding: 18px 16px 12px; }
 /* Sua semana e Meu motivo lado a lado */
 /* Mesma altura: quem manda é "Sua semana"; a janela da motivação ocupa a mesma altura e a cena dá zoom para preenchê-la */
 @media (min-width: 1000px) {
- .evolution-layout { grid-template-columns: minmax(0, 1fr); }
+ .evolution-layout { grid-template-columns: minmax(260px, 1fr) minmax(0, 2fr); align-items: stretch; }
  .motivation-window { min-height: 300px; }
  /* No desktop a moldura tem a altura de "Sua semana" e o desenho se encaixa nela */
  .motivation-window .motivation-stage { position: absolute; inset: 8px; aspect-ratio: auto; }
@@ -199,6 +242,10 @@
 @keyframes gym-second { to { transform: rotate(360deg); } }
 @keyframes gym-light { 50% { opacity: .12; } }
 @keyframes week-pop { from { transform: scale(0); } }
+@keyframes sheet-turn-next { 0% { transform: rotateY(0) skewY(0); } 35% { transform: rotateY(-55deg) skewY(-3deg); } 70% { transform: rotateY(-130deg) skewY(2deg); } 100% { transform: rotateY(-180deg) skewY(0); } }
+@keyframes sheet-turn-prev { 0% { transform: rotateY(-180deg) skewY(0); } 30% { transform: rotateY(-130deg) skewY(2deg); } 65% { transform: rotateY(-55deg) skewY(-3deg); } 100% { transform: rotateY(0) skewY(0); } }
+@keyframes turn-light { 40% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes turn-shadow { 30%, 60% { opacity: 1; } 100% { opacity: 0; } }
 @keyframes plot-in { from { opacity: 0; transform: translateY(10px); } }
 @keyframes bloom-grow { from { transform: scaleX(0); } }
 @keyframes scroll-wiggle { 25% { transform: rotate(-2deg); } 75% { transform: rotate(2deg); } }
@@ -218,6 +265,9 @@
  .evolution-hero-top { padding-left: 0; }
  .evolution-sign { width: 100%; transform: none; }
  .evolution-layout { padding: 14px 10px; gap: 14px; }
+ /* Celular: o tracker vem primeiro e o caderninho depois */
+ .notebook { order: 2; }
+ .nb-text { font-size: 24px; }
  /* Celular: plaquinhas lado a lado embaixo do ranking; % e contagem ficam embaixo da barra */
  .week-bloom { grid-template-columns: minmax(0, 1fr); gap: 18px; padding: 14px 10px 0; }
  .bloom-row { grid-template-columns: 30px 24px minmax(0, 1fr) auto; grid-template-areas: 'rank icon label percent' 'bar bar bar count'; gap: 4px 8px; }

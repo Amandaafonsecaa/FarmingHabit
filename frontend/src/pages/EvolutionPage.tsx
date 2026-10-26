@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { MainLayout } from '../layouts/MainLayout';
 import { GymHero } from '../components/evolution/GymHero';
 import { WeekBoard } from '../components/evolution/WeekBoard';
+import { SketchbookInsights } from '../components/evolution/SketchbookInsights';
 import { WeekBloomChart } from '../components/evolution/WeekBloomChart';
 import { useGoalTracker, useToday } from '../hooks/useGoalTracker';
 import { goalWeek } from '../lib/coach';
@@ -38,7 +39,9 @@ export function EvolutionPage({ onNavigate }: { onNavigate: (page: AppPage) => v
     world={<GymHero level={player?.level ?? 1} xpInLevel={(player?.xp ?? 0) % XP_PER_LEVEL} xpPerLevel={XP_PER_LEVEL} goals={goals} log={log} coach={coach}/>}>
     {offline && <p role="alert" className="world-status">Servidor indisponível: o nível aparece quando o backend voltar.</p>}
     <WeekBloomChart goals={goals} log={log} today={today} missions={missions}/>
+    {/* Caderninho de notas à esquerda; "Sua semana" continua como o principal */}
     <div className="evolution-layout">
+      <SketchbookInsights goals={goals} log={log} today={today}/>
       <WeekBoard goals={goals} log={log} today={today}/>
     </div>
     <p role="status" className="world-status">Cada pequeno passo também é crescimento.</p>

@@ -1,7 +1,7 @@
 import type { GoalArea, GoalLog, TrackedGoal } from '../types/goals';
 import type { Mission } from '../types/world';
 import type { TreasureState } from './treasure';
-import { addDays, startOfWeek, toKey } from './goalLogic';
+import { addDays, isDoneOn, startOfWeek, toKey } from './goalLogic';
 import { goalWeek } from './coach';
 import { areaOf } from './goalAreas';
 import { HARVEST_REWARD, WEEK_BONUS } from './harvestRewards';
@@ -80,3 +80,24 @@ export function weekEarnings(today: Date, claims: string[], treasure: TreasureSt
   };
 }
 
+
+const WEEKDAY_FULL = ['domingo', 'segunda-feira', 'terça-feira', 'quarta-feira', 'quinta-feira', 'sexta-feira', 'sábado'];
+
+/** Dia desta semana (segunda até hoje) com mais metas cumpridas; null se nada foi feito ainda */
+export function bestDayThisWeek(goals: TrackedGoal[], log: GoalLog, today: Date): { name: string; count: number } | null {
+  const monday = startOfWeek(today);
+  let best: { name: string; count: number } | null = null;
+  for (let day = monday; toKey(day) <= toKey(today); day = addDays(day, 1)) {
+    const count = goals.filter(goal => isDoneOn(goal, log, day)).length;
+    if (count > 0 && (!best || count > best.count)) best = { name: WEEKDAY_FULL[day.getDay()], count };
+  }
+  return best;
+}
+
+/** Área para a dica da semana: a de menor % de conclusão (empate: menos concluídas). 'ok' se tudo está em 100% */
+export function tipArea(areas: AreaWeek[]): AreaWeek | 'ok' | null {
+  const measured = areas.filter(area => area.expected > 0);
+  if (!measured.length) return null;
+  const weakest = [...measured].sort((a, b) => a.rate - b.rate || a.done - b.done)[0];
+  return weakest.rate < 1 ? weakest : 'ok';
+}
