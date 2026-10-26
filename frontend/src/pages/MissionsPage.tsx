@@ -3,7 +3,6 @@ import { toast } from '../lib/toast';
 import { MainLayout } from '../layouts/MainLayout';
 import { MissionsHero } from '../components/missions/MissionsHero';
 import { QuestScroll } from '../components/missions/QuestScroll';
-import { AdventureDiary } from '../components/missions/AdventureDiary';
 import { MissionDialog } from '../components/dialogs/MissionDialog';
 import { PixelIcon } from '../components/PixelIcon';
 import { useAcceptedMissions, useMissionBoard } from '../hooks/useMissionBoard';
@@ -23,7 +22,6 @@ export function MissionsPage({ onNavigate }: { onNavigate: (page: AppPage) => vo
   const { accepted, accept, abandon } = useAcceptedMissions();
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [celebratingId, setCelebratingId] = useState<string | null>(null);
-  const [freshId, setFreshId] = useState<string | null>(null);
   const [highlightId, setHighlightId] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   // Avisos de ação aparecem como toast
@@ -31,7 +29,8 @@ export function MissionsPage({ onNavigate }: { onNavigate: (page: AppPage) => vo
   const [treasure, setTreasure] = useState(readTreasure);
   const [openingChest, setOpeningChest] = useState<FoundChest | null>(null);
 
-  // A missão sendo comemorada fica no quadro até o carimbo terminar, depois vai para o diário
+  // Cumpridas continuam no quadro com o carimbo, abaixo das em aberto (as em jornada vêm primeiro).
+  // A que está sendo comemorada fica no lugar até o carimbo terminar
   const open = board.missions.filter(mission => !mission.completed || mission.id === celebratingId)
     .sort((a, b) => Number(accepted.includes(b.id)) - Number(accepted.includes(a.id)));
   const done = board.missions.filter(mission => mission.completed && mission.id !== celebratingId);
@@ -71,7 +70,7 @@ export function MissionsPage({ onNavigate }: { onNavigate: (page: AppPage) => vo
       recordAdventure(title);
       setCelebratingId(id);
       setAnnouncement(`${title}: missão cumprida! +${xp} XP e +${coins} moedas.`);
-      window.setTimeout(() => { setCelebratingId(null); setFreshId(id); abandon(id); }, CELEBRATION_MS);
+      window.setTimeout(() => { setCelebratingId(null); abandon(id); }, CELEBRATION_MS);
     });
   }
 
@@ -106,7 +105,7 @@ export function MissionsPage({ onNavigate }: { onNavigate: (page: AppPage) => vo
       onCreate={()=>setDialogOpen(true)} onFocusMission={focusQuest}/>}>
     <div className="missions-layout">
       <section className="world-panel pixel-frame quest-board-panel" aria-labelledby="board-heading">
-        <header className="panel-heading"><h2 id="board-heading"><PixelIcon name="mission" className="size-5"/>Quadro de aventuras</h2><span className="panel-tag">{open.length} em aberto</span></header>
+        <header className="panel-heading"><h2 id="board-heading"><PixelIcon name="mission" className="size-5"/>Quadro de aventuras</h2><span className="panel-tag">{stillOpen.length} em aberto</span></header>
         <div className="quest-board">
           {board.loading && <p className="quest-board-note">Desenrolando os pergaminhos…</p>}
           {board.error && <p role="alert" className="quest-board-note is-error">Não foi possível carregar as missões: {board.error}</p>}
@@ -114,15 +113,25 @@ export function MissionsPage({ onNavigate }: { onNavigate: (page: AppPage) => vo
             <p>Nenhuma missão no quadro. Viu algo curioso hoje?</p>
             <button type="button" className="pixel-button primary-button mt-3" onClick={()=>setDialogOpen(true)}><PixelIcon name="plus" className="size-2.5"/>Transformar em missão</button>
           </div>}
-          <ul className="quest-list">{open.map((mission, index) => <QuestScroll key={mission.id} mission={mission} index={index}
-            active={accepted.includes(mission.id)} pending={pendingId === mission.id} celebrating={celebratingId === mission.id} highlighted={highlightId === mission.id}
+          {open.length > 0 && <ul className="quest-list">{open.map((mission, index) => <QuestScroll key={mission.id} mission={mission} index={index}
+            completed={mission.completed && mission.id !== celebratingId} active={accepted.includes(mission.id)} pending={pendingId === mission.id} celebrating={celebratingId === mission.id} highlighted={highlightId === mission.id}
+            onAccept={()=>{ accept(mission.id); setAnnouncement(`${mission.title}: pé na estrada! Boa aventura.`); }}
+            onAbandon={()=>{ abandon(mission.id); setAnnouncement(`${mission.title}: fica para outro dia.`); }}
+            onComplete={origin=>complete(mission.id, mission.title, mission.xp, mission.coins, origin)}
+            onRemove={()=>remove(mission.id, mission.title)}/>)}</ul>}
+          {/* Divisor discreto entre o que falta fazer e o que já foi cumprido */}
+          {done.length > 0 && <>
+            <p className="quest-divider"><span>Cumpridas · {done.length}</span></p>
+            <ul className="quest-list">{done.map((mission, index) => <QuestScroll key={mission.id} mission={mission} index={index + open.length}
+            completed={mission.completed && mission.id !== celebratingId} active={accepted.includes(mission.id)} pending={pendingId === mission.id} celebrating={celebratingId === mission.id} highlighted={highlightId === mission.id}
             onAccept={()=>{ accept(mission.id); setAnnouncement(`${mission.title}: pé na estrada! Boa aventura.`); }}
             onAbandon={()=>{ abandon(mission.id); setAnnouncement(`${mission.title}: fica para outro dia.`); }}
             onComplete={origin=>complete(mission.id, mission.title, mission.xp, mission.coins, origin)}
             onRemove={()=>remove(mission.id, mission.title)}/>)}</ul>
+          </>}
         </div>
       </section>
-      <div className="missions-side"><AdventureDiary entries={done} freshId={freshId}/><CollectionPanel collection={treasure.collection}/></div>
+      <div className="missions-side"><CollectionPanel collection={treasure.collection}/></div>
     </div>
     <p role="status" className="world-status">{'Toda grande descoberta começa com uma pequena curiosidade.'}</p>
     {dialogOpen && <MissionDialog onSave={create} onClose={()=>setDialogOpen(false)}/>}

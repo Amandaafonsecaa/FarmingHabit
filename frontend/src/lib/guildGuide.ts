@@ -40,8 +40,8 @@ export function guideRespond(choice: GuideChoice, context: GuideContext): string
   ];
   if (choice === 'map') return [
     'Cada missão cumprida faz você andar uma parada no mapa. Cada região tem 5 paradas.',
-    'Ao passar da última parada, as nuvens se abrem e uma nova região aparece.',
-    `São ${CHAPTERS.length} regiões até o castelo. Lá no fim, uma princesa espera ser resgatada... e aí começa uma nova jornada!`,
+    'Cada região é um mundo com o seu próprio mapa. Ao passar da última parada, o mapa do próximo mundo começa a ser desenhado.',
+    `São ${CHAPTERS.length} mundos ao todo. O que espera no fim? Só indo até lá para descobrir...`,
   ];
   if (choice === 'chests') return [
     'Na 3ª e na 5ª parada de cada região tem um baú. O da 5ª é um baú grande, com mais prêmios!',
