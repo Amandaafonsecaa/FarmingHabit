@@ -1,18 +1,21 @@
-import { useState, type ChangeEvent } from 'react';
+import { Fragment, useState, type ChangeEvent, type CSSProperties } from 'react';
 import type { Motivation } from '../../services/api';
 import { shrinkImage } from '../../lib/image';
 import { GameDialog } from '../dialogs/GameDialog';
-import { PixelIcon } from '../PixelIcon';
 
 const MAX_TEXT = 160;
+// Inclinações bem leves e alternadas: o giz parece escrito à mão, sem perder a leitura
+const WOBBLE = [-1.6, .9, -.4, 1.3, -1, .5, -.7, 1.1];
 
 /** Modal da motivação: a frase do quadro-negro e, se quiser, a foto do porta-retrato */
 function MotivationDialog({ motivation, onSave, onClose }: {
   motivation: Motivation; onSave: (changes: { text: string; photo?: string | null }) => Promise<void>; onClose: () => void;
 }) {
   const [text, setText] = useState(motivation.text);
-  const [photo, setPhoto] = useState(motivation.photo);
+  // undefined = mantém a foto atual; string = foto nova; null = remover
+  const [photo, setPhoto] = useState<string | null | undefined>(undefined);
   const [error, setError] = useState('');
+  const preview = photo === undefined ? motivation.photoUrl : photo;
 
   async function pickPhoto(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
@@ -26,8 +29,7 @@ function MotivationDialog({ motivation, onSave, onClose }: {
     const phrase = text.trim();
     if (!phrase) { setError('Escreva a sua motivação principal.'); return false; }
     try {
-      // Só manda a foto quando ela mudou (evita reenviar a mesma imagem)
-      await onSave({ text: phrase, ...(photo !== motivation.photo && { photo }) });
+      await onSave({ text: phrase, ...(photo !== undefined && { photo }) });
       onClose();
       return true;
     } catch (reason) {
@@ -36,18 +38,19 @@ function MotivationDialog({ motivation, onSave, onClose }: {
     }
   }
 
-  return <GameDialog title="Sua motivação" icon="flame" intro="O que te faz levantar e cumprir as metas? Isso vai ficar no quadro-negro todos os dias."
-    submitLabel="Salvar motivação" error={error} onSubmit={submit} onClose={onClose}>
+  return <GameDialog title="Meu motivo" icon="flame" intro="O que te faz levantar e cumprir as metas? Vai ficar escrito a giz no seu cantinho."
+    submitLabel="Salvar" error={error} onSubmit={submit} onClose={onClose}>
     <label className="form-label" htmlFor="motivation-text">Motivação principal
-      <textarea id="motivation-text" rows={3} value={text} maxLength={MAX_TEXT} autoFocus onChange={event=>setText(event.target.value)} placeholder="Ex.: Quero ter energia para brincar com meus filhos"/>
+      <textarea id="motivation-text" rows={3} value={text} maxLength={MAX_TEXT} autoFocus onChange={event=>setText(event.target.value)} placeholder="Eu quero me tornar uma pessoa mais saudável, constante e feliz."/>
       <small className="text-right text-xs font-normal text-muted">{text.length}/{MAX_TEXT} caracteres</small>
     </label>
     <div className="form-label">Foto do porta-retrato <span className="optional-tag">(opcional)</span>
       <div className="motivation-photo-field">
-        <span className="motivation-photo-preview">{photo ? <img src={photo} alt="Foto escolhida"/> : <PixelIcon name="sun" className="size-6"/>}</span>
+        {/* Prévia já dentro de um porta-retrato igual ao da escrivaninha */}
+        <span className="mini-frame">{preview ? <img src={preview} alt="Prévia da foto no porta-retrato"/> : <span className="mini-frame-empty" aria-hidden="true"/>}</span>
         <div className="flex flex-wrap gap-2">
-          <label className="pixel-button motivation-upload">{photo ? 'Trocar foto' : 'Escolher foto'}<input type="file" accept="image/*" className="sr-only" onChange={event=>{ void pickPhoto(event); }}/></label>
-          {photo && <button type="button" className="pixel-button" onClick={()=>setPhoto(null)}>Remover</button>}
+          <label className="pixel-button motivation-upload">{preview ? 'Trocar foto' : 'Escolher foto'}<input type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" onChange={event=>{ void pickPhoto(event); }}/></label>
+          {preview && <button type="button" className="pixel-button" onClick={()=>setPhoto(null)}>Remover</button>}
         </div>
       </div>
     </div>
@@ -55,70 +58,101 @@ function MotivationDialog({ motivation, onSave, onClose }: {
 }
 
 /**
- * Cantinho da motivação: escrivaninha com o porta-retrato (a foto da pessoa) e, na parede, o quadro-negro com a frase.
- * As peças em HTML (frase e foto) ficam por cima do desenho, nas mesmas proporções do viewBox 1000×520.
+ * "Este é o meu motivo": quadro-negro na parede com a frase a giz; escrivaninha com luminária, caderno, lápis e o porta-retrato.
+ * O desenho inteiro se encaixa na moldura sem esticar (enquadramento 432×336 em volta dos itens);
+ * parede e piso continuam além dele para preencher a sobra. Frase e foto ficam dentro do SVG, então sempre acompanham a escala.
  */
 export function MotivationCorner({ motivation, onSave, disabled }: {
   motivation: Motivation | null; onSave: (changes: { text: string; photo?: string | null }) => Promise<void>; disabled: boolean;
 }) {
   const [editing, setEditing] = useState(false);
-  const current = motivation ?? { text: '', photo: null };
+  const current = motivation ?? { text: '', photoUrl: null, createdAt: null, updatedAt: null };
   const open = () => { if (!disabled) setEditing(true); };
+  const words = current.text.split(/\s+/).filter(Boolean);
+  // Frase longa usa giz mais fino para caber no quadro
+  const chalkSize = current.text.length > 100 ? 15 : current.text.length > 45 ? 18 : 22;
 
-  return <section className="world-panel pixel-frame motivation-panel" aria-labelledby="motivation-heading">
-    <header className="panel-heading"><h2 id="motivation-heading"><PixelIcon name="flame" className="size-5"/>Sua motivação</h2>
-      <button type="button" className="pixel-button motivation-edit" disabled={disabled} onClick={open}><PixelIcon name="plus" className="size-2.5"/>{current.text ? 'Editar' : 'Escrever'}</button></header>
-    <div className="motivation-scene">
-      <svg viewBox="0 0 1000 520" shapeRendering="crispEdges" aria-hidden="true">
-        {/* Parede listrada, rodapé e piso de tábuas */}
-        <rect width="1000" height="430" fill="#ead6b0"/>
-        {Array.from({ length: 25 }, (_, i) => <rect key={i} x={i * 40} width="18" height="430" fill="#e2cb9f"/>)}
-        <rect y="410" width="1000" height="20" fill="#8a5838"/><rect y="410" width="1000" height="4" fill="#a86b35"/>
-        <rect y="430" width="1000" height="90" fill="#b07a4c"/>
-        {Array.from({ length: 4 }, (_, i) => <rect key={i} y={450 + i * 20} width="1000" height="2" fill="#8a5838"/>)}
-        {Array.from({ length: 12 }, (_, i) => <rect key={i} x={(i * 97) % 1000} y={432 + (i % 4) * 20} width="2" height="18" fill="#8a5838"/>)}
-        <rect x="560" y="456" width="420" height="40" fill="#bf5837"/><rect x="560" y="456" width="420" height="4" fill="#e07a5a"/>{[590, 650, 710, 770, 830, 890, 950].map(x => <rect key={x} x={x} y="470" width="12" height="12" fill="#f2c453"/>)}
+  return <section className="motivation-window pixel-frame" aria-labelledby="motivation-heading">
+    <h2 id="motivation-heading" className="sr-only">Meu motivo</h2>
+    <div className="motivation-stage">
+      <button type="button" className="motivation-pencil" disabled={disabled} onClick={open} aria-label="Editar meu motivo" title="Editar meu motivo">✎</button>
+      <svg className="motivation-art" viewBox="92 4 432 336" preserveAspectRatio="xMidYMax meet" shapeRendering="crispEdges">
+        <defs>
+          {/* Luz quente da luminária espalhando pela parede e pela mesa */}
+          <radialGradient id="lamp-light" cx="300" cy="196" r="330" gradientUnits="userSpaceOnUse">
+            <stop offset="0" stopColor="#ffd98a" stopOpacity=".55"/><stop offset=".45" stopColor="#ffc46b" stopOpacity=".18"/><stop offset="1" stopColor="#ffc46b" stopOpacity="0"/>
+          </radialGradient>
+        </defs>
+        <g aria-hidden="true">
+          {/* Parede de madeira, rodapé e piso: continuam bem além do enquadramento para preencher qualquer moldura */}
+          <rect x="-2000" y="-2000" width="4600" height="2312" fill="#6b4a37"/>
+          {Array.from({ length: 70 }, (_, i) => <rect key={i} x={-1200 + i * 40} y="-2000" width="2" height="2312" fill="#5c3f2f"/>)}
+          <rect x="-2000" y="300" width="4600" height="12" fill="#4a3226"/><rect x="-2000" y="312" width="4600" height="2000" fill="#3b2a20"/>
 
-        {/* Quadro-negro com moldura de madeira, bandeja e gizes */}
-        <rect x="50" y="50" width="490" height="320" fill="#8a5838"/><rect x="56" y="56" width="478" height="308" fill="#a86b35"/>
-        <rect x="64" y="64" width="462" height="292" fill="#26302b"/>
-        <rect x="76" y="80" width="80" height="3" fill="#3a463f"/><rect x="420" y="330" width="90" height="3" fill="#3a463f"/><rect x="90" y="320" width="40" height="2" fill="#3a463f"/>
-        <rect x="60" y="370" width="470" height="12" fill="#8a5838"/><rect x="60" y="370" width="470" height="3" fill="#c9995a"/>
-        <rect x="110" y="362" width="22" height="8" fill="#fff6e6"/><rect x="140" y="363" width="14" height="7" fill="#f2c4d2"/><rect x="470" y="362" width="30" height="8" fill="#e8ecef"/>
+          {/* Quadro-negro: moldura fina, superfície fosca, poeira de giz e bandejinha */}
+          <rect x="104" y="40" width="252" height="164" fill="#a8743f"/><rect x="104" y="40" width="252" height="2" fill="#c9995a"/>
+          <rect x="109" y="45" width="242" height="154" fill="#1f2a25"/>
+          <rect x="120" y="54" width="70" height="3" fill="#ffffff" opacity=".05"/><rect x="290" y="180" width="50" height="4" fill="#ffffff" opacity=".05"/><rect x="128" y="176" width="34" height="2" fill="#ffffff" opacity=".06"/>
+          <rect x="110" y="204" width="240" height="5" fill="#8a5838"/>
+          <rect x="300" y="200" width="16" height="4" fill="#f6eedb"/><rect x="322" y="201" width="9" height="3" fill="#f3d9a6"/>
+          {/* Preguinho e barbante segurando o quadro */}
+          <path d="M230 14h2v2h-2Z M232 16l-72 24h2l70-22Zm0 0l72 24h-2l-70-22Z" fill="#3b2418" opacity=".7"/>
 
-        {/* Janela e plantinha pendurada */}
-        <rect x="640" y="26" width="240" height="108" fill="#57311f"/><rect x="648" y="34" width="224" height="92" fill="#9fd8f0"/><rect x="756" y="34" width="8" height="92" fill="#57311f"/><rect x="656" y="42" width="34" height="8" fill="#ffffff" opacity=".6"/>
-        <rect x="944" y="0" width="2" height="60" fill="#57311f"/><rect x="926" y="60" width="38" height="24" fill="#bf5837"/><rect x="920" y="52" width="50" height="12" fill="#4fa851"/><rect x="916" y="64" width="10" height="40" fill="#4fa851"/><rect x="962" y="64" width="10" height="30" fill="#2f7a3f"/>
+          {/* Escrivaninha pequena: tampo fino, gaveta e pernas delicadas */}
+          <rect x="210" y="262" width="300" height="8" fill="#b07a4c"/><rect x="210" y="262" width="300" height="2" fill="#d6a46a"/>
+          <rect x="216" y="270" width="288" height="14" fill="#8a5838"/><rect x="336" y="273" width="48" height="8" fill="#9a6538"/><rect x="358" y="276" width="4" height="2" fill="#e3b268"/>
+          <rect x="220" y="284" width="6" height="48" fill="#6b4426"/><rect x="494" y="284" width="6" height="48" fill="#6b4426"/>
+          <rect x="216" y="332" width="290" height="4" fill="#000000" opacity=".25"/>
 
-        {/* Escrivaninha */}
-        <rect x="586" y="330" width="378" height="18" fill="#a86b35"/><rect x="586" y="330" width="378" height="4" fill="#c9995a"/>
-        <rect x="596" y="348" width="358" height="28" fill="#8a5838"/><rect x="740" y="354" width="70" height="16" fill="#a86b35"/><rect x="768" y="360" width="14" height="4" fill="#f2c453"/>
-        <rect x="600" y="376" width="16" height="96" fill="#6b4426"/><rect x="934" y="376" width="16" height="96" fill="#6b4426"/>
+          {/* Luminária de mesa (acesa) */}
+          <rect x="234" y="258" width="26" height="4" fill="#2c2f36"/><rect x="246" y="214" width="3" height="44" fill="#2c2f36"/>
+          <path d="M232 194h30l8 20h-46Z" fill="#c9995a"/><path d="M232 194h30l2 4h-34Z" fill="#e3b268"/>
+          <rect x="243" y="214" width="8" height="3" fill="#fff6c2"/>
 
-        {/* Luminária acesa, livros e caneca */}
-        <path d="M612 230h-26l-10 30h46Z" fill="#3f6b55"/><rect x="584" y="258" width="44" height="4" fill="#2f5a46"/>
-        <path d="M576 262h60l40 68h-140Z" fill="#fff6c2" opacity=".18" className="motivation-lamp"/>
-        <rect x="604" y="262" width="6" height="58" fill="#2c2f36"/><rect x="590" y="318" width="34" height="12" fill="#2c2f36"/>
-        <rect x="878" y="312" width="70" height="18" fill="#5f86b8"/><rect x="884" y="296" width="60" height="16" fill="#bf5837"/><rect x="880" y="282" width="64" height="14" fill="#72ad32"/>
-        <rect x="878" y="312" width="70" height="3" fill="#8fb0d6"/><rect x="884" y="296" width="60" height="3" fill="#e07a5a"/>
-        <rect x="846" y="304" width="22" height="26" fill="#fff1c7"/><rect x="868" y="310" width="6" height="12" fill="#fff1c7"/><rect x="850" y="310" width="14" height="6" fill="#bf5837"/>
-        <path className="motivation-steam" d="M852 292h2v-6h2v-4h2v6h-2v4h-2Zm8 0h2v-8h2v-4h2v6h-2v6h-2Z" fill="#ffffff" opacity=".7"/>
+          {/* Caderno aberto e lápis */}
+          <rect x="300" y="256" width="58" height="6" fill="#f3ead6"/><rect x="328" y="255" width="2" height="7" fill="#c9b994"/>
+          <rect x="304" y="258" width="20" height="1" fill="#b9ad96"/><rect x="334" y="258" width="18" height="1" fill="#b9ad96"/>
+          <rect x="366" y="259" width="30" height="3" fill="#f2c453"/><rect x="396" y="259" width="4" height="3" fill="#e8c48a"/><rect x="400" y="260" width="2" height="1" fill="#3b2418"/><rect x="363" y="259" width="3" height="3" fill="#e8576f"/>
 
-        {/* Porta-retrato em pé, com apoio atrás */}
-        <rect x="770" y="300" width="10" height="30" fill="#6b4426"/>
-        <rect x="690" y="160" width="170" height="170" fill="#a86d1c"/><rect x="696" y="166" width="158" height="158" fill="#f2c453"/>
-        <rect x="702" y="172" width="146" height="146" fill="#fff1c7"/>
-        <rect x="690" y="160" width="170" height="4" fill="#ffe38b"/>
+          {/* Porta-retrato: moldura creme fina, de frente, com apoio e sombra na mesa */}
+          <rect x="414" y="260" width="62" height="3" fill="#000000" opacity=".22"/>
+          <rect x="440" y="246" width="10" height="16" fill="#8a6a3a"/>
+          <rect x="418" y="182" width="54" height="80" fill="#8a6a3a"/><rect x="419" y="183" width="52" height="78" fill="#f3e6c8"/>
+          <rect x="419" y="183" width="52" height="2" fill="#fffaf0"/>
+          <rect x="423" y="187" width="44" height="70" fill="#d9c8a4"/>
+        </g>
+
+        {/* Frase escrita a giz no quadro */}
+        <foreignObject x="109" y="45" width="242" height="154">
+          <button type="button" className={`chalk-board ${words.length ? '' : 'is-empty'}`} disabled={disabled} onClick={open}
+            aria-label={words.length ? `Meu motivo: ${current.text}. Editar` : 'Escrever o meu motivo'}>
+            <span className="chalk-text" style={{ fontSize: chalkSize }}>{words.length
+              // O espaço fica fora da palavra inclinada (dentro de um inline-block ele some)
+              ? words.map((word, index) => <Fragment key={index}><span style={{ '--tilt': `${WOBBLE[index % WOBBLE.length]}deg` } as CSSProperties}>{word}</span>{' '}</Fragment>)
+              : 'escreva aqui o seu motivo…'}</span>
+          </button>
+        </foreignObject>
+
+        {/* Foto dentro do porta-retrato (ou só o paspatur vazio) */}
+        <foreignObject x="423" y="187" width="44" height="70">
+          <button type="button" className={`desk-photo ${current.photoUrl ? '' : 'is-empty'}`} disabled={disabled} onClick={open}
+            aria-label={current.photoUrl ? 'Trocar a foto do porta-retrato' : 'Colocar uma foto no porta-retrato'}>
+            {current.photoUrl ? <img src={current.photoUrl} alt="Minha foto de motivação"/> : <span aria-hidden="true">+</span>}
+          </button>
+        </foreignObject>
+
+        <g aria-hidden="true">
+          {/* Poeirinha flutuando na luz da luminária */}
+          {[[238, 250, 0], [262, 236, 1.6], [284, 252, 3.1], [224, 230, 4.4], [300, 240, 2.3]].map(([x, y, delay]) => <rect key={x} className="dust-mote" x={x} y={y} width="2" height="2" fill="#fff6c2" style={{ animationDelay: `${delay}s` }}/>)}
+          {/* Mariposa dando voltinhas em volta da luminária */}
+          <g transform="translate(250 196)"><g className="lamp-moth">
+            <g className="lamp-moth-wings"><rect x="-4" y="-2" width="3" height="3" fill="#efe4cc"/><rect x="2" y="-2" width="3" height="3" fill="#efe4cc"/></g>
+            <rect x="-1" y="-2" width="2" height="4" fill="#6b4426"/>
+          </g></g>
+          {/* Luz quente por cima de tudo, tremulando de leve */}
+          <rect className="lamp-glow" x="-2000" y="-2000" width="4600" height="4340" fill="url(#lamp-light)" pointerEvents="none"/>
+        </g>
       </svg>
-
-      {/* Frase no quadro-negro, escrita a giz */}
-      <button type="button" className={`motivation-board ${current.text ? '' : 'is-empty'}`} disabled={disabled} onClick={open} aria-label={current.text ? `Motivação: ${current.text}. Editar` : 'Escrever a sua motivação'}>
-        <span>{current.text || 'Escreva aqui o que te motiva ✎'}</span>
-      </button>
-      {/* Foto no porta-retrato */}
-      <button type="button" className={`motivation-photo ${current.photo ? '' : 'is-empty'}`} disabled={disabled} onClick={open} aria-label={current.photo ? 'Trocar a foto do porta-retrato' : 'Colocar uma foto no porta-retrato'}>
-        {current.photo ? <img src={current.photo} alt=""/> : <span>+ foto</span>}
-      </button>
     </div>
     {editing && <MotivationDialog motivation={current} onSave={onSave} onClose={()=>setEditing(false)}/>}
   </section>;

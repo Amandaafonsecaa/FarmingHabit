@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { NpcDialog } from '../NpcDialog';
 import { ProgressBar } from '../ProgressBar';
 import type { GoalLog, TrackedGoal } from '../../types/goals';
 import { StreakHud } from './StreakHud';
+import { toKey } from '../../lib/goalLogic';
 import { coachChoices, coachGreeting, coachRespond, type CoachChoice, type CoachContext } from '../../lib/coach';
 
 const SKIN = '#5a3a2a', SKIN_LIGHT = '#7a5038', SKIN_DARK = '#3f281c', SHINE = '#93664a';
@@ -63,9 +64,42 @@ function CoachDialog({ context, onClose }: { context: CoachContext; onClose: () 
     respond={choice => { setMode(choice === 'pick' ? 'goals' : 'main'); return coachRespond(choice, context); }}/>;
 }
 
+/** A mesma gatinha laranja do Diário, agora de pé, andando pela academia (desenhada virada para a direita, pés em y=28) */
+function WalkingCat() {
+  return <g shapeRendering="crispEdges">
+    <ellipse cx="32" cy="29" rx="28" ry="3" fill="#000" opacity=".25"/>
+    <g className="gym-cat-tail"><rect x="0" y="6" width="12" height="4" fill="#e8954a"/><rect x="0" y="-2" width="4" height="10" fill="#e8954a"/></g>
+    {/* Patinhas em dois quadros, alternando a cada passo */}
+    <g className="gym-cat-legs"><rect x="12" y="20" width="4" height="8" fill="#e8954a"/><rect x="34" y="20" width="4" height="8" fill="#e8954a"/><rect x="12" y="26" width="4" height="2" fill="#fff1d6"/><rect x="34" y="26" width="4" height="2" fill="#fff1d6"/></g>
+    <g className="gym-cat-legs is-alt"><rect x="18" y="20" width="4" height="8" fill="#e8954a"/><rect x="40" y="20" width="4" height="8" fill="#e8954a"/><rect x="18" y="26" width="4" height="2" fill="#fff1d6"/><rect x="40" y="26" width="4" height="2" fill="#fff1d6"/></g>
+    <rect x="10" y="6" width="34" height="14" fill="#e8954a"/><rect x="16" y="8" width="3" height="8" fill="#c8743a"/><rect x="24" y="8" width="3" height="8" fill="#c8743a"/><rect x="32" y="8" width="3" height="8" fill="#c8743a"/>
+    {/* Cabeça igual à do Diário: orelhas, olhos acordados e narizinho rosa */}
+    <rect x="40" y="-2" width="22" height="16" fill="#e8954a"/><rect x="40" y="-6" width="5" height="5" fill="#e8954a"/><rect x="56" y="-6" width="5" height="5" fill="#e8954a"/>
+    <rect x="44" y="3" width="4" height="4" fill="#3b2418"/><rect x="53" y="3" width="4" height="4" fill="#3b2418"/><rect x="44" y="3" width="1" height="1" fill="#fff"/><rect x="53" y="3" width="1" height="1" fill="#fff"/>
+    <rect x="49" y="8" width="3" height="2" fill="#e8576f"/>
+  </g>;
+}
+
+// A gatinha passa uma vez por dia (na primeira visita à Evolução) para lembrar que dá para conversar com o coach
+const CAT_VISIT_KEY = 'farminghabit.coach-cat-day';
+const CAT_VISIT_MS = 10000;
+
 /** Topo da Evolução: academia com o Coach Rocha treinando; clicar nele abre a conversa */
 export function GymHero({ level, xpInLevel, xpPerLevel, goals, log, coach }: { level: number; xpInLevel: number; xpPerLevel: number; goals: TrackedGoal[]; log: GoalLog; coach: CoachContext }) {
   const [talking, setTalking] = useState(false);
+  // A gatinha avisa que dá para conversar com o coach até a pessoa conversar a primeira vez
+  const [catVisit] = useState(() => { try { return localStorage.getItem(CAT_VISIT_KEY) !== toKey(coach.today); } catch { return false; } });
+  const [showCat, setShowCat] = useState(catVisit);
+  // Marca a visita do dia e tira a gatinha de cena quando o passeio termina (o timer cobre o modo sem animações)
+  useEffect(() => {
+    if (!catVisit) return;
+    try { localStorage.setItem(CAT_VISIT_KEY, toKey(coach.today)); } catch { /* ignora */ }
+    const timer = window.setTimeout(() => setShowCat(false), CAT_VISIT_MS + 500);
+    return () => window.clearTimeout(timer);
+  }, [catVisit]); // eslint-disable-line react-hooks/exhaustive-deps
+  function talk() {
+    setTalking(true);
+  }
   return <section className="evolution-hero gym-hero" aria-labelledby="evolution-title">
     <svg className="gym-scene" viewBox="0 0 1000 320" preserveAspectRatio="xMidYMin slice" shapeRendering="crispEdges" aria-hidden="true">
       {/* Parede de tijolos, lambri e viga do teto */}
@@ -127,14 +161,26 @@ export function GymHero({ level, xpInLevel, xpPerLevel, goals, log, coach }: { l
       <rect x="350" y="218" width="16" height="4" fill="#fff1c7"/>
 
       {/* Coach Rocha no centro, na frente do espelho */}
-      <g className="gym-coach npc-clickable" transform="translate(456 124) scale(1.4)" onClick={()=>setTalking(true)}>
+      <g className="gym-coach npc-clickable" transform="translate(456 124) scale(1.4)" onClick={talk}>
         <rect x="0" y="-4" width="64" height="100" fill="transparent"/>
         <CoachFigure/>
         <g className="talk-prompt"><rect x="2" y="-20" width="60" height="14" fill="#57311f"/><rect x="4" y="-18" width="56" height="10" fill="#fff1c7"/><rect x="29" y="-6" width="6" height="3" fill="#57311f"/>
           <text x="32" y="-10.5" textAnchor="middle" className="talk-prompt-text coach-prompt-text">Conversar</text></g>
       </g>
+
+      {/* A gatinha do Diário entra, dá a dica de conversar com o coach e vai embora (uma vez por dia, sem clique) */}
+      {/* Desenhada depois do coach para o balão ficar na frente dele. Para perto do coach, no trecho do cenário que aparece até no celular */}
+      {showCat && <g transform="translate(372 250)" aria-hidden="true"><g className="gym-cat-walk" onAnimationEnd={()=>setShowCat(false)}>
+        <g className="gym-cat-bubble">
+          <rect x="-6" y="-48" width="140" height="34" fill="#57311f"/><rect x="-4" y="-46" width="136" height="30" fill="#fff1c7"/><rect x="22" y="-14" width="8" height="5" fill="#57311f"/>
+          <text x="64" y="-34" textAnchor="middle" className="cat-tip-text">Fale com o treinador!</text>
+          <text x="64" y="-22" textAnchor="middle" className="cat-tip-text is-small">Ele sabe das coisas 😉</text>
+        </g>
+        <g className="gym-cat-flip"><WalkingCat/></g>
+      </g></g>}
+
     </svg>
-    <button type="button" className="talk-sr-button sr-only focus:not-sr-only" onClick={()=>setTalking(true)}>Conversar com o Coach Rocha</button>
+    <button type="button" className="talk-sr-button sr-only focus:not-sr-only" onClick={talk}>Conversar com o Coach Rocha</button>
 
     <div className="evolution-hero-top">
       <div className="evolution-sign pixel-frame">

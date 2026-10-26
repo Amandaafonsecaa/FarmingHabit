@@ -1,7 +1,8 @@
 /* ===== Aba Evolução: academia do Coach Rocha, a semana de relance e a comparação com a semana passada ===== */
 
 /* --- Topo: a academia --- */
-.evolution-hero { position: relative; isolation: isolate; overflow: hidden; min-height: max(360px, 27.5vw); padding: 18px; border: 6px solid #52301f; border-bottom-width: 10px; background: #b5654a; box-shadow: inset 0 0 0 3px #efb96b; }
+/* Proporção da cena (1000×320 + bordas): o cenário aparece inteiro, chão incluído, em qualquer largura */
+.evolution-hero { position: relative; isolation: isolate; overflow: hidden; aspect-ratio: 1000 / 336; min-height: 380px; padding: 18px; border: 6px solid #52301f; border-bottom-width: 10px; background: #b5654a; box-shadow: inset 0 0 0 3px #efb96b; }
 .gym-scene { position: absolute; inset: 0; z-index: -1; width: 100%; height: 100%; }
 .evolution-hero-top { position: relative; display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 12px; padding-left: 56px; pointer-events: none; }
 .evolution-hero-top > * { pointer-events: auto; }
@@ -23,6 +24,16 @@
 .gym-second { transform-box: fill-box; transform-origin: 50% 100%; animation: gym-second 60s steps(60) infinite; }
 .gym-light { animation: gym-light 5s steps(2) infinite; }
 .coach-prompt-text { font-size: 8px; }
+/* Gatinha andando de um lado para o outro (vira nas pontas) com o balão de dica por cima */
+/* Visita única: entra pela esquerda, para com o balão e volta por onde veio (10s, uma vez) */
+.gym-cat-walk { animation: cat-visit 10s ease-in-out forwards; }
+.gym-cat-flip { transform-box: fill-box; transform-origin: 50% 50%; animation: cat-turn 10s linear forwards; }
+.gym-cat-legs { animation: cat-step .5s steps(1) infinite; }
+.gym-cat-legs.is-alt { animation-delay: -.25s; }
+.gym-cat-tail { transform-box: fill-box; transform-origin: 100% 100%; animation: tail-swish 1.2s ease-in-out infinite alternate; }
+.gym-cat-bubble { opacity: 0; transform-box: fill-box; transform-origin: 50% 100%; animation: cat-tip 10s linear forwards; }
+.cat-tip-text { font-family: 'Courier New', monospace; font-size: 10px; font-weight: 900; fill: #3b2418; }
+.cat-tip-text.is-small { font-size: 9px; font-weight: bold; fill: #765337; }
 .evolution-hero:has(.talk-sr-button:focus) .talk-prompt { opacity: 1; transform: none; }
 .vendor-portrait.coach-portrait { background: #cfe6ee; }
 .coach-portrait-art { display: block; width: 100%; height: 100%; }
@@ -30,10 +41,15 @@
 
 /* --- Layout --- */
 .evolution-layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; max-width: 1600px; margin: auto; padding: 18px 16px 12px; }
-@media (min-width: 900px) {
- .evolution-layout { grid-template-columns: minmax(0, 1.4fr) minmax(300px, 1fr); }
- .evolution-layout > .week-board { grid-column: 1 / -1; }
+/* Sua semana e Meu motivo lado a lado */
+/* Mesma altura: quem manda é "Sua semana"; a janela da motivação ocupa a mesma altura e a cena dá zoom para preenchê-la */
+@media (min-width: 1000px) {
+ .evolution-layout { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); align-items: stretch; }
+ .motivation-window { min-height: 300px; }
+ /* No desktop a moldura tem a altura de "Sua semana" e o desenho se encaixa nela */
+ .motivation-window .motivation-stage { position: absolute; inset: 8px; aspect-ratio: auto; }
 }
+.week-board-body { flex: 1; }
 
 /* --- A semana de relance: uma bolinha da cor da meta em cada dia feito --- */
 .week-board-body { padding: 10px 14px 14px; background: #fff8e1; overflow-x: auto; }
@@ -71,51 +87,43 @@
 .streak-hud:not(.is-lit) strong { color: #a3957d; text-shadow: 2px 2px 0 #6b6255; }
 .streak-hud span { font-size: 11px; font-weight: 900; color: #765337; text-transform: uppercase; letter-spacing: 1px; }
 
-/* --- Cantinho da motivação: quadro-negro com a frase e porta-retrato com a foto --- */
-.motivation-panel { display: flex; flex-direction: column; }
-.motivation-panel .panel-heading { flex-wrap: nowrap; }
-.motivation-edit { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; font-size: 11px; }
-.motivation-scene { position: relative; container-type: inline-size; aspect-ratio: 1000 / 520; overflow: hidden; background: #ead6b0; }
-.motivation-scene > svg { position: absolute; inset: 0; width: 100%; height: 100%; }
-/* Posições em % do viewBox 1000×520: área escura do quadro e o vidro do porta-retrato */
-.motivation-board { position: absolute; left: 6.4%; top: 12.3%; width: 46.2%; height: 56.2%; display: flex; align-items: center; justify-content: center; padding: 3cqw; overflow-y: auto; border: 0; background: none; cursor: pointer; scrollbar-width: none; }
-.motivation-board span { font-size: clamp(11px, 3cqw, 26px); font-weight: 900; line-height: 1.3; text-align: center; color: #f4f1e8; text-shadow: 0 0 1px #ffffffaa, 1px 1px 0 #ffffff22; overflow-wrap: anywhere; letter-spacing: .5px; }
-.motivation-board.is-empty span { font-weight: bold; color: #f4f1e877; }
-.motivation-board:hover:not(:disabled) span, .motivation-board:focus-visible span { color: #ffffff; }
-.motivation-photo { position: absolute; left: 70.2%; top: 33.1%; width: 14.6%; height: 28.1%; display: flex; align-items: center; justify-content: center; padding: 0; border: 0; background: #fff1c7; cursor: pointer; overflow: hidden; }
-.motivation-photo img { width: 100%; height: 100%; object-fit: cover; image-rendering: auto; }
-.motivation-photo.is-empty span { font-size: clamp(9px, 1.8cqw, 14px); font-weight: 900; color: #a86d1c; }
-.motivation-photo:hover:not(:disabled), .motivation-board:hover:not(:disabled) { filter: drop-shadow(0 0 0 #ffe38b) brightness(1.06); }
-.motivation-board:focus-visible, .motivation-photo:focus-visible { outline: 3px dashed #f2c453; outline-offset: 2px; }
-.motivation-lamp { animation: gym-light 5s steps(2) infinite; }
-.motivation-steam { animation: lm-bob 1.4s steps(2) infinite alternate; }
-/* Campo de foto no modal */
-.motivation-photo-field { display: flex; align-items: center; gap: 12px; margin-top: 6px; }
-.motivation-photo-preview { display: flex; width: 72px; height: 72px; flex-shrink: 0; align-items: center; justify-content: center; overflow: hidden; color: #a86d1c; background: #fff1c7; border: 4px solid #f2c453; box-shadow: 0 0 0 2px #a86d1c; }
-.motivation-photo-preview img { width: 100%; height: 100%; object-fit: cover; }
+/* --- "Meu motivo": vinheta como miniatura fotografada dentro da janela do jogo --- */
+.motivation-window { position: relative; display: flex; flex-direction: column; width: 100%; padding: 8px; background: #8a5838; }
+/* Zoom sem esticar, enquadrando o quadro-negro, a escrivaninha e o porta-retrato (região ~420×290 do desenho 600×340) */
+.motivation-stage { position: relative; overflow: hidden; aspect-ratio: 432 / 336; background: #3b2a20; box-shadow: inset 0 0 0 2px #3b2418; }
+.motivation-art { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+/* Cantos escurecidos, como foto de um cantinho à meia-luz */
+.motivation-stage::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse at 50% 52%, transparent 45%, #1a0f0a88 100%); }
+.motivation-stage button { border: 0; background: none; padding: 0; cursor: pointer; }
+.motivation-stage button:disabled { cursor: default; }
+/* Frase e foto vivem dentro do SVG (foreignObject): medidas em unidades do desenho */
+.chalk-board { display: flex; width: 100%; height: 100%; align-items: center; justify-content: center; padding: 14px 22px; overflow: hidden; }
+.chalk-text { display: block; transform: rotate(-1.5deg); font-family: 'Caveat', 'Segoe Print', 'Bradley Hand', cursive; font-weight: 700; line-height: 1.05; text-align: center; color: #f6eedb;
+ /* Giz: borda levemente esfarelada e brilho fosco */
+ text-shadow: 0 0 1px #f6eedbcc, .5px .5px 0 #f6eedb55, -.5px 0 0 #ffffff22; opacity: .93; overflow-wrap: anywhere; }
+.chalk-text > span { display: inline-block; transform: rotate(var(--tilt, 0deg)) translateY(calc(var(--tilt, 0deg) / 1deg * .6px)); }
+.chalk-board.is-empty .chalk-text { font-weight: 600; color: #f6eedb66; text-shadow: none; }
+.chalk-board:hover:not(:disabled) .chalk-text, .chalk-board:focus-visible .chalk-text { opacity: 1; color: #fffaf0; }
+/* Foto dentro do porta-retrato */
+.desk-photo { display: flex; width: 100%; height: 100%; align-items: center; justify-content: center; overflow: hidden; background: #d9c8a4 !important; box-shadow: inset 0 0 0 1px #b9a37a; }
+.desk-photo img { width: 100%; height: 100%; object-fit: cover; filter: sepia(.12) saturate(.95); }
+.desk-photo.is-empty span { font-size: 14px; font-weight: 900; color: #a88a5a; opacity: .7; }
+.desk-photo:hover:not(:disabled) { filter: brightness(1.08); }
+.chalk-board:focus-visible, .desk-photo:focus-visible { outline: 2px dashed #f2c453; outline-offset: 2px; }
+/* Lápis discreto para editar */
+/* Vida na cena: mariposa em volta da luminária, poeira na luz e a luz tremulando */
+.lamp-moth { animation: moth-orbit 5s linear infinite; }
+.lamp-moth-wings { transform-box: fill-box; transform-origin: 50% 50%; animation: moth-flap .16s steps(2) infinite; }
+.dust-mote { opacity: 0; animation: dust-float 6s ease-in-out infinite; }
+.lamp-glow { animation: lamp-flicker 4s steps(1) infinite; }
+.motivation-pencil { position: absolute; top: 8px; right: 8px; z-index: 2; display: flex; width: 28px; height: 28px; align-items: center; justify-content: center; font-size: 15px; color: #3b2418; background: #f3e6c8 !important; border: 2px solid #3b2418 !important; box-shadow: 2px 2px 0 #1a0f0a66; opacity: .85; }
+.motivation-pencil:hover:not(:disabled), .motivation-pencil:focus-visible { opacity: 1; background: #ffe38b !important; }
+/* Prévia no modal: o mesmo porta-retrato creme, em miniatura */
+.motivation-photo-field { display: flex; align-items: center; gap: 14px; margin-top: 6px; }
+.mini-frame { display: flex; width: 58px; height: 80px; flex-shrink: 0; padding: 4px; background: #f3e6c8; border: 1px solid #8a6a3a; box-shadow: 2px 3px 0 #42291644; }
+.mini-frame img { width: 100%; height: 100%; object-fit: cover; }
+.mini-frame-empty { display: block; width: 100%; height: 100%; background: #d9c8a4; box-shadow: inset 0 0 0 1px #b9a37a; }
 .motivation-upload { cursor: pointer; }
-
-/* --- Análise em post-its: arranca o de cima para ver o próximo --- */
-/* Post-its soltos, sem card por trás: ficam centralizados no espaço ao lado da comparação */
-.insight-notes { display: flex; align-items: center; justify-content: center; min-height: 260px; padding: 16px; }
-.notes-pad { position: relative; width: 230px; height: 220px; border: 0; background: none; cursor: pointer; outline: none; }
-.notes-pad:focus-visible .post-it:first-child { outline: 3px dashed #3b2418; outline-offset: 4px; }
-.post-it {
- position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 22px 16px 18px;
- text-align: center; color: #3b2418; background: #ffe98a; box-shadow: 3px 5px 0 #42291644;
- clip-path: polygon(0 0, 100% 0, 100% 86%, 86% 100%, 0 100%);
- transform: rotate(calc(-2deg + var(--depth, 0) * 3deg)) translate(calc(var(--depth, 0) * 3px), calc(var(--depth, 0) * 4px));
- transition: transform .25s cubic-bezier(.34, 1.56, .64, 1);
-}
-/* Cantinho dobrado */
-.post-it::after { content: ''; position: absolute; right: 0; bottom: 0; width: 14%; height: 14%; background: linear-gradient(135deg, #00000022 50%, transparent 50%); }
-.post-it.is-pink { background: #ffc6d3; } .post-it.is-blue { background: #c4e4ff; } .post-it.is-green { background: #cdeeb0; } .post-it.is-end { background: #fff6d6; }
-.post-it-tape { position: absolute; top: -6px; left: 50%; width: 64px; height: 16px; margin-left: -32px; background: #ffffff99; box-shadow: inset 0 0 0 1px #ffffffaa; transform: rotate(-3deg); }
-.post-it-count { position: absolute; top: 10px; right: 12px; font-size: 10px; font-weight: 900; opacity: .55; }
-.post-it-big { font-size: 40px; font-weight: 900; line-height: 1; letter-spacing: -1px; }
-.post-it-text { max-width: 160px; font-size: 13px; font-weight: bold; line-height: 1.35; overflow-wrap: anywhere; }
-.notes-pad:hover .post-it:first-child:not(.is-tearing) { transform: rotate(-4deg) translateY(-3px); }
-.post-it.is-tearing { animation: note-tear .42s cubic-bezier(.5, 0, .75, 0) forwards; }
 
 /* --- Animações --- */
 @keyframes chicken-peck { 0%, 50%, 100% { transform: none; } 60%, 70% { transform: rotate(18deg) translateY(1px); } 80% { transform: none; } 86% { transform: rotate(14deg); } }
@@ -127,14 +135,24 @@
 @keyframes gym-second { to { transform: rotate(360deg); } }
 @keyframes gym-light { 50% { opacity: .12; } }
 @keyframes week-pop { from { transform: scale(0); } }
-@keyframes note-tear { 0% { transform: rotate(-2deg); } 30% { transform: rotate(-9deg) translate(-6px, -14px); } 100% { transform: rotate(22deg) translate(160px, 70px); opacity: 0; } }
+@keyframes cat-visit { 0% { transform: translateX(-420px); } 25%, 70% { transform: translateX(0); } 100% { transform: translateX(-420px); } }
+@keyframes cat-turn { 0%, 69.9% { transform: scaleX(1); } 70%, 100% { transform: scaleX(-1); } }
+@keyframes cat-tip { 0%, 26% { opacity: 0; transform: scale(.4); } 29% { opacity: 1; transform: scale(1.06); } 31%, 66% { opacity: 1; transform: scale(1); } 69%, 100% { opacity: 0; transform: scale(.8); } }
+@keyframes cat-step { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
+@keyframes moth-orbit { 0% { transform: translate(-22px, 2px); } 20% { transform: translate(-6px, -16px); } 40% { transform: translate(18px, -8px); } 55% { transform: translate(24px, 8px); } 70% { transform: translate(6px, 14px); } 85% { transform: translate(-14px, 12px); } 100% { transform: translate(-22px, 2px); } }
+@keyframes moth-flap { 50% { transform: scaleY(.3); } }
+@keyframes dust-float { 0% { opacity: 0; transform: translate(0, 0); } 25% { opacity: .8; } 75% { opacity: .5; } 100% { opacity: 0; transform: translate(10px, -40px); } }
+@keyframes lamp-flicker { 0%, 46%, 50%, 100% { opacity: 1; } 47% { opacity: .82; } 49% { opacity: .92; } }
 
 /* --- Responsivo --- */
 @media (max-width: 767px) {
- .evolution-hero { min-height: 460px; padding: 70px 12px 12px; border-width: 4px; border-bottom-width: 8px; }
+ .evolution-hero { aspect-ratio: auto; min-height: 460px; padding: 70px 12px 12px; border-width: 4px; border-bottom-width: 8px; }
  .evolution-hero-top { padding-left: 0; }
  .evolution-sign { width: 100%; transform: none; }
  .evolution-layout { padding: 14px 10px; gap: 14px; }
  .week-goal { max-width: 120px; font-size: 12px; }
+ /* Colunas dos dias estreitas para os nomes das metas caberem */
+ .week-table thead th:not(:first-child), .week-table td { width: 24px; }
+ .week-table tbody th { min-width: 96px; }
  .week-dot { width: 14px; height: 14px; }
 }

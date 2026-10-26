@@ -55,13 +55,14 @@ export async function updatePlayerName(id: string, name: string): Promise<Player
 
 // --- Motivação (quadro-negro e porta-retrato da Evolução) ---
 
-export interface Motivation { text: string; photo: string | null }
+/** A frase vem do servidor; photoUrl, por enquanto, é a foto guardada no navegador (ver useMotivation) */
+export interface Motivation { text: string; photoUrl: string | null; createdAt: string | null; updatedAt: string | null }
 
 export async function getMotivation(userId: string): Promise<Motivation> {
   return request<Motivation>(`/users/${userId}/motivation`);
 }
 
-/** photo: string troca a foto, null remove, undefined mantém a atual */
+/** Salva a frase. O backend também aceita photo (Supabase Storage), mas por enquanto a foto fica no navegador */
 export async function saveMotivation(userId: string, motivation: { text: string; photo?: string | null }): Promise<Motivation> {
   return request<Motivation>(`/users/${userId}/motivation`, { method: 'PUT', body: JSON.stringify(motivation) });
 }
