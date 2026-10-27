@@ -5,7 +5,6 @@ import {
   Patch,
   Body,
   Param,
-  Query,
   HttpStatus,
   HttpCode,
   Delete,
@@ -16,14 +15,17 @@ import {
   ApiOperation,
   ApiResponse,
   ApiParam,
-  ApiQuery,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
 import { RewardsService } from '../services/rewards.service';
 import { CreateRewardDto } from '../dto/create-reward.dto';
 import { UpdateRewardDto } from '../dto/update-reward.dto';
+import { CurrentUser } from '../../auth/current-user.decorator';
+import type { AuthUser } from '../../auth/auth-user';
 import { Reward } from '../entities/reward.entity';
 
 @ApiTags('rewards')
+@ApiBearerAuth()
 @Controller('rewards')
 export class RewardsController {
   constructor(private readonly rewardsService: RewardsService) {}
@@ -44,8 +46,8 @@ export class RewardsController {
     status: HttpStatus.BAD_REQUEST,
     description: 'Dados inválidos.',
   })
-  async create(@Body() createRewardDto: CreateRewardDto): Promise<Reward> {
-    return this.rewardsService.create(createRewardDto);
+  async create(@CurrentUser() user: AuthUser, @Body() createRewardDto: CreateRewardDto): Promise<Reward> {
+    return this.rewardsService.create(createRewardDto, user.id);
   }
 
   @Get()
@@ -54,19 +56,13 @@ export class RewardsController {
     description:
       'Retorna o catálogo de recompensas disponíveis para compra com moedas.',
   })
-  @ApiQuery({
-    name: 'userId',
-    required: false,
-    description: 'Filtrar por recompensas específicas do usuário',
-    example: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
-  })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Lista de recompensas.',
     type: [Reward],
   })
-  async findAll(@Query('userId') userId?: string): Promise<Reward[]> {
-    return this.rewardsService.findAll(userId);
+  async findAll(@CurrentUser() user: AuthUser): Promise<Reward[]> {
+    return this.rewardsService.findAll(user.id);
   }
 
   @Get(':id')
@@ -88,8 +84,8 @@ export class RewardsController {
     status: HttpStatus.NOT_FOUND,
     description: 'Recompensa não encontrada.',
   })
-  async findOne(@Param('id') id: string): Promise<Reward> {
-    return this.rewardsService.findOne(id);
+  async findOne(@CurrentUser() user: AuthUser, @Param('id') id: string): Promise<Reward> {
+    return this.rewardsService.findOne(id, user.id);
   }
 
   @Patch(':id')
@@ -107,10 +103,11 @@ export class RewardsController {
     type: Reward,
   })
   async update(
+    @CurrentUser() user: AuthUser,
     @Param('id') id: string,
     @Body() updateRewardDto: UpdateRewardDto,
   ): Promise<Reward> {
-    return this.rewardsService.update(id, updateRewardDto);
+    return this.rewardsService.update(id, updateRewardDto, user.id);
   }
 
   @Delete(':id')
@@ -119,12 +116,11 @@ export class RewardsController {
     summary:
       'Apagar recompensa da vitrine pessoal, preservando compras anteriores',
   })
-  @ApiQuery({ name: 'userId', required: true })
   async remove(
+    @CurrentUser() user: AuthUser,
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
-    @Query('userId', new ParseUUIDPipe({ version: '4' })) userId: string,
   ): Promise<void> {
-    await this.rewardsService.remove(id, userId);
+    await this.rewardsService.remove(id, user.id);
   }
 
   @Post(':id/claim')
@@ -138,12 +134,6 @@ export class RewardsController {
     description: 'ID da recompensa desejada',
     example: '8b63e8c2-3e2b-4fa9-83bc-42bfe041f909',
   })
-  @ApiQuery({
-    name: 'userId',
-    required: true,
-    description: 'ID do usuário que está comprando o item',
-    example: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
-  })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Item resgatado com sucesso!',
@@ -156,10 +146,7 @@ export class RewardsController {
     status: HttpStatus.NOT_FOUND,
     description: 'Recompensa ou usuário não encontrado.',
   })
-  async claimReward(
-    @Param('id') id: string,
-    @Query('userId', new ParseUUIDPipe({ version: '4' })) userId: string,
-  ) {
-    return this.rewardsService.claimReward(id, userId);
+  async claimReward(@CurrentUser() user: AuthUser, @Param('id') id: string) {
+    return this.rewardsService.claimReward(id, user.id);
   }
 }

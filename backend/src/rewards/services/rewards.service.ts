@@ -50,28 +50,24 @@ export class RewardsService implements OnModuleInit {
     );
   }
 
-  async create(createRewardDto: CreateRewardDto): Promise<Reward> {
-    if (createRewardDto.userId) {
-      await this.usersService.findOne(createRewardDto.userId);
-    }
-
+  async create(createRewardDto: CreateRewardDto, userId: string): Promise<Reward> {
     return this.prisma.reward.create({
       data: {
         title: createRewardDto.title,
         description: createRewardDto.description ?? null,
         price: createRewardDto.price,
         available: createRewardDto.available ?? true,
-        userId: createRewardDto.userId ?? null,
+        userId,
       },
     });
   }
 
-  async findAll(userId?: string): Promise<Reward[]> {
+  /** Vitrine do jogador: as recompensas globais com os ajustes pessoais, mais as próprias */
+  async findAll(userId: string): Promise<Reward[]> {
     const rewards = await this.prisma.reward.findMany({
-      where: userId ? { OR: [{ userId }, { userId: null }] } : { userId: null },
+      where: { OR: [{ userId }, { userId: null }] },
       orderBy: { createdAt: 'desc' },
     });
-    if (!userId) return rewards;
     const overrides = await this.prisma.rewardOverride.findMany({
       where: { userId },
     });
@@ -103,26 +99,21 @@ export class RewardsService implements OnModuleInit {
       : reward;
   }
 
-  async findOne(id: string): Promise<Reward> {
+  /** Recompensa que o jogador pode ver: a global ou a dele */
+  async findOne(id: string, userId: string): Promise<Reward> {
     const reward = await this.prisma.reward.findUnique({
       where: { id },
     });
 
-    if (!reward) {
+    if (!reward || (reward.userId && reward.userId !== userId)) {
       throw new NotFoundException(`Recompensa com ID ${id} não encontrada.`);
     }
 
     return reward;
   }
 
-  async update(id: string, updateRewardDto: UpdateRewardDto): Promise<Reward> {
-    const reward = await this.findOne(id);
-    const userId = updateRewardDto.userId;
-    if (!userId || (reward.userId && reward.userId !== userId))
-      throw new NotFoundException(
-        'Recompensa não encontrada para este jogador.',
-      );
-    await this.usersService.findOne(userId);
+  async update(id: string, updateRewardDto: UpdateRewardDto, userId: string): Promise<Reward> {
+    const reward = await this.findOne(id, userId);
     if (!reward.userId) {
       const data = {
         ...(updateRewardDto.title !== undefined && {
@@ -164,7 +155,7 @@ export class RewardsService implements OnModuleInit {
   }
 
   async remove(id: string, userId: string): Promise<void> {
-    await this.update(id, { userId, available: false });
+    await this.update(id, { available: false }, userId);
   }
 
   /**

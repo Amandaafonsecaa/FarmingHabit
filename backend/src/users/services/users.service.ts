@@ -1,9 +1,9 @@
 import {
   BadRequestException,
+  ConflictException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { CreateUserDto } from '../dto/create-user.dto';
 import { UpdateUserDto } from '../dto/update-user.dto';
 import { UpdateMotivationDto } from '../dto/update-motivation.dto';
 import { SaveUserDataDto } from '../dto/save-user-data.dto';
@@ -12,6 +12,7 @@ import { Motivation, Prisma, User } from '@prisma/client';
 import type { ResetScope } from '../dto/reset-user-data.dto';
 import { randomUUID } from 'node:crypto';
 import { SupabaseStorageService } from '../../storage/supabase-storage.service';
+import { adjustWallet } from '../../progress/wallet';
 
 const MOTIVATION_BUCKET = 'motivation-photos';
 /** Só chaves do próprio jogo ("farminghabit.algo.v1") */
@@ -32,29 +33,22 @@ export interface MotivationView { text: string; photoUrl: string | null; created
 export class UsersService {
   constructor(private readonly prisma: PrismaService, private readonly storage: SupabaseStorageService) {}
 
-  async create(createUserDto: CreateUserDto): Promise<User> {
-    return this.prisma.user.create({
-      data: {
-        name: createUserDto.name,
-        email: createUserDto.email,
-        level: createUserDto.level ?? 1,
-        xp: createUserDto.xp ?? 0,
-        coins: createUserDto.coins ?? 0,
-      },
-    });
-  }
-
-  async findAll(): Promise<User[]> {
-    return this.prisma.user.findMany({
-      include: {
-        habits: true,
-        missions: true,
-        rewards: true,
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-    });
+  /**
+   * Garante a linha do jogador para a conta que acabou de se autenticar (o id é o UUID do Supabase Auth).
+   * Chamado pelo AuthGuard em toda requisição; o create só roda na primeira vez.
+   */
+  async ensureUser(id: string, email: string, displayName?: string): Promise<User> {
+    const existing = await this.prisma.user.findUnique({ where: { id } });
+    if (existing) return existing;
+    const name = displayName?.trim().slice(0, 40) || email.split('@')[0].slice(0, 40) || 'Aventureiro';
+    try {
+      return await this.prisma.user.create({ data: { id, email, name } });
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+        throw new ConflictException('Este e-mail já está ligado a outro jogador.');
+      }
+      throw error;
+    }
   }
 
   async findOne(id: string): Promise<User> {
@@ -80,11 +74,7 @@ export class UsersService {
     return this.prisma.user.update({
       where: { id },
       data: {
-        ...(updateUserDto.name && { name: updateUserDto.name }),
-        ...(updateUserDto.email && { email: updateUserDto.email }),
-        ...(updateUserDto.level !== undefined && { level: updateUserDto.level }),
-        ...(updateUserDto.xp !== undefined && { xp: updateUserDto.xp }),
-        ...(updateUserDto.coins !== undefined && { coins: updateUserDto.coins }),
+        ...(updateUserDto.name?.trim() && { name: updateUserDto.name.trim() }),
       },
     });
   }
@@ -172,6 +162,14 @@ export class UsersService {
     if (chosen.has('motivation')) operations.push(this.prisma.motivation.deleteMany({ where }));
     const keys = scopes.flatMap(scope => RESET_DATA_KEYS[scope]);
     if (keys.length) operations.push(this.prisma.userData.deleteMany({ where: { userId: id, key: { in: keys } } }));
+    if (chosen.has('treasure')) {
+      // Baús voltam a ficar fechados e o que eles pagaram sai do saldo (senão reabrir daria moedas de novo)
+      const chests = await this.prisma.rewardClaim.findMany({ where: { userId: id, kind: 'chest' }, select: { coins: true, xp: true } });
+      operations.push(this.prisma.rewardClaim.deleteMany({ where: { userId: id, kind: 'chest' } }));
+      const coins = chests.reduce((total, chest) => total + chest.coins, 0);
+      const xp = chests.reduce((total, chest) => total + chest.xp, 0);
+      if (!chosen.has('progress') && (coins || xp)) operations.push(adjustWallet(this.prisma, id, -coins, -xp));
+    }
     if (chosen.has('progress')) operations.push(this.prisma.user.update({ where: { id }, data: { level: 1, xp: 0, coins: 0 } }));
 
     // A foto da motivação mora no Storage: guarda o caminho antes de apagar a linha
@@ -179,58 +177,5 @@ export class UsersService {
     await this.prisma.$transaction(operations);
     if (photoPath) await this.storage.remove(MOTIVATION_BUCKET, [photoPath]);
     return this.findOne(id);
-  }
-
-  /** Devolve XP e moedas de uma missão desfeita (nunca deixa negativo) e recalcula o nível */
-  async revokeRewards(userId: string, xpToRemove: number, coinsToRemove: number): Promise<User> {
-    const user = await this.findOne(userId);
-    const newXp = Math.max(0, user.xp - xpToRemove);
-    return this.prisma.user.update({
-      where: { id: userId },
-      data: {
-        xp: newXp,
-        coins: Math.max(0, user.coins - coinsToRemove),
-        level: Math.floor(newXp / 100) + 1,
-      },
-    });
-  }
-
-  async addRewards(
-    userId: string,
-    xpToAdd: number,
-    coinsToAdd: number,
-  ): Promise<User> {
-    const user = await this.findOne(userId);
-    const newXp = user.xp + xpToAdd;
-    const newCoins = user.coins + coinsToAdd;
-
-    // Regra de evolução de nível: a cada 100 XP sobe 1 nível
-    const newLevel = Math.floor(newXp / 100) + 1;
-
-    return this.prisma.user.update({
-      where: { id: userId },
-      data: {
-        xp: newXp,
-        coins: newCoins,
-        level: newLevel,
-      },
-    });
-  }
-
-  async deductCoins(userId: string, amount: number): Promise<User> {
-    const user = await this.findOne(userId);
-
-    if (user.coins < amount) {
-      throw new BadRequestException(
-        `Saldo insuficiente. O item custa ${amount} moedas e você possui ${user.coins}.`,
-      );
-    }
-
-    return this.prisma.user.update({
-      where: { id: userId },
-      data: {
-        coins: user.coins - amount,
-      },
-    });
   }
 }

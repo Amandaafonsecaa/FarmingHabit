@@ -119,11 +119,10 @@ describe('Shop purchase transaction', () => {
         }),
     };
     const updated = await service.update('reward', {
-      userId: 'player',
       title: 'Meu café',
       description: '',
       price: 40,
-    });
+    }, 'player');
     expect(updated.title).toBe('Meu café');
     expect(updated.price).toBe(40);
     expect(updated.description).toBe('');

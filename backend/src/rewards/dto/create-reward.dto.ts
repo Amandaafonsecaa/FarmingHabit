@@ -6,7 +6,6 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
-  IsUUID,
   Min,
   Max,
   MaxLength,
@@ -51,12 +50,4 @@ export class CreateRewardDto {
   @IsOptional()
   @IsBoolean()
   available?: boolean = true;
-
-  @ApiProperty({
-    example: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
-    description:
-      'ID do jogador proprietário; itens globais são gerenciados pelo catálogo',
-  })
-  @IsUUID('4', { message: 'O userId deve ser um UUID válido' })
-  userId: string;
 }

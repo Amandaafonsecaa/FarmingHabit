@@ -6,7 +6,6 @@ import {
   Delete,
   Body,
   Param,
-  Query,
   HttpStatus,
   HttpCode,
 } from '@nestjs/common';
@@ -15,14 +14,17 @@ import {
   ApiOperation,
   ApiResponse,
   ApiParam,
-  ApiQuery,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
 import { HabitsService } from '../services/habits.service';
 import { CreateHabitDto } from '../dto/create-habit.dto';
 import { UpdateHabitDto } from '../dto/update-habit.dto';
 import { Habit } from '../entities/habit.entity';
+import { CurrentUser } from '../../auth/current-user.decorator';
+import type { AuthUser } from '../../auth/auth-user';
 
 @ApiTags('habits')
+@ApiBearerAuth()
 @Controller('habits')
 export class HabitsController {
   constructor(private readonly habitsService: HabitsService) {}
@@ -47,8 +49,8 @@ export class HabitsController {
     status: HttpStatus.NOT_FOUND,
     description: 'Usuário não encontrado.',
   })
-  async create(@Body() createHabitDto: CreateHabitDto): Promise<Habit> {
-    return this.habitsService.create(createHabitDto);
+  async create(@CurrentUser() user: AuthUser, @Body() createHabitDto: CreateHabitDto): Promise<Habit> {
+    return this.habitsService.create(createHabitDto, user.id);
   }
 
   @Get()
@@ -56,22 +58,13 @@ export class HabitsController {
     summary: 'Listar hábitos',
     description: 'Retorna todos os hábitos ou filtra pelos hábitos de um usuário.',
   })
-  @ApiQuery({
-    name: 'userId',
-    required: false,
-    description: 'ID do usuário para filtrar os hábitos',
-    example: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
-  })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Lista de hábitos retornada.',
     type: [Habit],
   })
-  async findAll(@Query('userId') userId?: string): Promise<Habit[]> {
-    if (userId) {
-      return this.habitsService.findAllByUser(userId);
-    }
-    return this.habitsService.findAll();
+  async findAll(@CurrentUser() user: AuthUser): Promise<Habit[]> {
+    return this.habitsService.findAll(user.id);
   }
 
   @Get(':id')
@@ -93,8 +86,8 @@ export class HabitsController {
     status: HttpStatus.NOT_FOUND,
     description: 'Hábito não encontrado.',
   })
-  async findOne(@Param('id') id: string): Promise<Habit> {
-    return this.habitsService.findOne(id);
+  async findOne(@CurrentUser() user: AuthUser, @Param('id') id: string): Promise<Habit> {
+    return this.habitsService.findOne(id, user.id);
   }
 
   @Patch(':id')
@@ -117,10 +110,11 @@ export class HabitsController {
     description: 'Hábito não encontrado.',
   })
   async update(
+    @CurrentUser() user: AuthUser,
     @Param('id') id: string,
     @Body() updateHabitDto: UpdateHabitDto,
   ): Promise<Habit> {
-    return this.habitsService.update(id, updateHabitDto);
+    return this.habitsService.update(id, updateHabitDto, user.id);
   }
 
   @Delete(':id')
@@ -140,7 +134,7 @@ export class HabitsController {
     status: HttpStatus.NOT_FOUND,
     description: 'Hábito não encontrado.',
   })
-  async remove(@Param('id') id: string) {
-    return this.habitsService.remove(id);
+  async remove(@CurrentUser() user: AuthUser, @Param('id') id: string) {
+    return this.habitsService.remove(id, user.id);
   }
 }

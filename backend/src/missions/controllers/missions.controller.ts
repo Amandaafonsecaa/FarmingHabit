@@ -6,7 +6,6 @@ import {
   Delete,
   Body,
   Param,
-  Query,
   HttpStatus,
   HttpCode,
 } from '@nestjs/common';
@@ -15,14 +14,17 @@ import {
   ApiOperation,
   ApiResponse,
   ApiParam,
-  ApiQuery,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
 import { MissionsService } from '../services/missions.service';
 import { CreateMissionDto } from '../dto/create-mission.dto';
 import { UpdateMissionDto } from '../dto/update-mission.dto';
 import { Mission } from '../entities/mission.entity';
+import { CurrentUser } from '../../auth/current-user.decorator';
+import type { AuthUser } from '../../auth/auth-user';
 
 @ApiTags('missions')
+@ApiBearerAuth()
 @Controller('missions')
 export class MissionsController {
   constructor(private readonly missionsService: MissionsService) {}
@@ -42,28 +44,22 @@ export class MissionsController {
     status: HttpStatus.BAD_REQUEST,
     description: 'Dados de validação incorretos.',
   })
-  async create(@Body() createMissionDto: CreateMissionDto): Promise<Mission> {
-    return this.missionsService.create(createMissionDto);
+  async create(@CurrentUser() user: AuthUser, @Body() createMissionDto: CreateMissionDto): Promise<Mission> {
+    return this.missionsService.create(createMissionDto, user.id);
   }
 
   @Get()
   @ApiOperation({
     summary: 'Listar missões disponíveis',
-    description: 'Retorna todas as missões globais ou missões do usuário.',
-  })
-  @ApiQuery({
-    name: 'userId',
-    required: false,
-    description: 'ID do usuário para filtrar missões específicas',
-    example: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+    description: 'Retorna as missões do jogador logado e as globais.',
   })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Lista de missões retornada.',
     type: [Mission],
   })
-  async findAll(@Query('userId') userId?: string): Promise<Mission[]> {
-    return this.missionsService.findAll(userId);
+  async findAll(@CurrentUser() user: AuthUser): Promise<Mission[]> {
+    return this.missionsService.findAll(user.id);
   }
 
   @Get(':id')
@@ -85,8 +81,8 @@ export class MissionsController {
     status: HttpStatus.NOT_FOUND,
     description: 'Missão não encontrada.',
   })
-  async findOne(@Param('id') id: string): Promise<Mission> {
-    return this.missionsService.findOne(id);
+  async findOne(@CurrentUser() user: AuthUser, @Param('id') id: string): Promise<Mission> {
+    return this.missionsService.findOne(id, user.id);
   }
 
   @Patch(':id')
@@ -104,10 +100,11 @@ export class MissionsController {
     type: Mission,
   })
   async update(
+    @CurrentUser() user: AuthUser,
     @Param('id') id: string,
     @Body() updateMissionDto: UpdateMissionDto,
   ): Promise<Mission> {
-    return this.missionsService.update(id, updateMissionDto);
+    return this.missionsService.update(id, updateMissionDto, user.id);
   }
 
   @Patch(':id/complete')
@@ -121,12 +118,6 @@ export class MissionsController {
     description: 'ID da missão',
     example: '7c86a11e-2ff7-44bc-b530-9b3ec7095493',
   })
-  @ApiQuery({
-    name: 'userId',
-    required: true,
-    description: 'ID do usuário que receberá as recompensas',
-    example: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
-  })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Missão completada com sucesso!',
@@ -135,11 +126,8 @@ export class MissionsController {
     status: HttpStatus.BAD_REQUEST,
     description: 'Missão já concluída.',
   })
-  async completeMission(
-    @Param('id') id: string,
-    @Query('userId') userId: string,
-  ) {
-    return this.missionsService.completeMission(id, userId);
+  async completeMission(@CurrentUser() user: AuthUser, @Param('id') id: string) {
+    return this.missionsService.completeMission(id, user.id);
   }
 
   @Patch(':id/uncomplete')
@@ -149,14 +137,10 @@ export class MissionsController {
       'Volta a missão para "em aberto" e devolve o XP e as moedas que ela tinha creditado (sem deixar o saldo negativo).',
   })
   @ApiParam({ name: 'id', description: 'ID da missão' })
-  @ApiQuery({ name: 'userId', required: true, description: 'ID do usuário que recebeu as recompensas' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Missão desfeita.' })
   @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Missão ainda não concluída.' })
-  async uncompleteMission(
-    @Param('id') id: string,
-    @Query('userId') userId: string,
-  ) {
-    return this.missionsService.uncompleteMission(id, userId);
+  async uncompleteMission(@CurrentUser() user: AuthUser, @Param('id') id: string) {
+    return this.missionsService.uncompleteMission(id, user.id);
   }
 
   @Delete(':id')
@@ -177,7 +161,7 @@ export class MissionsController {
     status: HttpStatus.NOT_FOUND,
     description: 'Missão não encontrada.',
   })
-  async remove(@Param('id') id: string): Promise<{ message: string }> {
-    return this.missionsService.remove(id);
+  async remove(@CurrentUser() user: AuthUser, @Param('id') id: string): Promise<{ message: string }> {
+    return this.missionsService.remove(id, user.id);
   }
 }

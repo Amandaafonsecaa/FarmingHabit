@@ -11,8 +11,9 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
+/// Cada jogador é um usuário do Supabase Auth: o id é o UUID de auth.users (vem do JWT, não é gerado aqui)
 model User {
-  id        String    @id @default(uuid())
+  id        String    @id
   name      String
   email     String    @unique
   level     Int       @default(1)
@@ -27,6 +28,7 @@ model User {
   rewardOverrides RewardOverride[]
   motivation Motivation?
   data       UserData[]
+  rewardClaims RewardClaim[]
 
   @@map("users")
 }
@@ -131,4 +133,25 @@ model UserData {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   @@id([userId, key])
   @@map("user_data")
+}
+
+/// Livro-caixa das recompensas que o servidor pagou: colheita de meta, bônus da semana e baú.
+/// A chave é única por jogador, então a mesma recompensa nunca é paga duas vezes.
+model RewardClaim {
+  userId    String
+  /// "harvest:<dia>:<meta>", "week:<segunda>:<meta>" ou "chest:<baú>"
+  key       String
+  /// harvest | week | chest
+  kind      String
+  /// Dia do jogador (AAAA-MM-DD) em que a recompensa foi ganha
+  day       String
+  coins     Int
+  xp        Int
+  /// Conteúdo sorteado do baú
+  detail    Json?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@id([userId, key])
+  @@index([userId, day])
+  @@map("reward_claims")
 }

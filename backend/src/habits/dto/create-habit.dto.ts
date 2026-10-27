@@ -4,7 +4,6 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
-  IsUUID,
   Max,
   Min,
 } from 'class-validator';
@@ -30,11 +29,4 @@ export class CreateHabitDto {
   @Min(0, { message: 'O progresso mínimo é 0%' })
   @Max(100, { message: 'O progresso máximo é 100%' })
   progress?: number = 0;
-
-  @ApiProperty({
-    example: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
-    description: 'ID do usuário proprietário deste hábito',
-  })
-  @IsUUID('4', { message: 'O userId deve ser um UUID válido' })
-  userId: string;
 }

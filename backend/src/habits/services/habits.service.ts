@@ -2,45 +2,33 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateHabitDto } from '../dto/create-habit.dto';
 import { UpdateHabitDto } from '../dto/update-habit.dto';
 import { PrismaService } from '../../prisma/prisma.service';
-import { UsersService } from '../../users/services/users.service';
 import { Habit } from '@prisma/client';
 
 @Injectable()
 export class HabitsService {
-  constructor(
-    private readonly prisma: PrismaService,
-    private readonly usersService: UsersService,
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
-  async create(createHabitDto: CreateHabitDto): Promise<Habit> {
-    // Garante que o usuário existe
-    await this.usersService.findOne(createHabitDto.userId);
-
+  async create(createHabitDto: CreateHabitDto, userId: string): Promise<Habit> {
     return this.prisma.habit.create({
       data: {
         title: createHabitDto.title,
         progress: createHabitDto.progress ?? 0,
-        userId: createHabitDto.userId,
+        userId,
       },
     });
   }
 
-  async findAll(): Promise<Habit[]> {
-    return this.prisma.habit.findMany({
-      orderBy: { createdAt: 'desc' },
-    });
-  }
-
-  async findAllByUser(userId: string): Promise<Habit[]> {
+  /** Só os hábitos do jogador logado */
+  async findAll(userId: string): Promise<Habit[]> {
     return this.prisma.habit.findMany({
       where: { userId },
       orderBy: { createdAt: 'desc' },
     });
   }
 
-  async findOne(id: string): Promise<Habit> {
-    const habit = await this.prisma.habit.findUnique({
-      where: { id },
+  async findOne(id: string, userId: string): Promise<Habit> {
+    const habit = await this.prisma.habit.findFirst({
+      where: { id, userId },
     });
 
     if (!habit) {
@@ -50,8 +38,8 @@ export class HabitsService {
     return habit;
   }
 
-  async update(id: string, updateHabitDto: UpdateHabitDto): Promise<Habit> {
-    await this.findOne(id);
+  async update(id: string, updateHabitDto: UpdateHabitDto, userId: string): Promise<Habit> {
+    await this.findOne(id, userId);
 
     return this.prisma.habit.update({
       where: { id },
@@ -64,8 +52,8 @@ export class HabitsService {
     });
   }
 
-  async remove(id: string): Promise<{ message: string }> {
-    await this.findOne(id);
+  async remove(id: string, userId: string): Promise<{ message: string }> {
+    await this.findOne(id, userId);
     await this.prisma.habit.delete({
       where: { id },
     });

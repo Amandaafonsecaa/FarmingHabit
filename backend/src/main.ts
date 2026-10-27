@@ -35,6 +35,7 @@ async function bootstrap() {
     .addTag('habits', 'Gerenciamento de hábitos e acompanhamento percentual de progresso (0-100%)')
     .addTag('missions', 'Desafios e missões com recompensas de XP e Moedas')
     .addTag('rewards', 'Catálogo de itens e resgate de recompensas com moedas')
+    .addTag('progress', 'Ganhos do jogador (colheitas, bônus da semana e baús), calculados pelo servidor')
     .addBearerAuth()
     .build();
 

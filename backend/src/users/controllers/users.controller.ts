@@ -1,7 +1,6 @@
 import {
   Controller,
   Get,
-  Post,
   Patch,
   Delete,
   Put,
@@ -9,162 +8,95 @@ import {
   Param,
   Query,
   HttpStatus,
-  HttpCode,
 } from '@nestjs/common';
 import {
+  ApiBearerAuth,
   ApiTags,
   ApiOperation,
   ApiResponse,
   ApiParam,
 } from '@nestjs/swagger';
 import { UsersService } from '../services/users.service';
-import { CreateUserDto } from '../dto/create-user.dto';
 import { UpdateUserDto } from '../dto/update-user.dto';
 import { UpdateMotivationDto } from '../dto/update-motivation.dto';
 import { SaveUserDataDto } from '../dto/save-user-data.dto';
 import { ResetUserDataDto } from '../dto/reset-user-data.dto';
 import { User } from '../entities/user.entity';
+import { CurrentUser } from '../../auth/current-user.decorator';
+import type { AuthUser } from '../../auth/auth-user';
 
+/** Todas as rotas são do jogador logado: o id vem do token, nunca da URL */
 @ApiTags('users')
-@Controller('users')
+@ApiBearerAuth()
+@Controller('users/me')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @Post()
-  @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({
-    summary: 'Registrar um novo usuário/jogador',
-    description:
-      'Cria um usuário inicializando seus atributos de gamificação (Level 1, 0 XP, 0 Moedas).',
-  })
-  @ApiResponse({
-    status: HttpStatus.CREATED,
-    description: 'Usuário cadastrado com sucesso.',
-    type: User,
-  })
-  @ApiResponse({
-    status: HttpStatus.BAD_REQUEST,
-    description: 'Dados de validação incorretos.',
-  })
-  async create(@Body() createUserDto: CreateUserDto): Promise<User> {
-    return this.usersService.create(createUserDto);
-  }
-
   @Get()
   @ApiOperation({
-    summary: 'Listar todos os usuários',
-    description: 'Retorna a lista de usuários com seu progresso e atributos de gamificação.',
-  })
-  @ApiResponse({
-    status: HttpStatus.OK,
-    description: 'Lista recuperada com sucesso.',
-    type: [User],
-  })
-  async findAll(): Promise<User[]> {
-    return this.usersService.findAll();
-  }
-
-  @Get(':id')
-  @ApiOperation({
     summary: 'Buscar perfil e status de gamificação',
-    description:
-      'Retorna os dados do jogador incluindo nível atual, XP acumulado e saldo de moedas.',
+    description: 'Dados do jogador logado: nível, XP acumulado e saldo de moedas. Cria o jogador no primeiro acesso.',
   })
-  @ApiParam({
-    name: 'id',
-    description: 'Identificador único do usuário',
-    example: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
-  })
-  @ApiResponse({
-    status: HttpStatus.OK,
-    description: 'Usuário encontrado com sucesso.',
-    type: User,
-  })
-  @ApiResponse({
-    status: HttpStatus.NOT_FOUND,
-    description: 'Usuário não encontrado.',
-  })
-  async findOne(@Param('id') id: string): Promise<User> {
-    return this.usersService.findOne(id);
+  @ApiResponse({ status: HttpStatus.OK, description: 'Jogador do token.', type: User })
+  @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Token ausente, inválido ou expirado.' })
+  async getMe(@CurrentUser() user: AuthUser): Promise<User> {
+    return this.usersService.findOne(user.id);
   }
 
-  @Patch(':id')
+  @Patch()
   @ApiOperation({
-    summary: 'Atualizar dados ou progresso do usuário',
-    description: 'Permite atualizar informações cadastrais ou atributos do usuário.',
+    summary: 'Atualizar dados ou progresso do jogador',
+    description: 'Nome, nível, XP e moedas do jogador logado.',
   })
-  @ApiParam({
-    name: 'id',
-    description: 'ID do usuário a atualizar',
-  })
-  @ApiResponse({
-    status: HttpStatus.OK,
-    description: 'Usuário atualizado com sucesso.',
-    type: User,
-  })
-  @ApiResponse({
-    status: HttpStatus.NOT_FOUND,
-    description: 'Usuário não encontrado.',
-  })
-  async update(
-    @Param('id') id: string,
-    @Body() updateUserDto: UpdateUserDto,
-  ): Promise<User> {
-    return this.usersService.update(id, updateUserDto);
+  @ApiResponse({ status: HttpStatus.OK, description: 'Jogador atualizado com sucesso.', type: User })
+  async update(@CurrentUser() user: AuthUser, @Body() updateUserDto: UpdateUserDto): Promise<User> {
+    return this.usersService.update(user.id, updateUserDto);
   }
 
-  @Get(':id/motivation')
+  @Get('motivation')
   @ApiOperation({ summary: 'Buscar a motivação do jogador', description: 'Frase do quadro-negro e foto do porta-retrato (vazias se ainda não foram escritas).' })
-  @ApiParam({ name: 'id', description: 'ID do usuário' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Motivação do jogador.' })
-  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Usuário não encontrado.' })
-  async getMotivation(@Param('id') id: string) {
-    return this.usersService.getMotivation(id);
+  async getMotivation(@CurrentUser() user: AuthUser) {
+    return this.usersService.getMotivation(user.id);
   }
 
-  @Put(':id/motivation')
+  @Put('motivation')
   @ApiOperation({ summary: 'Salvar a motivação do jogador', description: 'Grava a frase e, opcionalmente, a foto. Enviar photo: null remove a foto.' })
-  @ApiParam({ name: 'id', description: 'ID do usuário' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Motivação salva.' })
   @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Frase longa demais ou foto inválida.' })
-  async saveMotivation(@Param('id') id: string, @Body() dto: UpdateMotivationDto) {
-    return this.usersService.saveMotivation(id, dto);
+  async saveMotivation(@CurrentUser() user: AuthUser, @Body() dto: UpdateMotivationDto) {
+    return this.usersService.saveMotivation(user.id, dto);
   }
 
-  @Get(':id/storage')
+  @Get('storage')
   @ApiOperation({ summary: 'Buscar os dados sincronizados do jogador', description: 'Metas, diário, baús, perfil, preferências... (uma entrada por chave, com updatedAt).' })
-  @ApiParam({ name: 'id', description: 'ID do usuário' })
-  async listData(@Param('id') id: string) {
-    return this.usersService.listData(id);
+  async listData(@CurrentUser() user: AuthUser) {
+    return this.usersService.listData(user.id);
   }
 
-  @Put(':id/storage/:key')
+  @Put('storage/:key')
   @ApiOperation({ summary: 'Salvar uma chave de dados do jogador', description: 'Guarda o conteúdo (texto JSON) de uma chave do navegador, como "farminghabit.goals.v1".' })
-  @ApiParam({ name: 'id', description: 'ID do usuário' })
   @ApiParam({ name: 'key', description: 'Chave, no formato farminghabit.nome.v1' })
-  async saveData(@Param('id') id: string, @Param('key') key: string, @Body() dto: SaveUserDataDto) {
-    return this.usersService.saveData(id, key, dto);
+  async saveData(@CurrentUser() user: AuthUser, @Param('key') key: string, @Body() dto: SaveUserDataDto) {
+    return this.usersService.saveData(user.id, key, dto);
   }
 
-  @Delete(':id/storage/:key')
+  @Delete('storage/:key')
   @ApiOperation({ summary: 'Apagar uma chave de dados do jogador' })
-  @ApiParam({ name: 'id', description: 'ID do usuário' })
   @ApiParam({ name: 'key', description: 'Chave, no formato farminghabit.nome.v1' })
-  async deleteData(@Param('id') id: string, @Param('key') key: string) {
-    return this.usersService.deleteData(id, key);
+  async deleteData(@CurrentUser() user: AuthUser, @Param('key') key: string) {
+    return this.usersService.deleteData(user.id, key);
   }
 
-  @Delete(':id/data')
+  @Delete('data')
   @ApiOperation({
     summary: 'Apagar partes escolhidas dos dados do jogador, mantendo a conta',
     description:
       'Cada parte em "scopes" é apagada numa única transação: goals (metas e histórico), diary (diário e aventuras), missions, shop (compras, recompensas próprias e favoritos), treasure (baús e coleção), motivation (frase e foto) e progress (volta para Level 1, 0 XP, 0 Moedas). Nome, e-mail, perfil e preferências continuam.',
   })
-  @ApiParam({ name: 'id', description: 'ID do usuário' })
-  @ApiResponse({ status: HttpStatus.OK, description: 'Partes apagadas; retorna o usuário atualizado.', type: User })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Partes apagadas; retorna o jogador atualizado.', type: User })
   @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Nenhuma parte escolhida ou parte desconhecida.' })
-  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Usuário não encontrado.' })
-  async resetData(@Param('id') id: string, @Query() query: ResetUserDataDto): Promise<User> {
-    return this.usersService.resetData(id, query.scopes);
+  async resetData(@CurrentUser() user: AuthUser, @Query() query: ResetUserDataDto): Promise<User> {
+    return this.usersService.resetData(user.id, query.scopes);
   }
 }

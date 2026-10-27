@@ -11,6 +11,29 @@ const {
 } = require('../dist/src/rewards/services/purchases.service');
 const { UsersService } = require('../dist/src/users/services/users.service');
 
+// Desde o login, todo jogador é um usuário do Supabase Auth (users.id → auth.users.id).
+// As contas de teste são criadas pela API de admin (service_role) e apagadas no fim; o jogador sai junto (ON DELETE CASCADE).
+const AUTH_URL = `${(process.env.SUPABASE_URL ?? '').replace(/\/+$/, '')}/auth/v1/admin/users`;
+const adminHeaders = () => ({
+  apikey: process.env.SUPABASE_SERVICE_ROLE_KEY,
+  Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`,
+  'Content-Type': 'application/json',
+});
+
+async function createAuthUser(email) {
+  const response = await fetch(AUTH_URL, {
+    method: 'POST',
+    headers: adminHeaders(),
+    body: JSON.stringify({ email, password: randomUUID(), email_confirm: true }),
+  });
+  if (!response.ok) throw new Error(`Não foi possível criar a conta de teste: ${response.status}`);
+  return (await response.json()).id;
+}
+
+async function deleteAuthUser(id) {
+  await fetch(`${AUTH_URL}/${id}`, { method: 'DELETE', headers: adminHeaders() });
+}
+
 async function main() {
   const prisma = new PrismaClient();
   const users = new UsersService(prisma);
@@ -20,21 +43,15 @@ async function main() {
   try {
     await prisma.$connect();
     for (let index = 0; index < 2; index++) {
-      const user = await prisma.user.create({
-        data: {
-          name: 'Shop integration fixture',
-          email: `shop-test-${randomUUID()}@example.invalid`,
-          coins: 100,
-        },
+      const email = `shop-test-${randomUUID()}@example.invalid`;
+      const id = await createAuthUser(email);
+      ids.push(id);
+      await prisma.user.create({
+        data: { id, name: 'Shop integration fixture', email, coins: 100 },
       });
-      ids.push(user.id);
     }
     const [owner, other] = ids;
-    const reward = await rewards.create({
-      title: 'Fixture reward',
-      price: 60,
-      userId: owner,
-    });
+    const reward = await rewards.create({ title: 'Fixture reward', price: 60 }, owner);
     assert(
       !(await rewards.findAll(other)).some((item) => item.id === reward.id),
     );
@@ -58,11 +75,7 @@ async function main() {
     const history = await purchases.findAll(owner);
     assert.equal(history.length, 1);
     const purchase = history[0];
-    await rewards.update(reward.id, {
-      title: 'Renamed fixture',
-      price: 75,
-      userId: owner,
-    });
+    await rewards.update(reward.id, { title: 'Renamed fixture', price: 75 }, owner);
     assert.equal((await purchases.findAll(owner))[0].title, 'Fixture reward');
     assert.equal((await purchases.findAll(owner))[0].price, 60);
     await assert.rejects(
@@ -78,7 +91,7 @@ async function main() {
     const undone = await purchases.setUsed(purchase.id, false, owner);
     assert.equal(undone.used, false);
     assert.equal(undone.usedAt, null);
-    await rewards.update(reward.id, { available: false, userId: owner });
+    await rewards.update(reward.id, { available: false }, owner);
     await assert.rejects(
       () => rewards.claimReward(reward.id, owner),
       (error) => error.status === 400,
@@ -97,11 +110,10 @@ async function main() {
     assert.equal((await purchases.findAll(other)).length, 1);
     const fixedId = fixed.reward.id;
     await rewards.update(fixedId, {
-      userId: owner,
       title: 'Meu episódio',
       price: 10,
       description: 'Minha pausa',
-    });
+    }, owner);
     assert.equal(
       (await rewards.findAll(owner)).find((item) => item.id === fixedId).price,
       10,
@@ -144,6 +156,7 @@ async function main() {
   } finally {
     if (ids.length)
       await prisma.user.deleteMany({ where: { id: { in: ids } } });
+    for (const id of ids) await deleteAuthUser(id);
     await prisma.$disconnect();
   }
 }

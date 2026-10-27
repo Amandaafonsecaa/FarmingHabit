@@ -5,21 +5,23 @@ import {
   HttpStatus,
   Param,
   Patch,
-  Query,
   ParseUUIDPipe,
 } from '@nestjs/common';
 import {
   ApiOperation,
   ApiParam,
-  ApiQuery,
+  ApiBearerAuth,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
 import { PurchasesService } from '../services/purchases.service';
 import { UpdatePurchaseDto } from '../dto/update-purchase.dto';
 import { Purchase } from '../entities/purchase.entity';
+import { CurrentUser } from '../../auth/current-user.decorator';
+import type { AuthUser } from '../../auth/auth-user';
 
 @ApiTags('purchases')
+@ApiBearerAuth()
 @Controller('purchases')
 export class PurchasesController {
   constructor(private readonly purchasesService: PurchasesService) {}
@@ -30,12 +32,6 @@ export class PurchasesController {
     description:
       'Retorna o histórico de compras da loja, das mais recentes para as mais antigas.',
   })
-  @ApiQuery({
-    name: 'userId',
-    required: true,
-    description: 'ID do jogador',
-    example: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
-  })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Histórico de compras.',
@@ -45,18 +41,11 @@ export class PurchasesController {
     status: HttpStatus.NOT_FOUND,
     description: 'Usuário não encontrado.',
   })
-  async findAll(
-    @Query('userId', new ParseUUIDPipe({ version: '4' })) userId: string,
-  ): Promise<Purchase[]> {
-    return this.purchasesService.findAll(userId);
+  async findAll(@CurrentUser() user: AuthUser): Promise<Purchase[]> {
+    return this.purchasesService.findAll(user.id);
   }
 
   @Patch(':id')
-  @ApiQuery({
-    name: 'userId',
-    required: true,
-    description: 'ID do jogador proprietário da compra',
-  })
   @ApiOperation({
     summary: 'Marcar compra como aproveitada',
     description:
@@ -73,10 +62,10 @@ export class PurchasesController {
     description: 'Compra não encontrada.',
   })
   async update(
+    @CurrentUser() user: AuthUser,
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
-    @Query('userId', new ParseUUIDPipe({ version: '4' })) userId: string,
     @Body() updatePurchaseDto: UpdatePurchaseDto,
   ): Promise<Purchase> {
-    return this.purchasesService.setUsed(id, updatePurchaseDto.used, userId);
+    return this.purchasesService.setUsed(id, updatePurchaseDto.used, user.id);
   }
 }

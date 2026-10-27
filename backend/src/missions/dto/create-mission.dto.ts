@@ -1,16 +1,16 @@
 import { Transform } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
-  IsBoolean,
   IsInt,
   IsNotEmpty,
   IsOptional,
   IsPositive,
   IsString,
-  IsUUID,
   Min,
+  Max,
   MaxLength,
 } from 'class-validator';
+import { MISSION_LIMITS } from '../../progress/economy';
 
 export class CreateMissionDto {
   @ApiProperty({
@@ -35,37 +35,22 @@ export class CreateMissionDto {
   description?: string;
 
   @ApiProperty({
-    example: 100,
-    description: 'Recompensa em pontos de experiência (XP)',
-    default: 100,
+    example: 50,
+    description: `Recompensa em pontos de experiência (XP), de 1 a ${MISSION_LIMITS.xp}`,
+    maximum: MISSION_LIMITS.xp,
   })
   @IsInt({ message: 'A recompensa de XP deve ser um número inteiro' })
   @IsPositive({ message: 'A recompensa de XP deve ser positiva' })
+  @Max(MISSION_LIMITS.xp, { message: `A recompensa de XP pode ser no máximo ${MISSION_LIMITS.xp}` })
   xpReward: number;
 
   @ApiProperty({
-    example: 25,
-    description: 'Recompensa em moedas do jogo',
-    default: 25,
+    example: 30,
+    description: `Recompensa em moedas do jogo, de 0 a ${MISSION_LIMITS.coins}`,
+    maximum: MISSION_LIMITS.coins,
   })
   @IsInt({ message: 'A recompensa de moedas deve ser um número inteiro' })
   @Min(0, { message: 'A quantidade de moedas não pode ser negativa' })
+  @Max(MISSION_LIMITS.coins, { message: `A recompensa de moedas pode ser no máximo ${MISSION_LIMITS.coins}` })
   coinsReward: number;
-
-  @ApiPropertyOptional({
-    example: false,
-    description: 'Estado inicial de conclusão da missão',
-    default: false,
-  })
-  @IsOptional()
-  @IsBoolean()
-  completed?: boolean = false;
-
-  @ApiPropertyOptional({
-    example: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
-    description: 'ID do usuário ao qual a missão pertence (opcional se for missão global)',
-  })
-  @IsOptional()
-  @IsUUID('4', { message: 'O userId deve ser um UUID válido' })
-  userId?: string;
 }
