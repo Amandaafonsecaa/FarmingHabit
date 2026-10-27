@@ -82,7 +82,17 @@ export function nextScheduledName(goal: TrackedGoal, today: Date) {
   return '';
 }
 
+export const isQuitGoal = (goal: TrackedGoal) => goal.mode === 'quit';
+
+/** Dias sem o hábito, numa meta de largar: desde a última recaída (ou desde que a meta foi criada) até hoje */
+export function daysWithout(goal: TrackedGoal, today: Date) {
+  const lastRelapse = [...(goal.relapses ?? [])].sort().at(-1);
+  const start = lastRelapse ? addDays(fromKey(lastRelapse), 1) : fromKey(goal.createdOn);
+  return Math.max(0, Math.round((fromKey(toKey(today)).getTime() - start.getTime()) / 86400000));
+}
+
 export function frequencyLabel(goal: TrackedGoal) {
+  if (isQuitGoal(goal)) return 'Largar · todo dia';
   if (goal.frequency.kind === 'weekly') return `${goal.frequency.timesPerWeek}x por semana`;
   if (goal.frequency.kind === 'weekdays') {
     const days = goal.frequency.days;

@@ -27,7 +27,7 @@ function GoalsVine({ progress }: { progress: number }) {
 }
 
 export function GoalsPage({ onNavigate }: { onNavigate: (page: AppPage) => void }) {
-  const { goals, log, setAmount, addGoal, updateGoal, removeGoal } = useGoalTracker();
+  const { goals, log, setAmount, addGoal, updateGoal, relapse, removeGoal } = useGoalTracker();
   const today = useToday();
   const [view, setView] = useState<'today' | 'all'>('today');
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -73,6 +73,13 @@ export function GoalsPage({ onNavigate }: { onNavigate: (page: AppPage) => void 
     setAnnouncement(`${goal.title}: semente plantada!`);
   }
 
+  // Recaída: zera o contador de dias sem e desmarca o "evitei" de hoje (as moedas já ganhas ficam)
+  function registerRelapse(goalId: string, title: string) {
+    if (!window.confirm(`Registrar uma recaída em "${title}"? O contador de dias sem recomeça do zero — e tudo bem, recomeçar também é progresso.`)) return;
+    relapse(goalId, toKey(today));
+    setAnnouncement(`${title}: contador reiniciado. Amanhã é um novo dia 🌱`);
+  }
+
   function uproot(goalId: string, title: string) {
     if (!window.confirm(`Arrancar a meta "${title}"? O histórico dela também será apagado.`)) return;
     removeGoal(goalId);
@@ -95,7 +102,7 @@ export function GoalsPage({ onNavigate }: { onNavigate: (page: AppPage) => void 
             ? <div className="goals-empty"><p className="item-title">{goals.length ? 'Nenhuma meta cobra hoje. Dia de descanso no sítio!' : 'Nenhuma meta ainda.'}</p>
                 {!goals.length && <button type="button" className="pixel-button primary-button mt-3" onClick={()=>setDialogOpen(true)}><PixelIcon name="plus" className="size-2.5"/>Criar a primeira meta</button>}</div>
             : <ul ref={plotsRef} className="goal-plots">{shown.map(goal => <GoalCard key={goal.id} goal={goal} log={log} today={today}
-                onSetAmount={(amount, origin)=>updateAmount(goal, amount, origin)} onRemove={()=>uproot(goal.id, goal.title)} onAnnounce={setAnnouncement} onEdit={()=>setEditingId(goal.id)}/>)}</ul>}
+                onSetAmount={(amount, origin)=>updateAmount(goal, amount, origin)} onRemove={()=>uproot(goal.id, goal.title)} onAnnounce={setAnnouncement} onEdit={()=>setEditingId(goal.id)} onRelapse={()=>registerRelapse(goal.id, goal.title)}/>)}</ul>}
         </div>
       </section>
       <div className="goals-side"><ConsistencyCalendar goals={goals} log={log} today={today}/></div>

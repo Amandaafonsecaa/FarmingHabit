@@ -174,7 +174,7 @@ export function SettingsPage({ onNavigate }: { onNavigate: (page: AppPage) => vo
               <SettingsRow label="Seu nome" description="Salvo no servidor." htmlFor="settings-name">
                 <input id="settings-name" className="settings-input" value={name} maxLength={40} disabled={!player} onChange={event=>setName(event.target.value)} placeholder="Como o sítio te chama?"/>
               </SettingsRow>
-              <SettingsRow label="Nome do sítio" description="Salvo neste navegador." htmlFor="settings-farm">
+              <SettingsRow label="Nome do sítio" description="Salvo na sua conta." htmlFor="settings-farm">
                 <input id="settings-farm" className="settings-input" value={farm} maxLength={30} onChange={event=>setFarm(event.target.value)} placeholder="Ex.: Sítio Girassol"/>
               </SettingsRow>
               <SettingsRow label="Frase do fazendeiro" description="Aparece no seu cartão. Opcional." htmlFor="settings-bio">
@@ -220,7 +220,7 @@ export function SettingsPage({ onNavigate }: { onNavigate: (page: AppPage) => vo
                 <li><strong>{summary.pages}</strong><span>páginas do diário</span></li>
                 <li><strong>{summary.adventures}</strong><span>aventuras</span></li>
               </ul>
-              <SettingsRow label="Onde fica guardado" description="Metas, diário, aventuras e preferências ficam neste navegador. Se trocar de computador ou limpar o navegador, use um backup."/>
+              <SettingsRow label="Onde fica guardado" description="Metas, diário, aventuras, baús e preferências ficam salvos na sua conta, no servidor, e voltam sozinhos em qualquer navegador. Só a foto da motivação fica neste navegador."/>
             </SettingsGroup>
             <SettingsGroup title="Backup">
               <SettingsRow label="Baixar backup" description="Salva tudo o que está neste navegador num arquivo .json.">

@@ -53,6 +53,25 @@ export async function updatePlayerName(id: string, name: string): Promise<Player
   return toPlayer(await request<Player>(`/users/${id}`, { method: 'PATCH', body: JSON.stringify({ name }) }));
 }
 
+// --- Dados do jogador sincronizados com o servidor (ver lib/cloudSync) ---
+
+export interface StoredData { key: string; value: string; updatedAt: string }
+
+export async function listUserData(userId: string): Promise<StoredData[]> {
+  return request<StoredData[]>(`/users/${userId}/storage`);
+}
+
+export async function saveUserData(userId: string, key: string, value: string): Promise<{ key: string; updatedAt: string }> {
+  return request(`/users/${userId}/storage/${encodeURIComponent(key)}`, { method: 'PUT', body: JSON.stringify({ value }) });
+}
+
+export async function deleteUserData(userId: string, key: string): Promise<void> {
+  await request(`/users/${userId}/storage/${encodeURIComponent(key)}`, { method: 'DELETE' });
+}
+
+/** Endereço da rota de dados, para o envio de última hora ao fechar a página (fetch keepalive) */
+export const userDataUrl = (userId: string, key: string) => `${API_URL}/users/${userId}/storage/${encodeURIComponent(key)}`;
+
 // --- Motivação (quadro-negro e porta-retrato da Evolução) ---
 
 /** A frase vem do servidor; photoUrl, por enquanto, é a foto guardada no navegador (ver useMotivation) */

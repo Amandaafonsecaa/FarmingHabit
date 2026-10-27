@@ -74,6 +74,18 @@ export function useGoalTracker() {
     setState(current => ({ ...current, goals: current.goals.map(goal => goal.id === goalId ? { ...goal, ...changes } : goal) }));
   }
 
+  /** Recaída numa meta de largar: registra o dia (zera o contador de dias sem) e desmarca o "evitei" desse dia */
+  function relapse(goalId: string, key: string) {
+    setState(current => {
+      const day = { ...current.log[key] };
+      delete day[goalId];
+      return {
+        log: { ...current.log, [key]: day },
+        goals: current.goals.map(goal => goal.id === goalId ? { ...goal, relapses: [...new Set([...(goal.relapses ?? []), key])] } : goal),
+      };
+    });
+  }
+
   function removeGoal(goalId: string) {
     setState(current => ({
       goals: current.goals.filter(goal => goal.id !== goalId),
@@ -84,5 +96,5 @@ export function useGoalTracker() {
     }));
   }
 
-  return { goals: state.goals, log: state.log, setAmount, addGoal, updateGoal, removeGoal };
+  return { goals: state.goals, log: state.log, setAmount, addGoal, updateGoal, relapse, removeGoal };
 }
