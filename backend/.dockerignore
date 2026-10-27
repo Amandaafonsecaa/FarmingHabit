@@ -1,0 +1,9 @@
+# O container instala e compila tudo do zero: nada da máquina local entra na imagem
+node_modules
+dist
+coverage
+.git
+# Segredos (senha do banco, service_role) chegam pelo env_file do compose, nunca dentro da imagem
+.env
+.env.*
+!.env.example
