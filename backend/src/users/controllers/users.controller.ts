@@ -20,6 +20,7 @@ import { UsersService } from '../services/users.service';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { UpdateUserDto } from '../dto/update-user.dto';
 import { UpdateMotivationDto } from '../dto/update-motivation.dto';
+import { SaveUserDataDto } from '../dto/save-user-data.dto';
 import { User } from '../entities/user.entity';
 
 @ApiTags('users')
@@ -126,6 +127,29 @@ export class UsersController {
   @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Frase longa demais ou foto inválida.' })
   async saveMotivation(@Param('id') id: string, @Body() dto: UpdateMotivationDto) {
     return this.usersService.saveMotivation(id, dto);
+  }
+
+  @Get(':id/storage')
+  @ApiOperation({ summary: 'Buscar os dados sincronizados do jogador', description: 'Metas, diário, baús, perfil, preferências... (uma entrada por chave, com updatedAt).' })
+  @ApiParam({ name: 'id', description: 'ID do usuário' })
+  async listData(@Param('id') id: string) {
+    return this.usersService.listData(id);
+  }
+
+  @Put(':id/storage/:key')
+  @ApiOperation({ summary: 'Salvar uma chave de dados do jogador', description: 'Guarda o conteúdo (texto JSON) de uma chave do navegador, como "farminghabit.goals.v1".' })
+  @ApiParam({ name: 'id', description: 'ID do usuário' })
+  @ApiParam({ name: 'key', description: 'Chave, no formato farminghabit.nome.v1' })
+  async saveData(@Param('id') id: string, @Param('key') key: string, @Body() dto: SaveUserDataDto) {
+    return this.usersService.saveData(id, key, dto);
+  }
+
+  @Delete(':id/storage/:key')
+  @ApiOperation({ summary: 'Apagar uma chave de dados do jogador' })
+  @ApiParam({ name: 'id', description: 'ID do usuário' })
+  @ApiParam({ name: 'key', description: 'Chave, no formato farminghabit.nome.v1' })
+  async deleteData(@Param('id') id: string, @Param('key') key: string) {
+    return this.usersService.deleteData(id, key);
   }
 
   @Delete(':id/data')

@@ -6,12 +6,17 @@ import {
 import { CreateUserDto } from '../dto/create-user.dto';
 import { UpdateUserDto } from '../dto/update-user.dto';
 import { UpdateMotivationDto } from '../dto/update-motivation.dto';
+import { SaveUserDataDto } from '../dto/save-user-data.dto';
 import { PrismaService } from '../../prisma/prisma.service';
 import { Motivation, User } from '@prisma/client';
 import { randomUUID } from 'node:crypto';
 import { SupabaseStorageService } from '../../storage/supabase-storage.service';
 
 const MOTIVATION_BUCKET = 'motivation-photos';
+/** Só chaves do próprio jogo ("farminghabit.algo.v1") */
+const DATA_KEY = /^farminghabit\.[a-z0-9.-]{1,60}$/;
+/** O que "apagar tudo" mantém: perfil e preferências fazem parte da conta */
+const ACCOUNT_DATA_KEYS = ['farminghabit.profile.v1', 'farminghabit.settings.v1'];
 export interface MotivationView { text: string; photoUrl: string | null; createdAt: Date | null; updatedAt: Date | null }
 
 @Injectable()
@@ -115,15 +120,40 @@ export class UsersService {
     };
   }
 
+  /** Todos os dados sincronizados do jogador, com a data da última alteração de cada chave */
+  async listData(userId: string): Promise<{ key: string; value: string; updatedAt: Date }[]> {
+    await this.findOne(userId);
+    return this.prisma.userData.findMany({ where: { userId }, select: { key: true, value: true, updatedAt: true } });
+  }
+
+  async saveData(userId: string, key: string, dto: SaveUserDataDto): Promise<{ key: string; updatedAt: Date }> {
+    if (!DATA_KEY.test(key)) throw new BadRequestException('Chave de dados inválida.');
+    await this.findOne(userId);
+    const saved = await this.prisma.userData.upsert({
+      where: { userId_key: { userId, key } },
+      create: { userId, key, value: dto.value },
+      update: { value: dto.value },
+    });
+    return { key: saved.key, updatedAt: saved.updatedAt };
+  }
+
+  async deleteData(userId: string, key: string): Promise<{ key: string }> {
+    if (!DATA_KEY.test(key)) throw new BadRequestException('Chave de dados inválida.');
+    await this.findOne(userId);
+    await this.prisma.userData.deleteMany({ where: { userId, key } });
+    return { key };
+  }
+
   /** Apaga tudo que o jogador criou ou conquistou, mas mantém a conta (nome e e-mail) */
   async resetData(id: string): Promise<User> {
     await this.findOne(id);
-    const [, , , , , user] = await this.prisma.$transaction([
+    const [, , , , , , user] = await this.prisma.$transaction([
       this.prisma.purchase.deleteMany({ where: { userId: id } }),
       this.prisma.rewardOverride.deleteMany({ where: { userId: id } }),
       this.prisma.reward.deleteMany({ where: { userId: id } }),
       this.prisma.mission.deleteMany({ where: { userId: id } }),
       this.prisma.habit.deleteMany({ where: { userId: id } }),
+      this.prisma.userData.deleteMany({ where: { userId: id, key: { notIn: ACCOUNT_DATA_KEYS } } }),
       this.prisma.user.update({ where: { id }, data: { level: 1, xp: 0, coins: 0 } }),
     ]);
     return user;
