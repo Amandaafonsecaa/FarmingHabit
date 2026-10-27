@@ -1,3 +1,5 @@
+import { useDayPhase } from '../../hooks/useDayPhase';
+import { WindowSky } from '../scenery/WindowSky';
 import { useEffect, useState } from 'react';
 import { NpcDialog } from '../NpcDialog';
 import { ProgressBar } from '../ProgressBar';
@@ -86,6 +88,7 @@ const CAT_VISIT_MS = 10000;
 
 /** Topo da Evolução: academia com o Coach Rocha treinando; clicar nele abre a conversa */
 export function GymHero({ level, xpInLevel, xpPerLevel, goals, log, coach }: { level: number; xpInLevel: number; xpPerLevel: number; goals: TrackedGoal[]; log: GoalLog; coach: CoachContext }) {
+  const phase = useDayPhase();
   const [talking, setTalking] = useState(false);
   // A gatinha avisa que dá para conversar com o coach até a pessoa conversar a primeira vez
   const [catVisit] = useState(() => { try { return localStorage.getItem(CAT_VISIT_KEY) !== toKey(coach.today); } catch { return false; } });
@@ -113,7 +116,7 @@ export function GymHero({ level, xpInLevel, xpPerLevel, goals, log, coach }: { l
       {[250, 750].map(x => <g key={x}><rect x={x - 1} y="14" width="2" height="22" fill="#2c2f36"/><path d={`M${x - 14} 36h28l6 10h-40Z`} fill="#2f6b55"/><rect x={x - 6} y="46" width="12" height="4" fill="#ffe38b"/><path className="gym-light" d={`M${x - 20} 50h40l50 150h-140Z`} fill="#fff6c2" opacity=".08"/></g>)}
 
       {/* Janelas */}
-      {[60, 850].map(x => <g key={x}><rect x={x} y="50" width="96" height="96" fill="#57311f"/><rect x={x + 6} y="56" width="84" height="84" fill="#9fd8f0"/><rect x={x + 46} y="56" width="4" height="84" fill="#57311f"/><rect x={x + 6} y="96" width="84" height="4" fill="#57311f"/><rect x={x + 12} y="62" width="20" height="6" fill="#ffffff" opacity=".6"/></g>)}
+      {[60, 850].map(x => <g key={x}><rect x={x} y="50" width="96" height="96" fill="#57311f"/><WindowSky x={x + 6} y={56} width={84} height={84} phase={phase}/><rect x={x + 46} y="56" width="4" height="84" fill="#57311f"/><rect x={x + 6} y="96" width="84" height="4" fill="#57311f"/><rect x={x + 12} y="62" width="20" height="6" fill="#ffffff" opacity=".6"/></g>)}
 
       {/* Relógio de parede */}
       <g transform="translate(640 40)"><rect x="-16" y="-16" width="32" height="32" fill="#3b2418"/><rect x="-13" y="-13" width="26" height="26" fill="#fff1c7"/><rect x="-1" y="-10" width="2" height="10" fill="#3b2418"/><rect x="0" y="-1" width="7" height="2" fill="#3b2418"/><g className="gym-second"><rect x="-.5" y="-11" width="1" height="11" fill="#d64d3c"/></g></g>

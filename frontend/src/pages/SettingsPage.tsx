@@ -14,7 +14,7 @@ import { WIPE_FLASH_KEY, WipeDialog } from '../components/settings/WipeDialog';
 import { JOURNEY_LENGTH } from '../lib/journey';
 import { HARVEST_REWARD, WEEK_BONUS } from '../lib/harvestRewards';
 import { loadPlayer, updatePlayerName, type Player } from '../services/api';
-import { signOut } from '../lib/auth';
+import { SignOutButton } from '../components/SignOutButton';
 import type { AppPage } from '../types/navigation';
 
 type Section = 'profile' | 'appearance' | 'data' | 'about';
@@ -166,7 +166,7 @@ export function SettingsPage({ onNavigate }: { onNavigate: (page: AppPage) => vo
                 <button type="button" className="pixel-button" onClick={()=>updateProfile({ onboarded: false })}>Abrir</button>
               </SettingsRow>
               <SettingsRow label="Sair da conta" description="Volta para a tela de entrada.">
-                <button type="button" className="pixel-button" onClick={()=>void signOut()}>Sair</button>
+                <SignOutButton/>
               </SettingsRow>
             </SettingsGroup>
             <div className="settings-save-bar">

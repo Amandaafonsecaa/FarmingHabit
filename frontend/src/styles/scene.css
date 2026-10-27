@@ -186,3 +186,8 @@
 /* Missões na Casa: a recompensa forma uma 2ª linha alinhada à borda esquerda do ícone */
 .mission-reward-row { margin-top: 10px; }
 .mission-reward-row .bounty { margin-top: 0; }
+
+/* Shared daylight: window frames and indoor scenery retain their own lighting. */
+.scenery-window-sky stop { transition: stop-color 2s ease; }
+.goals-hero { transition: background 2s ease; }
+.goals-hero > .sky-layer { z-index: -2; }

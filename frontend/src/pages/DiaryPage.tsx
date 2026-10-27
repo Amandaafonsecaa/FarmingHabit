@@ -46,10 +46,9 @@ export function DiaryPage({ onNavigate }: { onNavigate: (page: AppPage) => void 
   const counts = new Map<Mood, number>();
   Object.entries(diary.entries).forEach(([key, item]) => { if (key.startsWith(monthPrefix) && item.mood) counts.set(item.mood, (counts.get(item.mood) ?? 0) + 1); });
   const monthMood = [...counts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0];
-  const hour = new Date().getHours();
 
   return <MainLayout page="diary" onNavigate={onNavigate}
-    world={<DiaryHero todayMood={diary.entryFor(todayKey).mood} night={hour >= 18 || hour < 6} dateLabel={new Intl.DateTimeFormat('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' }).format(today)}
+    world={<DiaryHero todayMood={diary.entryFor(todayKey).mood} dateLabel={new Intl.DateTimeFormat('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' }).format(today)}
       written={diary.written.length} streak={diary.streak(today)} monthMood={monthMood}/>}>
     <div className="diary-layout">
       {/* Livro e, embaixo, o cantinho da motivação: juntos têm a altura da coluna de humor + memórias */}

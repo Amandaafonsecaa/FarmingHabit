@@ -1,3 +1,5 @@
+import { useDayPhase } from '../../hooks/useDayPhase';
+import { skyBackground } from '../../lib/timeOfDay';
 import { SkyLayer } from '../home/SkyLayer';
 import { SeasonParticles } from '../home/SeasonParticles';
 import { Tree } from '../WorldScenery';
@@ -15,8 +17,9 @@ const FENCE_POSTS = Array.from({ length: 22 }, (_, index) => index * 60 - 40).fi
  * As camadas se deslocam um pouco com o mouse (variável --px, a mesma do céu da Casa) para dar profundidade.
  */
 export function AuthScene() {
-  return <div className="auth-backdrop" aria-hidden="true">
-    <SkyLayer/>
+  const phase = useDayPhase();
+  return <div className={`auth-backdrop phase-${phase}`} style={{ background: skyBackground(phase) }} aria-hidden="true">
+    <SkyLayer phase={phase}/>
     <svg className="auth-landscape" viewBox="0 0 1200 300" preserveAspectRatio="xMidYMax slice" shapeRendering="crispEdges">
       {/* Morros ao longe, em degraus de pixel */}
       <g className="auth-layer-far">

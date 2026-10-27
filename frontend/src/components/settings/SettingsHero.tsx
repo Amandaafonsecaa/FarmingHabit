@@ -1,3 +1,5 @@
+import { useDayPhase } from '../../hooks/useDayPhase';
+import { WindowSky } from '../scenery/WindowSky';
 import type { CSSProperties } from 'react';
 
 /** Engrenagem com dentes quadradinhos, centrada em (0,0) */
@@ -14,6 +16,7 @@ const TOOL = { stroke: '#3b2418', strokeWidth: 2 } as const;
 
 /** Galpão de ferramentas: ferramentas balançando no painel, engrenagens girando, lampião e uma galinha curiosa */
 export function SettingsHero({ playerName, farmName }: { playerName: string; farmName: string }) {
+  const phase = useDayPhase();
   return <section className="settings-hero" aria-labelledby="settings-title">
     <svg className="shed-scene" viewBox="0 0 1000 320" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
       <rect width="1000" height="250" fill="#9c6b3f"/>
@@ -21,8 +24,8 @@ export function SettingsHero({ playerName, farmName }: { playerName: string; far
       <rect y="250" width="1000" height="70" fill="#7a5233"/>{[266, 284, 302].map(y => <rect key={y} y={y} width="1000" height="2" fill="#5b3a22" shapeRendering="crispEdges"/>)}
 
       {/* Janelinha com raio de sol e poeirinha flutuando */}
-      <g shapeRendering="crispEdges"><rect x="70" y="50" width="110" height="90" fill="#6b4426"/><rect x="80" y="60" width="90" height="70" fill="#9fd8f0"/><rect x="123" y="60" width="4" height="70" fill="#6b4426"/><rect x="80" y="93" width="90" height="4" fill="#6b4426"/></g>
-      <path d="M80 130L180 130L330 260L160 260Z" fill="#fff6c2" opacity=".16"/>
+      <g shapeRendering="crispEdges"><rect x="70" y="50" width="110" height="90" fill="#6b4426"/><WindowSky x={80} y={60} width={90} height={70} phase={phase}/><rect x="123" y="60" width="4" height="70" fill="#6b4426"/><rect x="80" y="93" width="90" height="4" fill="#6b4426"/></g>
+      {phase !== 'night' && <path d="M80 130L180 130L330 260L160 260Z" fill="#fff6c2" opacity=".16"/>}
       <g className="shed-dust" fill="#fff6c2">{[[180, 220], [210, 190], [240, 235], [200, 160], [260, 205], [150, 200]].map(([x, y], i) => <rect key={i} x={x} y={y} width="2" height="2" style={{ animationDelay: `${-i * 1.1}s` }}/>)}</g>
 
       {/* Painel de ferramentas penduradas */}

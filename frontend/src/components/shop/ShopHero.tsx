@@ -1,3 +1,5 @@
+import { useDayPhase } from '../../hooks/useDayPhase';
+import { WindowSky } from '../scenery/WindowSky';
 import { CoinHud } from '../home/CoinHud';
 import { PixelIcon } from '../PixelIcon';
 
@@ -5,6 +7,7 @@ const JARS: [number, number, string][] = [[70, 150, '#ee6996'], [96, 150, '#f2c4
 
 /** Interior do armazém: placa balançando, sininho, prateleiras, caixa registradora e o gato Bigode no balcão */
 export function ShopHero({ coins, onCreate, onTalk }: { coins: number | null; onCreate: () => void; onTalk: () => void }) {
+  const phase = useDayPhase();
   return <section className="shop-hero" aria-labelledby="shop-title">
     <svg className="shop-scene" viewBox="0 0 1000 320" preserveAspectRatio="xMidYMin slice" shapeRendering="crispEdges" aria-hidden="true">
       {/* Papel de parede listrado, lambri e piso xadrez */}
@@ -13,7 +16,7 @@ export function ShopHero({ coins, onCreate, onTalk }: { coins: number | null; on
       <rect y="240" width="1000" height="80" fill="#c9a46a"/>{Array.from({ length: 50 }, (_, i) => <rect key={i} x={(i % 25) * 40 + (Math.floor(i / 25) % 2) * 20} y={240 + Math.floor(i / 25) * 40} width="20" height="40" fill="#b08850" opacity=".7"/>)}
 
       {/* Janela com sol e sininho da porta */}
-      <rect x="230" y="40" width="130" height="110" fill="#6b4426"/><rect x="240" y="50" width="110" height="90" fill="#9fd8f0"/><rect x="293" y="50" width="4" height="90" fill="#6b4426"/><rect x="240" y="93" width="110" height="4" fill="#6b4426"/>
+      <rect x="230" y="40" width="130" height="110" fill="#6b4426"/><WindowSky x={240} y={50} width={110} height={90} phase={phase}/><rect x="293" y="50" width="4" height="90" fill="#6b4426"/><rect x="240" y="93" width="110" height="4" fill="#6b4426"/>
       <rect x="250" y="60" width="18" height="6" fill="#fff" opacity=".6"/><rect x="306" y="104" width="30" height="6" fill="#fff" opacity=".4"/>
       <g className="door-bell"><rect x="398" y="20" width="2" height="16" fill="#57311f"/><rect x="390" y="36" width="18" height="12" fill="#f2c453"/><rect x="388" y="46" width="22" height="3" fill="#a86d1c"/><rect x="397" y="49" width="4" height="4" fill="#a86d1c"/></g>
 

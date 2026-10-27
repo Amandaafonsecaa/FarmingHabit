@@ -122,3 +122,18 @@
  .game-nav-item.is-selected::before { left: 50%; top: auto; bottom: -2px; width: 24px; height: 5px; margin-left: -12px; border: 2px solid #23401f; border-bottom: 0; }
  @keyframes nav-item-up { from { transform: translateY(24px); opacity: 0; } }
 }
+
+/* Opções da conta: a mesma abertura suave por hover da semente, dentro da gaveta. */
+.nav-account { position: relative; }
+.nav-account-popover { position: absolute; bottom: calc(100% - 8px); left: 0; right: 0; z-index: 5; padding-bottom: 10px; opacity: 0; visibility: hidden; transform: translateY(6px) scale(.96); transform-origin: bottom center; transition: opacity .18s, transform .22s cubic-bezier(.34, 1.4, .64, 1), visibility .18s; }
+.nav-account-popover.is-open { opacity: 1; visibility: visible; transform: none; }
+.nav-account-panel { border: 2px solid #57311f; padding: 3px; background: #fff1c7; box-shadow: inset 0 0 0 2px #d29853, 2px 3px #3b241844; }
+.nav-signout { display: flex; align-items: center; justify-content: center; gap: 5px; width: 100%; min-height: 38px; padding: 6px 3px; border: 0; background: transparent; color: #8c3027; font: inherit; font-size: 10px; font-weight: bold; cursor: pointer; }
+.nav-signout svg { flex-shrink: 0; width: 13px; }
+.nav-signout:hover, .nav-signout:focus-visible { background: #f7dfc5; }
+.nav-signout:disabled { cursor: wait; opacity: .65; }
+@media (max-width: 767px) {
+ .game-navigation, .navigation-open .game-navigation { overflow: visible; }
+ .nav-account-popover { left: auto; right: 0; width: 155px; bottom: 100%; }
+ .nav-signout { font-size: 12px; min-height: 44px; }
+}

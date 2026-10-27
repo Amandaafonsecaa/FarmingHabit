@@ -6,8 +6,10 @@ export function useNow() {
   useEffect(() => {
     const timer = window.setInterval(() => setNow(new Date()), 60000);
     const onFocus = () => setNow(new Date());
+    const onVisibility = () => { if (!document.hidden) onFocus(); };
     window.addEventListener('focus', onFocus);
-    return () => { window.clearInterval(timer); window.removeEventListener('focus', onFocus); };
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => { window.clearInterval(timer); window.removeEventListener('focus', onFocus); document.removeEventListener('visibilitychange', onVisibility); };
   }, []);
   return now;
 }

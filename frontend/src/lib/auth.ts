@@ -29,15 +29,19 @@ export async function signIn(email: string, password: string): Promise<void> {
 }
 
 /** Devolve true quando a conta já entra na hora; false quando o Supabase pede a confirmação do e-mail antes */
-export async function signUp(email: string, password: string): Promise<boolean> {
+export async function signUp(email: string, password: string, name: string): Promise<boolean> {
   if (!supabase) throw new Error('Configure VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY no arquivo .env.');
-  const { data, error } = await supabase.auth.signUp({ email, password });
+  const displayName = name.trim();
+  if (!displayName || displayName.length > 40) throw new Error('Informe seu nome com até 40 caracteres.');
+  const { data, error } = await supabase.auth.signUp({ email, password, options: { data: { name: displayName } } });
   if (error) throw new Error(translateAuthError(error.message));
   return data.session !== null;
 }
 
 export async function signOut(): Promise<void> {
-  await supabase?.auth.signOut();
+  if (!supabase) throw new Error('O serviço de autenticação não está configurado.');
+  const { error } = await supabase.auth.signOut({ scope: 'local' });
+  if (error) throw new Error('Não foi possível sair da conta. Verifique sua conexão e tente novamente.');
 }
 
 /** Mensagens do Supabase em português, para o jogador entender o que aconteceu */

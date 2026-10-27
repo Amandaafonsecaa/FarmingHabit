@@ -36,6 +36,7 @@ function FieldIcon({ kind }: { kind: 'mail' | 'lock' }) {
 /** Entrada do sítio: plaquinha de madeira no meio da praça, na porteira da fazenda. Erros saem como toast. */
 export function AuthScreen() {
   const [mode, setMode] = useState<AuthMode>('signin');
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [passwordAttempted, setPasswordAttempted] = useState(false);
@@ -81,6 +82,7 @@ export function AuthScreen() {
     event.preventDefault();
     if (busy) return;
     if (mode === 'signup') setPasswordAttempted(true);
+    if (mode === 'signup' && (!name.trim() || name.trim().length > 40)) { toast('Informe seu nome com até 40 caracteres.', 'error'); document.getElementById('auth-name')?.focus(); return; }
     if (!email.trim() || !password) { toast('Preencha e-mail e senha.', 'error'); return; }
     if (mode === 'signup' && password.length < MIN_PASSWORD_LENGTH) {
       toast(`Sua senha precisa de pelo menos ${MIN_PASSWORD_LENGTH} caracteres. Complete mais um pouquinho para continuar.`, 'error');
@@ -95,7 +97,7 @@ export function AuthScreen() {
         window.location.reload();
         return;
       }
-      const signedIn = await signUp(email.trim(), password);
+      const signedIn = await signUp(email.trim(), password, name.trim());
       if (signedIn) { window.location.reload(); return; }
       // Com a confirmação de e-mail ligada no Supabase, a conta só entra depois do link
       toast('Conta criada! Confirme o e-mail que enviamos e depois entre.', 'success');
@@ -133,6 +135,12 @@ export function AuthScreen() {
 
           {configured
             ? <form key={mode} id="auth-panel" role="tabpanel" aria-labelledby={`auth-tab-${mode}`} className={`auth-form is-${mode}`} onSubmit={submit} aria-busy={busy} noValidate>
+              {mode === 'signup' && <div className="auth-field">
+                <label className="auth-label" htmlFor="auth-name">Nome</label>
+                <span className="auth-input">
+                  <input id="auth-name" name="name" type="text" autoComplete="name" value={name} onChange={event=>setName(event.target.value)} maxLength={40} placeholder="Como podemos te chamar?" required/>
+                </span>
+              </div>}
               <div className="auth-field">
                 <label className="auth-label" htmlFor="auth-email">E-mail</label>
                 <span className="auth-input"><FieldIcon kind="mail"/>

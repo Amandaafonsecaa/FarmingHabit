@@ -1,3 +1,6 @@
+import { useDayPhase } from '../../hooks/useDayPhase';
+import { skyBackground } from '../../lib/timeOfDay';
+import { SkyLayer } from '../home/SkyLayer';
 import type { GoalLog, TrackedGoal } from '../../types/goals';
 import { addDays, isDoneOn, isScheduled, startOfWeek, streakFor, weekChecks } from '../../lib/goalLogic';
 import { PixelIcon } from '../PixelIcon';
@@ -11,6 +14,7 @@ const shortDate = new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: '2-d
 
 /** Topo da aba: placa de madeira plantada no chão e a vendinha com as metas de hoje em caixotes */
 export function GoalsHero({ goals, log, today, coins, onPlant, onHarvest }: { goals: TrackedGoal[]; log: GoalLog; today: Date; coins: number | null; onPlant: () => void; onHarvest: (goal: TrackedGoal, origin: Element) => void }) {
+  const phase = useDayPhase();
   const monday = startOfWeek(today);
   const [talking, setTalking] = useState(false);
   const [playerName, setPlayerName] = useState('fazendeira');
@@ -22,7 +26,8 @@ export function GoalsHero({ goals, log, today, coins, onPlant, onHarvest }: { go
     ? weekChecks(goal, log, today) < goal.frequency.timesPerWeek || isDoneOn(goal, log, today)
     : isScheduled(goal, today));
 
-  return <section className="goals-hero" aria-labelledby="goals-title">
+  return <section className={`goals-hero phase-${phase}`} style={{ background: skyBackground(phase) }} aria-labelledby="goals-title">
+    <SkyLayer phase={phase}/>
     <div className="goals-hero-top">
       {/* Placa plantada no chão: as estacas descem até a grama da cena */}
       <div className="planted-sign">

@@ -1,3 +1,6 @@
+import { useDayPhase } from '../../hooks/useDayPhase';
+import type { DayPhase } from '../../lib/timeOfDay';
+import { WindowSky } from '../scenery/WindowSky';
 import { useEffect, useRef, useState } from 'react';
 import type { Mood } from '../../lib/diary';
 import { MoodIcon } from './DiaryIcons';
@@ -46,15 +49,13 @@ function useSleepyCat() {
 }
 
 /** Clima da janela: segue o humor do dia (chuva, tempestade, arco-íris...) */
-function WindowWeather({ mood, night }: { mood?: Mood; night: boolean }) {
+function WindowWeather({ mood, phase }: { mood?: Mood; phase: DayPhase }) {
+  const night = phase === 'night';
   const rain = mood === 'rainy' || mood === 'stormy';
   return <g clipPath="url(#diary-window)">
-    <rect x="612" y="42" width="256" height="146" fill={mood === 'stormy' ? '#3a3f55' : rain ? (night ? '#2d3550' : '#7f97ad') : night ? '#2b3a67' : '#8fd0f0'}/>
-    {night
-      ? <><circle cx="810" cy="82" r="18" fill="#fff6dd"/><circle cx="803" cy="76" r="4" fill="#efe2bf"/><circle cx="816" cy="90" r="3" fill="#efe2bf"/>
-          <g className="window-stars" fill="#fff6c2">{[[640, 60], [690, 90], [730, 55], [760, 120], [660, 140], [850, 130], [840, 56]].map(([x, y], i) => <rect key={i} x={x} y={y} width="3" height="3" style={{ animationDelay: `${-i * 0.5}s` }}/>)}</g>
-          {!rain && <g className="window-fireflies" fill="#f6d34a">{[[650, 170], [700, 160], [790, 172], [840, 162]].map(([x, y], i) => <rect key={i} x={x} y={y} width="3" height="3" style={{ animationDelay: `${-i * 0.7}s` }}/>)}</g>}</>
-      : <g className="window-sun"><path d="M796 66h20v4h4v20h-4v4h-20v-4h-4V70h4Z" fill="#ffe38b"/><path d="M804 58h4v4h-4Zm0 40h4v4h-4ZM784 78h4v4h-4Zm40 0h4v4h-4Z" fill="#f2c453"/></g>}
+    <WindowSky x={612} y={42} width={256} height={146} phase={phase}/>
+    {rain && <rect x="612" y="42" width="256" height="146" fill={mood === 'stormy' ? '#242b45' : '#53667f'} opacity={night ? .45 : .35}/>}
+    {night && !rain && <g className="window-fireflies" fill="#f6d34a">{[[650,170],[700,160],[790,172],[840,162]].map(([x,y],i)=><rect key={i} x={x} y={y} width="3" height="3" style={{ animationDelay: `${-i*.7}s` }}/>)}</g>}
     {(mood === 'cloudy' || rain) && <g className="window-clouds" fill={rain ? '#8a90a3' : '#eef1f6'}><path d="M630 70h30v-8h24v8h16v12h-70Z"/><path d="M720 96h26v-8h22v8h14v10h-62Z"/><path d="M800 60h24v-8h20v8h12v10h-56Z" opacity=".9"/></g>}
     {rain && <g className="window-rain" fill="#a9dcef">{Array.from({ length: 26 }, (_, i) => <rect key={i} x={616 + (i * 37) % 250} y={30 + (i * 23) % 150} width="2" height="9" style={{ animationDelay: `${-(i * 0.13) % 0.9}s` }}/>)}</g>}
     {mood === 'stormy' && <rect className="window-lightning" x="612" y="42" width="256" height="146" fill="#fff"/>}
@@ -64,9 +65,11 @@ function WindowWeather({ mood, night }: { mood?: Mood; night: boolean }) {
 }
 
 /** Cantinho do diário: quarto aconchegante com janela, escrivaninha, vela, estante e gatinho dormindo */
-export function DiaryHero({ todayMood, night, dateLabel, written, streak, monthMood }: {
-  todayMood?: Mood; night: boolean; dateLabel: string; written: number; streak: number; monthMood?: Mood;
+export function DiaryHero({ todayMood, dateLabel, written, streak, monthMood }: {
+  todayMood?: Mood; dateLabel: string; written: number; streak: number; monthMood?: Mood;
 }) {
+  const phase = useDayPhase();
+  const night = phase === 'night';
   const cat = useSleepyCat();
   return <section className="diary-hero" aria-labelledby="diary-title">
     <svg className="diary-room" viewBox="0 0 1000 320" preserveAspectRatio="xMidYMax slice" shapeRendering="crispEdges" aria-hidden="true">
@@ -84,7 +87,7 @@ export function DiaryHero({ todayMood, night, dateLabel, written, streak, monthM
 
       {/* Janela com clima */}
       <rect x="600" y="30" width="280" height="170" fill="#6b4426"/>
-      <WindowWeather mood={todayMood} night={night}/>
+      <WindowWeather mood={todayMood} phase={phase}/>
       <rect x="738" y="42" width="6" height="146" fill="#6b4426"/><rect x="612" y="112" width="256" height="6" fill="#6b4426"/>
       <rect x="590" y="198" width="300" height="12" fill="#8a5838"/><rect x="590" y="198" width="300" height="3" fill="#b07a4c"/>
       <g className="sill-plant"><rect x="636" y="180" width="18" height="18" fill="#b96845"/><rect x="634" y="178" width="22" height="4" fill="#d98a5c"/><path d="M640 160h4v18h-4Zm6 6h4v12h-4Zm-12 4h4v8h-4Z" fill="#53922d"/><path d="M638 156h8v6h-8Z" fill="#ee6996"/></g>

@@ -1,3 +1,4 @@
+import { skyBackground } from '../lib/timeOfDay';
 import { useRef, type PointerEvent } from 'react';
 import { WorldScenery, type GardenPlot } from './WorldScenery';
 import { WorldInfo } from './WorldInfo';
@@ -44,7 +45,7 @@ export function GameWorld({ player, coins, today, plots, onHarvest, poppedId, pe
   }
   const resetParallax = () => { worldRef.current?.style.setProperty('--px', '0'); worldRef.current?.style.setProperty('--py', '0'); };
 
-  return <section ref={worldRef} className={`game-world phase-${phase} season-${season} ${perfectDay ? 'is-perfect' : ''}`} aria-labelledby="world-heading"
+  return <section ref={worldRef} className={`game-world phase-${phase} season-${season} ${perfectDay ? 'is-perfect' : ''}`} aria-labelledby="world-heading" style={{ background: skyBackground(phase) }}
     onPointerMove={onPointerMove} onPointerLeave={resetParallax}>
     <SkyLayer phase={phase} rainbow={celebrating}/>
     <h1 id="world-heading" className="sr-only">{farmName} · {SEASON_NAMES[season]}, {PHASE_NAMES[phase].toLowerCase()}</h1>
