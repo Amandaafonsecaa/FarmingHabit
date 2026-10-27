@@ -1,8 +1,7 @@
 import { useId, useState, type CSSProperties } from 'react';
 import type { GoalArea, GoalLog, TrackedGoal } from '../../types/goals';
 import type { Mission } from '../../types/world';
-import { readClaims } from '../../lib/harvestRewards';
-import { readTreasure } from '../../lib/treasure';
+import type { RewardClaim } from '../../services/api';
 import { GOAL_AREAS } from '../../lib/goalAreas';
 import { areasThisWeek, weekEarnings, type AreaWeek, type Earnings } from '../../lib/weekMetrics';
 import { PixelIcon, type PixelIconName } from '../PixelIcon';
@@ -53,7 +52,7 @@ function RewardsScroll({ now, before, farmName }: { now: Earnings; before: Earni
 /**
  * "Áreas da sua vida": ranking das áreas pelo % de conclusão da semana (a barra é esse %; empates dividem a posição), e ao lado o pergaminho opcional com moedas e XP comparados à semana passada.
  */
-export function WeekBloomChart({ goals, log, today, missions }: { goals: TrackedGoal[]; log: GoalLog; today: Date; missions: Mission[] }) {
+export function WeekBloomChart({ goals, log, today, missions, claims }: { goals: TrackedGoal[]; log: GoalLog; today: Date; missions: Mission[]; claims: RewardClaim[] }) {
   const byArea = new Map(areasThisWeek(goals, log, today).map(area => [area.area, area]));
   // % de conclusão (inteiro, como é mostrado); sem nada a cumprir não há % (nunca divide por zero)
   const percentOf = (week?: AreaWeek) => week && week.expected > 0 ? Math.round(week.done / week.expected * 100) : null;
@@ -68,7 +67,7 @@ export function WeekBloomChart({ goals, log, today, missions }: { goals: Tracked
   // Destaques só quando a posição não está empatada
   const best = top && top.percent! > 0 && !tiedAt(top.percent!) ? top.value : null;
   const lowest = bottom && ranked.length > 1 && bottom.percent! < top.percent! && !tiedAt(bottom.percent!) ? bottom.value : null;
-  const { now, before } = weekEarnings(today, readClaims(), readTreasure(), missions);
+  const { now, before } = weekEarnings(today, claims, missions);
   const [settings] = useSettings();
 
   return <div className="week-bloom">

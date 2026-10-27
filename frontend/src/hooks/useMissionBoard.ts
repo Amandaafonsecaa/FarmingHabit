@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { Mission } from '../types/world';
 import type { NewMission, Player } from '../services/api';
-import { completeMission, uncompleteMission, updateMission, createMission, deleteMission, grantRewards, listMissions, loadPlayer } from '../services/api';
+import { completeMission, uncompleteMission, updateMission, createMission, deleteMission, listMissions, loadPlayer } from '../services/api';
 
 /** Missões e jogador vindos do backend, com as ações do quadro de aventuras */
 export function useMissionBoard() {
@@ -55,13 +55,10 @@ export function useMissionBoard() {
     setMissions(current => current.filter(mission => mission.id !== id));
   }
 
-  /** Moedas e XP de um baú vão para o jogador no servidor */
-  async function grant(coins: number, xp: number) {
-    if (!player) throw new Error('Servidor indisponível: abra o baú quando o backend estiver rodando.');
-    setPlayer(await grantRewards(player, coins, xp));
-  }
+  /** Jogador atualizado por outra ação já paga pelo servidor (ex.: baú aberto) */
+  const applyPlayer = (next: Player) => setPlayer(next);
 
-  return { player, missions, loading, error, create, edit, complete, uncomplete, remove, grant };
+  return { player, missions, loading, error, create, edit, complete, uncomplete, remove, applyPlayer };
 }
 
 // "Partir em aventura" ainda não existe no backend: guardamos quais missões estão em andamento neste navegador

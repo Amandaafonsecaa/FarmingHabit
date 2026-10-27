@@ -65,3 +65,13 @@
 .auth-config { font-size: 14px; color: #765337; }
 
 @keyframes auth-panel-in { from { opacity: 0; transform: translateX(var(--auth-from, 0)); } }
+
+/* Insight de senha: texto leve e estado identificado por ícone e cor. */
+.auth-password-hint { display: flex; align-items: flex-start; gap: 7px; margin: 2px 0 0; padding: 0; border: 0; background: none; color: #765337; font-size: 11px; line-height: 1.5; overflow-wrap: anywhere; }
+.auth-password-hint > span:first-child { flex-shrink: 0; font-weight: 900; }
+.auth-password-hint.is-error { color: #9b5144; }
+.auth-password-hint.is-valid { color: #52723d; }
+.auth-input:has(input[aria-invalid="true"]) { border-color: #b96845; }
+
+.auth-password-hint.is-error > span:first-child { color: #b34135; }
+.auth-password-hint.is-valid > span:first-child { color: #3f7b37; }

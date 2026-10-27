@@ -26,8 +26,8 @@ export function MissionDialog({ onSave, onClose }: { onSave: (item: Extract<NewI
     if (title.length > 60) return fail('O título deve ter no máximo 60 caracteres.');
     if (description.length > 160) return fail('A descrição deve ter no máximo 160 caracteres.');
     const { xp, coins } = size === 'custom' ? { xp: Number(data.get('xp')), coins: Number(data.get('coins')) } : REWARDS[size];
-    if (!Number.isInteger(xp) || xp < 1 || xp > 1000) return fail('O XP deve ser um número inteiro de 1 a 1000.');
-    if (!Number.isInteger(coins) || coins < 0 || coins > 10000) return fail('As moedas devem ser um número inteiro de 0 a 10000.');
+    if (!Number.isInteger(xp) || xp < 1 || xp > 120) return fail('O XP deve ser um número inteiro de 1 a 120.');
+    if (!Number.isInteger(coins) || coins < 0 || coins > 80) return fail('As moedas devem ser um número inteiro de 0 a 80.');
     setError('');
     return await onSave({ kind: 'mission', title, description, xp, coins }) || fail('Não foi possível salvar. Confira se o servidor está rodando e tente de novo.');
   }
@@ -38,8 +38,8 @@ export function MissionDialog({ onSave, onClose }: { onSave: (item: Extract<NewI
     <fieldset className="dialog-fieldset"><legend>Recompensa</legend>
       <ChoiceCards name="size" value={size} options={SIZES} onChange={setSize} compact/>
       {size === 'custom' && <div className="mt-3 grid grid-cols-2 gap-2">
-        <label className="form-label text-sm" htmlFor="mission-xp">XP<input id="mission-xp" name="xp" type="number" min={1} max={1000} defaultValue={50}/></label>
-        <label className="form-label text-sm" htmlFor="mission-coins">Moedas<input id="mission-coins" name="coins" type="number" min={0} max={10000} defaultValue={30}/></label>
+        <label className="form-label text-sm" htmlFor="mission-xp">XP<input id="mission-xp" name="xp" type="number" min={1} max={120} defaultValue={50}/></label>
+        <label className="form-label text-sm" htmlFor="mission-coins">Moedas<input id="mission-coins" name="coins" type="number" min={0} max={80} defaultValue={30}/></label>
       </div>}
     </fieldset>
   </GameDialog>;

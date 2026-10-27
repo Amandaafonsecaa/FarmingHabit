@@ -1,10 +1,9 @@
 import type { GoalArea, GoalLog, TrackedGoal } from '../types/goals';
 import type { Mission } from '../types/world';
-import type { TreasureState } from './treasure';
+import type { RewardClaim } from '../services/api';
 import { addDays, isDoneOn, startOfWeek, toKey } from './goalLogic';
 import { goalWeek } from './coach';
 import { areaOf } from './goalAreas';
-import { HARVEST_REWARD, WEEK_BONUS } from './harvestRewards';
 
 /** Uma área nesta semana: check-ins feitos e quanto já dava para ter feito (de segunda até hoje) */
 export interface AreaWeek { area: GoalArea; done: number; expected: number; pending: number; rate: number }
@@ -45,22 +44,13 @@ const empty = (): Earnings => ({ coins: 0, xp: 0, events: 0 });
 const add = (total: Earnings, coins: number, xp: number) => { total.coins += coins; total.xp += xp; total.events += 1; };
 
 /**
- * Moedas e XP ganhos entre duas datas (AAAA-MM-DD, inclusive), somando as três fontes do jogo:
- * colheitas de metas (e bônus de semana), baús abertos e missões cumpridas.
+ * Moedas e XP ganhos entre duas datas (AAAA-MM-DD, inclusive), somando o que o servidor pagou:
+ * colheitas de metas, bônus de semana e baús (livro-caixa) e missões cumpridas.
  */
-export function earningsBetween(from: string, to: string, claims: string[], treasure: TreasureState, missions: Mission[]): Earnings {
+export function earningsBetween(from: string, to: string, claims: RewardClaim[], missions: Mission[]): Earnings {
   const total = empty();
   for (const claim of claims) {
-    const day = claim.slice(0, 10);
-    if (day < from || day > to) continue;
-    if (claim.endsWith(':semana')) add(total, WEEK_BONUS.coins, WEEK_BONUS.xp);
-    else add(total, HARVEST_REWARD.coins, HARVEST_REWARD.xp);
-  }
-  for (const chest of treasure.history) {
-    if (chest.date < from || chest.date > to) continue;
-    add(total,
-      chest.loot.reduce((sum, item) => sum + (item.kind === 'coins' ? item.amount : 0), 0),
-      chest.loot.reduce((sum, item) => sum + (item.kind === 'xp' ? item.amount : 0), 0));
+    if (claim.day >= from && claim.day <= to) add(total, claim.coins, claim.xp);
   }
   for (const mission of missions) {
     if (!mission.completed || !mission.completedAt) continue;
@@ -71,12 +61,12 @@ export function earningsBetween(from: string, to: string, claims: string[], trea
 }
 
 /** Esta semana (segunda até hoje) e a semana passada inteira */
-export function weekEarnings(today: Date, claims: string[], treasure: TreasureState, missions: Mission[]) {
+export function weekEarnings(today: Date, claims: RewardClaim[], missions: Mission[]) {
   const monday = startOfWeek(today);
   const lastMonday = addDays(monday, -7);
   return {
-    now: earningsBetween(toKey(monday), toKey(today), claims, treasure, missions),
-    before: earningsBetween(toKey(lastMonday), toKey(addDays(lastMonday, 6)), claims, treasure, missions),
+    now: earningsBetween(toKey(monday), toKey(today), claims, missions),
+    before: earningsBetween(toKey(lastMonday), toKey(addDays(lastMonday, 6)), claims, missions),
   };
 }
 

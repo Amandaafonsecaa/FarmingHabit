@@ -5,7 +5,7 @@ import { PixelIcon } from '../PixelIcon';
 import { ProgressBar } from '../ProgressBar';
 import { PlantGrowth } from './PlantGrowth';
 import { HarvestBurst, type Burst } from './HarvestBurst';
-import { HARVEST_REWARD, type HarvestReward } from '../../lib/harvestRewards';
+import { HARVEST_REWARD } from '../../lib/harvestRewards';
 
 // Último número digitado para somar em cada meta de quantidade (fica só neste navegador)
 const LAST_AMOUNT_KEY = 'farminghabit.quantity-last.v1';
@@ -18,7 +18,7 @@ function rememberLastAmount(goalId: string, value: number) {
 
 interface GoalCardProps {
   goal: TrackedGoal; log: GoalLog; today: Date;
-  onSetAmount: (amount: number, origin?: Element) => HarvestReward | null; onRemove: () => void; onAnnounce: (message: string) => void;
+  onSetAmount: (amount: number, origin?: Element) => void; onRemove: () => void; onAnnounce: (message: string) => void;
   /** Abre o modal de edição da meta */
   onEdit: () => void;
   /** Recaída numa meta de largar (zera o contador de dias sem) */
@@ -69,13 +69,12 @@ export function GoalCard({ goal, log, today, onSetAmount, onRemove, onAnnounce, 
   // Check único (diária, dias específicos ou um check da semanal): alterna o dia de hoje
   function toggleCheck(origin: Element) {
     if (doneToday) { onSetAmount(0); onAnnounce(`${goal.title}: marcação de hoje desfeita.`); return; }
-    // A plaquinha mostra as moedas ganhas (só na primeira colheita do dia)
-    const reward = onSetAmount(1, origin);
-    const coins = reward ? ` +${reward.coins} 🪙` : '';
-    if (!weekly) celebrate('big', `${quitting ? 'Evitado!' : 'Colhido!'}${coins}`);
-    else if (checks >= weekly.timesPerWeek) celebrate('small', `Colheita extra!${coins}`);
-    else if (checks + 1 >= weekly.timesPerWeek) celebrate('big', `Semana completa!${coins}`);
-    else celebrate('small', `${checks + 1}/${weekly.timesPerWeek} na semana${coins}`);
+    // As moedas ganhas aparecem no aviso quando o servidor confirma o pagamento
+    onSetAmount(1, origin);
+    if (!weekly) celebrate('big', quitting ? 'Evitado!' : 'Colhido!');
+    else if (checks >= weekly.timesPerWeek) celebrate('small', 'Colheita extra!');
+    else if (checks + 1 >= weekly.timesPerWeek) celebrate('big', 'Semana completa!');
+    else celebrate('small', `${checks + 1}/${weekly.timesPerWeek} na semana`);
   }
 
   // Quantidade (copos, minutos...): a pessoa digita quanto somar; o navegador lembra o último número de cada meta
@@ -93,9 +92,9 @@ export function GoalCard({ goal, log, today, onSetAmount, onRemove, onAnnounce, 
     if (!quantity) return;
     if (!validChosen) { onAnnounce(`${goal.title}: digite quanto quer somar.`); return; }
     const next = Math.max(0, Math.round((amount + direction * chosen) * 100) / 100);
-    const reward = onSetAmount(next, origin);
+    onSetAmount(next, origin);
     if (direction < 0) return;
-    if (next >= target && amount < target) celebrate('big', `Meta do dia!${reward ? ` +${reward.coins} 🪙` : ''}`);
+    if (next >= target && amount < target) celebrate('big', 'Meta do dia!');
     else celebrate('small', `+${chosen} ${quantity.unit}`);
   }
 

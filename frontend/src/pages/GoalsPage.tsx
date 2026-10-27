@@ -10,7 +10,7 @@ import { useGoalTracker, useToday } from '../hooks/useGoalTracker';
 import { useFlipList } from '../hooks/useFlipList';
 import { amountOn, dailyTarget, isScheduled, sortByPending, toKey } from '../lib/goalLogic';
 import type { NewTrackedGoal, TrackedGoal } from '../types/goals';
-import { claimHarvest, creditPlayer, releaseHarvest, rewardLabel } from '../lib/harvestRewards';
+import { reachesHarvest, requestHarvest, rewardLabel } from '../lib/harvestRewards';
 import { flyCoins } from '../lib/coinFlight';
 import { usePlayerCoins } from '../hooks/usePlayerCoins';
 import type { AppPage } from '../types/navigation';
@@ -57,13 +57,14 @@ export function GoalsPage({ onNavigate }: { onNavigate: (page: AppPage) => void 
     if (next < dailyTarget(goal) && goal.measure.kind === 'quantity') setAnnouncement(`${goal.title}: ${next}/${dailyTarget(goal)} ${goal.measure.unit}.`);
   }
 
+  // Grava o dia; se ele acabou de ser cumprido, o servidor confere e paga a colheita
   function updateAmount(goal: TrackedGoal, amount: number, origin?: Element) {
-    const reward = claimHarvest(goal, log, today, amount);
-    setAmount(goal.id, toKey(today), amount);
-    if (reward) creditPlayer(reward.coins, reward.xp)
-      .then(() => { flyCoins(origin, reward.coins); setAnnouncement(`${goal.title}: ${rewardLabel(reward)}`); })
-      .catch(() => { releaseHarvest(reward); setAnnouncement(`${goal.title}: colhida, mas o servidor está fora do ar e as moedas não foram creditadas.`); });
-    return reward;
+    const day = toKey(today);
+    const harvests = reachesHarvest(goal, log, day, amount);
+    setAmount(goal.id, day, amount);
+    if (harvests) requestHarvest(goal, day)
+      .then(result => { if (!result.coins && !result.xp) return; flyCoins(origin, result.coins); setAnnouncement(`${goal.title}: ${rewardLabel(result)}`); })
+      .catch(error => setAnnouncement(`${goal.title}: colhida, mas as moedas não foram creditadas (${error instanceof Error ? error.message : 'servidor indisponível'}).`));
   }
 
   function plant(goal: NewTrackedGoal) {

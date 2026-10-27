@@ -7,6 +7,7 @@ import { Toaster } from '../Toaster';
 import { AuthScene } from './AuthScene';
 
 type AuthMode = 'signin' | 'signup';
+const MIN_PASSWORD_LENGTH = 6;
 const TABS: { mode: AuthMode; label: string }[] = [{ mode: 'signin', label: 'Entrar' }, { mode: 'signup', label: 'Criar conta' }];
 
 /** Brotinho do selo no topo da plaquinha */
@@ -37,6 +38,9 @@ export function AuthScreen() {
   const [mode, setMode] = useState<AuthMode>('signin');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [passwordAttempted, setPasswordAttempted] = useState(false);
+  const passwordInvalid = mode === 'signup' && (password.length > 0 || passwordAttempted) && password.length < MIN_PASSWORD_LENGTH;
+  const passwordRef = useRef<HTMLInputElement>(null);
   const [confirm, setConfirm] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -48,6 +52,7 @@ export function AuthScreen() {
   function switchMode(next: AuthMode) {
     if (next === mode || busy) return;
     setMode(next);
+    setPasswordAttempted(false);
     setConfirm('');
   }
 
@@ -75,8 +80,13 @@ export function AuthScreen() {
   async function submit(event: FormEvent) {
     event.preventDefault();
     if (busy) return;
+    if (mode === 'signup') setPasswordAttempted(true);
     if (!email.trim() || !password) { toast('Preencha e-mail e senha.', 'error'); return; }
-    if (mode === 'signup' && password.length < 6) { toast('A senha precisa ter pelo menos 6 caracteres.', 'error'); return; }
+    if (mode === 'signup' && password.length < MIN_PASSWORD_LENGTH) {
+      toast(`Sua senha precisa de pelo menos ${MIN_PASSWORD_LENGTH} caracteres. Complete mais um pouquinho para continuar.`, 'error');
+      passwordRef.current?.focus();
+      return;
+    }
     if (mode === 'signup' && password !== confirm) { toast('As senhas não são iguais.', 'error'); return; }
     setBusy(true);
     try {
@@ -91,6 +101,7 @@ export function AuthScreen() {
       toast('Conta criada! Confirme o e-mail que enviamos e depois entre.', 'success');
       setMode('signin');
       setPassword('');
+      setPasswordAttempted(false);
       setConfirm('');
     } catch (error) {
       toast(error instanceof Error ? error.message : 'Não foi possível entrar.', 'error');
@@ -132,18 +143,25 @@ export function AuthScreen() {
                 <label className="auth-label" htmlFor="auth-password">Senha</label>
                 <div className="auth-input-row">
                   <span className="auth-input"><FieldIcon kind="lock"/>
-                    <input id="auth-password" type={showPassword ? 'text' : 'password'} autoComplete={mode === 'signin' ? 'current-password' : 'new-password'} minLength={6}
+                    <input ref={passwordRef} id="auth-password" type={showPassword ? 'text' : 'password'} autoComplete={mode === 'signin' ? 'current-password' : 'new-password'} minLength={mode === 'signup' ? MIN_PASSWORD_LENGTH : undefined}
+                      aria-invalid={passwordInvalid || undefined} aria-describedby={mode === 'signup' ? 'auth-password-hint' : undefined}
                       value={password} onChange={event=>setPassword(event.target.value)} required/>
                   </span>
                   <button type="button" className="pixel-button auth-reveal" aria-pressed={showPassword} aria-controls="auth-password" onClick={()=>setShowPassword(value => !value)}>
                     {showPassword ? 'Ocultar' : 'Ver'}
                   </button>
                 </div>
+                {mode === 'signup' && <p id="auth-password-hint" className={`auth-password-hint ${password.length >= MIN_PASSWORD_LENGTH ? 'is-valid' : 'is-error'}`} aria-live="polite" aria-atomic="true">
+                  <span aria-hidden="true">{password.length >= MIN_PASSWORD_LENGTH ? '✓' : '✕'}</span>
+                  <span>{password.length >= MIN_PASSWORD_LENGTH
+                    ? `Mínimo de ${MIN_PASSWORD_LENGTH} caracteres atendido.`
+                    : `Use pelo menos ${MIN_PASSWORD_LENGTH} caracteres.`}</span>
+                </p>}
               </div>
               {mode === 'signup' && <div className="auth-field">
                 <label className="auth-label" htmlFor="auth-confirm">Repita a senha</label>
                 <span className="auth-input"><FieldIcon kind="lock"/>
-                  <input id="auth-confirm" type={showPassword ? 'text' : 'password'} autoComplete="new-password" minLength={6} value={confirm} onChange={event=>setConfirm(event.target.value)} required/>
+                  <input id="auth-confirm" type={showPassword ? 'text' : 'password'} autoComplete="new-password" minLength={MIN_PASSWORD_LENGTH} value={confirm} onChange={event=>setConfirm(event.target.value)} required/>
                 </span>
               </div>}
               <button type="submit" className="auth-submit" disabled={busy}>

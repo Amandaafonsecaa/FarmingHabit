@@ -3,7 +3,7 @@ import { toKey } from './goalLogic';
 
 /**
  * Baús da jornada: aparecem na 3ª parada (baú médio) e na 5ª parada (baú grande, fim do capítulo) de cada capítulo.
- * Ao abrir, sorteiam moedas, às vezes uma poção de XP e colecionáveis do tema daquele capítulo.
+ * O conteúdo (moedas, às vezes XP e colecionáveis do capítulo) é sorteado e pago pelo servidor (módulo progress).
  */
 export const CHEST_STOPS: Record<number, 'mid' | 'big'> = { 2: 'mid', 4: 'big' };
 
@@ -49,23 +49,6 @@ export function foundChests(completed: number): FoundChest[] {
     chests.push({ id: `${loop}:${chapter}:${stop}`, loop, chapter, stop, size });
   }
   return chests;
-}
-
-const between = (min: number, max: number) => min + Math.floor(Math.random() * (max - min + 1));
-
-/** Sorteia o conteúdo: sempre moedas, mais 1 (médio) ou 2 (grande) prêmios extras */
-export function rollLoot(chest: FoundChest): Loot[] {
-  const big = chest.size === 'big';
-  const loot: Loot[] = [{ kind: 'coins', amount: big ? between(30, 70) : between(10, 30) }];
-  const weights: [Rarity, number][] = big ? [['comum', 55], ['raro', 33], ['lendário', 12]] : [['comum', 70], ['raro', 25], ['lendário', 5]];
-  for (let roll = 0; roll < (big ? 2 : 1); roll++) {
-    if (Math.random() < 0.3) { loot.push({ kind: 'xp', amount: big ? 30 : 15 }); continue; }
-    let ticket = Math.random() * 100;
-    const rarity = weights.find(([, weight]) => (ticket -= weight) < 0)?.[0] ?? 'comum';
-    const pool = COLLECTIBLES.filter(item => item.chapter === chest.chapter && item.rarity === rarity);
-    loot.push({ kind: 'collectible', id: pool[Math.floor(Math.random() * pool.length)].id });
-  }
-  return loot;
 }
 
 // --- O que já foi aberto e a coleção ficam neste navegador ---

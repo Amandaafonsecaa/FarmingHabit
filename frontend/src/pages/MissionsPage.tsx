@@ -9,7 +9,10 @@ import { PixelIcon } from '../components/PixelIcon';
 import { useAcceptedMissions, useMissionBoard } from '../hooks/useMissionBoard';
 import type { Mission, NewItem } from '../types/world';
 import { recordAdventure } from '../lib/diary';
-import { foundChests, readTreasure, rollLoot, saveOpenedChest, type FoundChest } from '../lib/treasure';
+import { foundChests, readTreasure, saveOpenedChest, type FoundChest } from '../lib/treasure';
+import { toKey } from '../lib/goalLogic';
+import { PLAYER_EVENT } from '../lib/harvestRewards';
+import { openTreasureChest } from '../services/api';
 import { ChestOpening } from '../components/missions/ChestOpening';
 import { CollectionPanel } from '../components/missions/CollectionPanel';
 import { flyCoins } from '../lib/coinFlight';
@@ -41,15 +44,14 @@ export function MissionsPage({ onNavigate }: { onNavigate: (page: AppPage) => vo
   const chests = foundChests(completedCount);
   const unopened = chests.filter(chest => !treasure.opened.includes(chest.id));
 
-  // Abre o baú: sorteia, credita moedas/XP no servidor e só então marca como aberto (se falhar, dá para tentar de novo)
+  // Abre o baú no servidor (ele confere se a jornada chegou lá, sorteia e paga) e só então guarda na coleção
   async function openChest(chest: FoundChest) {
-    const loot = rollLoot(chest);
-    const coins = loot.reduce((sum, item) => sum + (item.kind === 'coins' ? item.amount : 0), 0);
-    const xp = loot.reduce((sum, item) => sum + (item.kind === 'xp' ? item.amount : 0), 0);
-    await board.grant(coins, xp);
-    setTreasure(current => saveOpenedChest(current, chest.id, loot));
-    setAnnouncement(`Baú aberto! +${coins} moedas${xp ? ` e +${xp} XP` : ''}.`);
-    return loot;
+    const result = await openTreasureChest(chest.id, toKey(new Date()));
+    board.applyPlayer(result.user);
+    window.dispatchEvent(new CustomEvent(PLAYER_EVENT, { detail: result.user }));
+    setTreasure(current => current.opened.includes(chest.id) ? current : saveOpenedChest(current, chest.id, result.loot));
+    setAnnouncement(result.alreadyOpened ? 'Este baú já tinha sido aberto.' : `Baú aberto! +${result.coins} moedas${result.xp ? ` e +${result.xp} XP` : ''}.`);
+    return result.loot;
   }
 
   function showChest(id?: string) {

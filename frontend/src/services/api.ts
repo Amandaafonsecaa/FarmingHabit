@@ -1,5 +1,6 @@
 import type { Mission, Reward } from '../types/world';
 import type { Purchase } from '../lib/shop';
+import type { Loot } from '../lib/treasure';
 import { toKey } from '../lib/goalLogic';
 import { currentAccessToken } from '../lib/auth';
 
@@ -39,12 +40,6 @@ const toPlayer = ({ id, name, level, xp, coins, email, createdAt }: Player): Pla
 
 export async function loadPlayer(): Promise<Player> {
   return toPlayer(await request<Player>('/users/me'));
-}
-
-/** Credita moedas e XP (baús e metas cumpridas), com a mesma regra de nível do backend: a cada 100 XP, +1 nível */
-export async function grantRewards(player: Player, coins: number, xp: number): Promise<Player> {
-  const totalXp = player.xp + xp;
-  return toPlayer(await request<Player>('/users/me', { method: 'PATCH', body: JSON.stringify({ coins: player.coins + coins, xp: totalXp, level: Math.floor(totalXp / 100) + 1 }) }));
 }
 
 /** Renomeia o jogador (PATCH /users/me) */
@@ -93,6 +88,29 @@ export async function resetPlayerData(scopes: ResetScope[]): Promise<Player> {
   return toPlayer(await request<Player>(`/users/me/data?scopes=${scopes.join(',')}`, { method: 'DELETE' }));
 }
 
+// --- Ganhos (o servidor confere a ação, decide o valor e paga uma vez só) ---
+
+export interface HarvestResult { coins: number; xp: number; weekBonus: boolean; user: Player }
+export interface ChestResult { loot: Loot[]; coins: number; xp: number; alreadyOpened: boolean; user: Player }
+export interface RewardClaim { key: string; kind: 'harvest' | 'week' | 'chest'; day: string; coins: number; xp: number }
+
+/** Colheita da meta cumprida hoje (o servidor confere nas metas salvas na conta). Repetir paga 0. */
+export async function harvestGoal(goalId: string, date: string): Promise<HarvestResult> {
+  const result = await request<HarvestResult>('/progress/harvest', { method: 'POST', body: JSON.stringify({ goalId, date }) });
+  return { ...result, user: toPlayer(result.user) };
+}
+
+/** Abre um baú alcançado na jornada: o conteúdo é sorteado no servidor */
+export async function openTreasureChest(chestId: string, date: string): Promise<ChestResult> {
+  const result = await request<ChestResult>(`/progress/chests/${encodeURIComponent(chestId)}/open`, { method: 'POST', body: JSON.stringify({ date }) });
+  return { ...result, user: toPlayer(result.user) };
+}
+
+/** Recompensas pagas entre dois dias (AAAA-MM-DD, inclusive) */
+export async function listClaims(from: string, to: string): Promise<RewardClaim[]> {
+  return request<RewardClaim[]>(`/progress/claims?from=${from}&to=${to}`);
+}
+
 // --- Missões ---
 
 // O backend não guarda "rewarded"; uma missão concluída já teve as recompensas creditadas
@@ -113,13 +131,12 @@ export async function createMission(mission: NewMission): Promise<Mission> {
   return toMission(created);
 }
 
-export async function updateMission(id: string, changes: Partial<NewMission & { completed: boolean }>): Promise<Mission> {
+export async function updateMission(id: string, changes: Partial<NewMission>): Promise<Mission> {
   const updated = await request<ApiMission>(`/missions/${id}`, { method: 'PATCH', body: JSON.stringify({
     ...(changes.title !== undefined && { title: changes.title }),
     ...(changes.description !== undefined && { description: changes.description }),
     ...(changes.xp !== undefined && { xpReward: changes.xp }),
     ...(changes.coins !== undefined && { coinsReward: changes.coins }),
-    ...(changes.completed !== undefined && { completed: changes.completed }),
   }) });
   return toMission(updated);
 }

@@ -8,7 +8,7 @@ import { PixelIcon, type PixelIconName } from '../components/PixelIcon';
 import { useSettings } from '../hooks/useSettings';
 import { useProfile } from '../hooks/useProfile';
 import { CharacterCreator } from '../components/profile/CharacterCreator';
-import { PixelAvatar } from '../components/PixelAvatar';
+import { CollectibleCard } from '../components/profile/CollectibleCard';
 import { exportBackup, importBackup } from '../lib/settings';
 import { WIPE_FLASH_KEY, WipeDialog } from '../components/settings/WipeDialog';
 import { JOURNEY_LENGTH } from '../lib/journey';
@@ -138,16 +138,11 @@ export function SettingsPage({ onNavigate }: { onNavigate: (page: AppPage) => vo
         <div key={section} className="settings-body">
 
           {section === 'profile' && <form onSubmit={saveProfile}>
-            {/* Cartão do fazendeiro: como o perfil aparece, já com as mudanças ainda não salvas */}
-            <div className="farmer-card">
-              <div className="farmer-card-avatar"><PixelAvatar avatar={avatar} className="size-full"/></div>
-              <div className="min-w-0">
-                <p className="farmer-card-name">{name.trim() || player?.name || 'Fazendeira'}</p>
-                <p className="farmer-card-farm">🌻 {farm.trim() || settings.farmName}</p>
-                {bio.trim() && <p className="farmer-card-bio">“{bio.trim()}”</p>}
-                <p className="farmer-card-meta">Nível {player?.level ?? '–'}{player?.createdAt && ` · no sítio desde ${new Intl.DateTimeFormat('pt-BR', { month: 'long', year: 'numeric' }).format(new Date(player.createdAt))}`}</p>
-              </div>
-            </div>
+            {/* Carta colecionável: como o perfil aparece, já com as mudanças ainda não salvas */}
+            <CollectibleCard data={{
+              name: name.trim() || player?.name || 'Fazendeira', farm: farm.trim() || settings.farmName, bio: bio.trim(), avatar,
+              level: player?.level ?? null, xp: player?.xp ?? 0, coins: player?.coins ?? null, goals: summary.goals, since: player?.createdAt ?? null,
+            }}/>
 
             <SettingsGroup title="Personagem" footer="Sua personagem aparece na Casa e como exploradora no mapa das Missões.">
               <div className="settings-creator"><CharacterCreator value={avatar} onChange={setAvatar}/></div>

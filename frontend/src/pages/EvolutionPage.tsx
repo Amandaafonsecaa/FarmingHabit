@@ -6,7 +6,8 @@ import { SketchbookInsights } from '../components/evolution/SketchbookInsights';
 import { WeekBloomChart } from '../components/evolution/WeekBloomChart';
 import { useGoalTracker, useToday } from '../hooks/useGoalTracker';
 import { goalWeek } from '../lib/coach';
-import { listMissions, loadPlayer, type Player } from '../services/api';
+import { listClaims, listMissions, loadPlayer, type Player, type RewardClaim } from '../services/api';
+import { addDays, startOfWeek, toKey } from '../lib/goalLogic';
 import type { Mission } from '../types/world';
 import type { AppPage } from '../types/navigation';
 
@@ -20,6 +21,7 @@ export function EvolutionPage({ onNavigate }: { onNavigate: (page: AppPage) => v
   const [player, setPlayer] = useState<Player | null>(null);
   const [offline, setOffline] = useState(false);
   const [missions, setMissions] = useState<Mission[]>([]);
+  const [claims, setClaims] = useState<RewardClaim[]>([]);
 
   useEffect(() => {
     let active = true;
@@ -27,18 +29,19 @@ export function EvolutionPage({ onNavigate }: { onNavigate: (page: AppPage) => v
       const user = await loadPlayer();
       if (active) setPlayer(user);
       // Missões entram em moedas e XP da semana (pela data em que foram cumpridas)
-      const list = await listMissions();
-      if (active) setMissions(list);
+      // Colheitas, bônus e baús pagos pelo servidor, da segunda passada até hoje (as duas semanas do gráfico)
+      const [list, paid] = await Promise.all([listMissions(), listClaims(toKey(addDays(startOfWeek(today), -7)), toKey(today))]);
+      if (active) { setMissions(list); setClaims(paid); }
     })().catch(() => { if (active) setOffline(true); });
     return () => { active = false; };
-  }, []);
+  }, [today]);
 
   const coach = { name: player?.name ?? 'campeão', weeks: goals.map(goal => goalWeek(goal, log, today)), log, today };
 
   return <MainLayout page="evolution" onNavigate={onNavigate}
     world={<GymHero level={player?.level ?? 1} xpInLevel={(player?.xp ?? 0) % XP_PER_LEVEL} xpPerLevel={XP_PER_LEVEL} goals={goals} log={log} coach={coach}/>}>
     {offline && <p role="alert" className="world-status">Servidor indisponível: o nível aparece quando o backend voltar.</p>}
-    <WeekBloomChart goals={goals} log={log} today={today} missions={missions}/>
+    <WeekBloomChart goals={goals} log={log} today={today} missions={missions} claims={claims}/>
     {/* Caderninho de notas à esquerda; "Sua semana" continua como o principal */}
     <div className="evolution-layout">
       <SketchbookInsights goals={goals} log={log} today={today}/>

@@ -19,7 +19,7 @@ import { MainLayout } from '../layouts/MainLayout';
 import { recordAdventure } from '../lib/diary';
 import { readWishes } from '../lib/shop';
 import { flyCoins } from '../lib/coinFlight';
-import { PLAYER_EVENT, claimHarvest, creditPlayer, releaseHarvest, rewardLabel } from '../lib/harvestRewards';
+import { PLAYER_EVENT, reachesHarvest, requestHarvest, rewardLabel } from '../lib/harvestRewards';
 import type { Player } from '../services/api';
 import type { AppPage } from '../types/navigation';
 import { claimReward, completeMission, createMission, createReward, listMissions, listRewards, loadPlayer } from '../services/api';
@@ -104,13 +104,12 @@ export function HomePage({ onNavigate }: { onNavigate: (page: AppPage) => void }
     finally { setPendingId(null); }
   }
 
-  // Meta cumprida no dia paga moedas e XP (uma vez por dia) e as moedinhas voam da origem até o contador
+  // Meta cumprida no dia: o servidor confere e paga (uma vez por dia) e as moedinhas voam da origem até o contador
   function payHarvest(goal: TrackedGoal, nextAmount: number, origin: Element) {
-    const reward = claimHarvest(goal, log, today, nextAmount);
-    if (!reward) return;
-    creditPlayer(reward.coins, reward.xp)
-      .then(() => { flyCoins(origin, reward.coins); setAnnouncement(`${goal.title}: colhida! ${rewardLabel(reward)}`); })
-      .catch(() => { releaseHarvest(reward); setAnnouncement(`${goal.title}: colhida, mas o servidor está fora do ar e as moedas não foram creditadas.`); });
+    if (!reachesHarvest(goal, log, todayKey, nextAmount)) return;
+    requestHarvest(goal, todayKey)
+      .then(result => { if (!result.coins && !result.xp) return; flyCoins(origin, result.coins); setAnnouncement(`${goal.title}: colhida! ${rewardLabel(result)}`); })
+      .catch(error => setAnnouncement(`${goal.title}: colhida, mas as moedas não foram creditadas (${errorMessage(error)}).`));
   }
 
   /** Colher (no painel ou na horta): check único conclui o dia, quantidade soma um passo */

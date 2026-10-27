@@ -74,6 +74,12 @@ function watchLocalStorage() {
   });
 }
 
+/** Envia já uma chave que está esperando o agrupamento (ex.: as metas, antes de pedir a colheita ao servidor) */
+export async function flushSync(key: string) {
+  window.clearTimeout(timers.get(key));
+  await push(key);
+}
+
 const withTimeout = <T,>(promise: Promise<T>) => Promise.race([promise, new Promise<never>((_, reject) => window.setTimeout(() => reject(new Error('timeout')), PULL_TIMEOUT_MS))]);
 
 /** Chamar antes de desenhar o app: traz do servidor o que for mais novo e começa a vigiar as gravações */

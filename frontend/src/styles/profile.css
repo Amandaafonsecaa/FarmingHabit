@@ -42,19 +42,39 @@
 .welcome-avatar { width: 140px; height: 154px; animation: avatar-cheer .8s ease-in-out 3 .5s; }
 .welcome-done-title { margin-top: 6px; font-size: 20px; font-weight: 900; color: #3f6b35; }
 
-/* --- Cartão do fazendeiro (Perfil) --- */
-.farmer-card { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; padding: 14px; background: #f8e7bf repeating-linear-gradient(0deg, transparent 0 5px, #c9a46a14 5px 6px); border: 3px solid #8a5838; box-shadow: inset 0 0 0 2px #f5c477, 3px 4px 0 #42291644; }
-.farmer-card-avatar { width: 96px; height: 106px; flex-shrink: 0; padding: 4px; background: linear-gradient(#a9dcef 0 70%, #79bd38 70%); border: 3px solid #57311f; }
-.farmer-card-avatar svg { animation: avatar-idle 1.4s steps(1) infinite; }
-.farmer-card-name { font-size: 20px; font-weight: 900; line-height: 1.2; overflow-wrap: anywhere; }
-.farmer-card-farm { margin-top: 2px; font-size: 13px; font-weight: bold; color: #3f6b35; }
-.farmer-card-bio { margin-top: 6px; font-size: 13px; font-style: italic; color: #5b3826; overflow-wrap: anywhere; }
-.farmer-card-meta { margin-top: 6px; font-size: 11px; color: #8a6136; }
+/* --- Carta colecionável (Perfil): vitrine de madeira, carta com brilho holográfico que segue o mouse --- */
+.holo-showcase { display: flex; flex-direction: column; align-items: center; gap: 16px; margin-bottom: 20px; padding: 22px 16px 18px; border: 3px solid #3b2418;
+  background: #8a5838 repeating-linear-gradient(0deg, #8a5838 0 7px, #7a4c2e 7px 9px, #8a5838 9px 15px, #96613d 15px 16px);
+  box-shadow: inset 0 3px #b07a4c, inset 0 -3px #5b3826, inset 3px 0 #a06a42, inset -3px 0 #6b4426; }
+.holo-card { width: min(280px, 100%); perspective: 900px; touch-action: pan-y; filter: drop-shadow(6px 8px 0 #3b241880); }
+/* Cantos em degraus de pixel, no lugar dos cantos arredondados das cartas de verdade */
+.holo-card-inner { position: relative; aspect-ratio: var(--card-ratio); transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)); transition: transform .45s cubic-bezier(.2, .9, .3, 1.2);
+  clip-path: polygon(0 6px, 3px 6px, 3px 3px, 6px 3px, 6px 0, calc(100% - 6px) 0, calc(100% - 6px) 3px, calc(100% - 3px) 3px, calc(100% - 3px) 6px, 100% 6px, 100% calc(100% - 6px), calc(100% - 3px) calc(100% - 6px), calc(100% - 3px) calc(100% - 3px), calc(100% - 6px) calc(100% - 3px), calc(100% - 6px) 100%, 6px 100%, 6px calc(100% - 3px), 3px calc(100% - 3px), 3px calc(100% - 6px), 0 calc(100% - 6px)); }
+.holo-card.is-active .holo-card-inner { transition: transform .08s linear; }
+.holo-card-inner > svg { display: block; width: 100%; height: 100%; }
+
+.holo-foil, .holo-sparkle, .holo-glare { position: absolute; inset: 0; pointer-events: none; }
+/* Arco-íris em faixas duras (nada de degradê suave): desliza com o mouse ou sozinho, devagar */
+.holo-foil { background: repeating-linear-gradient(115deg, #f7a8c4 0 4%, #ffe38b 4% 8%, #b4de54 8% 12%, #8fd4f1 12% 16%, #c9a4f2 16% 20%); background-size: 400% 400%;
+  background-position: var(--foil-x, 30%) var(--foil-y, 30%); mix-blend-mode: soft-light; opacity: .35; transition: opacity .3s; animation: holo-drift 9s linear infinite alternate; }
+/* Na janela da arte o brilho é mais forte, como nas cartas holográficas */
+.holo-foil.is-art, .holo-sparkle { inset: 13.4% 7.9% 48% 7.9%; }
+.holo-foil.is-art { mix-blend-mode: overlay; opacity: .3; }
+.holo-card.is-active .holo-foil { animation: none; opacity: .55; }
+.holo-card.is-active .holo-foil.is-art { opacity: .5; }
+.holo-sparkle { background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36' shape-rendering='crispEdges'%3E%3Cpath d='M4 6h2v2H4Zm18 2h2v2h-2Zm8 14h2v2h-2ZM12 26h2v2h-2Zm14 6h2v2h-2ZM2 18h1v1H2Zm28-12h1v1h-1Z' fill='%23fff'/%3E%3C/svg%3E") repeat; background-position: calc(var(--foil-x, 50%) * .3) calc(var(--foil-y, 50%) * .3); mix-blend-mode: overlay; opacity: .45; animation: holo-twinkle 1.6s steps(2) infinite; }
+/* Reflexo de luz em anéis duros, no ponto do cursor */
+.holo-glare { background: radial-gradient(circle at var(--mx, 50%) var(--my, 30%), #fffbe8cc 0 7%, #fffbe866 7% 15%, #fffbe826 15% 26%, transparent 26%); mix-blend-mode: soft-light; opacity: 0; transition: opacity .25s; }
+.holo-card.is-active .holo-glare { opacity: 1; }
+.holo-download { min-width: 180px; }
+
 .settings-creator { padding: 14px; }
 .settings-badge { padding: 2px 8px; font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; color: #7a4a26; background: #ffe8a8; border: 2px dashed #a86d1c; }
 
 @keyframes avatar-hop { 40% { transform: translateY(-10px) scale(1.04, .97); } }
 @keyframes avatar-idle { 50% { transform: translateY(-2px); } }
+@keyframes holo-drift { from { background-position: 10% 20%; } to { background-position: 90% 80%; } }
+@keyframes holo-twinkle { 50% { opacity: .85; } }
 @keyframes avatar-cheer { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
 
 @media (max-width: 640px) {
@@ -62,6 +82,4 @@
  .creator-avatar { width: 120px; height: 132px; }
  .welcome-steps li { font-size: 0; gap: 0; justify-content: center; }
  .welcome-steps li span { font-size: 11px; }
- .farmer-card { align-items: flex-start; }
- .farmer-card-avatar { width: 72px; height: 80px; }
 }
