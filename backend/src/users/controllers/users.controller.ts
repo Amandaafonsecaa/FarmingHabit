@@ -7,6 +7,7 @@ import {
   Put,
   Body,
   Param,
+  Query,
   HttpStatus,
   HttpCode,
 } from '@nestjs/common';
@@ -21,6 +22,7 @@ import { CreateUserDto } from '../dto/create-user.dto';
 import { UpdateUserDto } from '../dto/update-user.dto';
 import { UpdateMotivationDto } from '../dto/update-motivation.dto';
 import { SaveUserDataDto } from '../dto/save-user-data.dto';
+import { ResetUserDataDto } from '../dto/reset-user-data.dto';
 import { User } from '../entities/user.entity';
 
 @ApiTags('users')
@@ -154,14 +156,15 @@ export class UsersController {
 
   @Delete(':id/data')
   @ApiOperation({
-    summary: 'Apagar os dados do jogador, mantendo a conta',
+    summary: 'Apagar partes escolhidas dos dados do jogador, mantendo a conta',
     description:
-      'Remove missões, compras, hábitos e recompensas próprias do usuário e zera o progresso (Level 1, 0 XP, 0 Moedas). Nome e e-mail continuam.',
+      'Cada parte em "scopes" é apagada numa única transação: goals (metas e histórico), diary (diário e aventuras), missions, shop (compras, recompensas próprias e favoritos), treasure (baús e coleção), motivation (frase e foto) e progress (volta para Level 1, 0 XP, 0 Moedas). Nome, e-mail, perfil e preferências continuam.',
   })
   @ApiParam({ name: 'id', description: 'ID do usuário' })
-  @ApiResponse({ status: HttpStatus.OK, description: 'Dados apagados; retorna o usuário zerado.', type: User })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Partes apagadas; retorna o usuário atualizado.', type: User })
+  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Nenhuma parte escolhida ou parte desconhecida.' })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Usuário não encontrado.' })
-  async resetData(@Param('id') id: string): Promise<User> {
-    return this.usersService.resetData(id);
+  async resetData(@Param('id') id: string, @Query() query: ResetUserDataDto): Promise<User> {
+    return this.usersService.resetData(id, query.scopes);
   }
 }

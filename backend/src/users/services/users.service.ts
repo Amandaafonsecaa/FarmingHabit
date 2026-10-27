@@ -8,15 +8,24 @@ import { UpdateUserDto } from '../dto/update-user.dto';
 import { UpdateMotivationDto } from '../dto/update-motivation.dto';
 import { SaveUserDataDto } from '../dto/save-user-data.dto';
 import { PrismaService } from '../../prisma/prisma.service';
-import { Motivation, User } from '@prisma/client';
+import { Motivation, Prisma, User } from '@prisma/client';
+import type { ResetScope } from '../dto/reset-user-data.dto';
 import { randomUUID } from 'node:crypto';
 import { SupabaseStorageService } from '../../storage/supabase-storage.service';
 
 const MOTIVATION_BUCKET = 'motivation-photos';
 /** Só chaves do próprio jogo ("farminghabit.algo.v1") */
 const DATA_KEY = /^farminghabit\.[a-z0-9.-]{1,60}$/;
-/** O que "apagar tudo" mantém: perfil e preferências fazem parte da conta */
-const ACCOUNT_DATA_KEYS = ['farminghabit.profile.v1', 'farminghabit.settings.v1'];
+/** Chaves sincronizadas do navegador que pertencem a cada parte apagável (perfil e preferências ficam de fora) */
+const RESET_DATA_KEYS: Record<ResetScope, string[]> = {
+  goals: ['farminghabit.goals.v1', 'farminghabit.harvest-rewards.v1', 'farminghabit.perfect-day'],
+  diary: ['farminghabit.diary.v1', 'farminghabit.adventures.v1'],
+  missions: ['farminghabit.missions.accepted.v1'],
+  shop: ['farminghabit.wish.v1'],
+  treasure: ['farminghabit.treasure.v1'],
+  motivation: [],
+  progress: [],
+};
 export interface MotivationView { text: string; photoUrl: string | null; createdAt: Date | null; updatedAt: Date | null }
 
 @Injectable()
@@ -144,19 +153,32 @@ export class UsersService {
     return { key };
   }
 
-  /** Apaga tudo que o jogador criou ou conquistou, mas mantém a conta (nome e e-mail) */
-  async resetData(id: string): Promise<User> {
+  /**
+   * Apaga só as partes escolhidas (metas, diário, missões, loja, baús, motivação, progresso), tudo numa transação.
+   * A conta (nome, e-mail, perfil e preferências) nunca é apagada aqui.
+   */
+  async resetData(id: string, scopes: ResetScope[]): Promise<User> {
     await this.findOne(id);
-    const [, , , , , , user] = await this.prisma.$transaction([
-      this.prisma.purchase.deleteMany({ where: { userId: id } }),
-      this.prisma.rewardOverride.deleteMany({ where: { userId: id } }),
-      this.prisma.reward.deleteMany({ where: { userId: id } }),
-      this.prisma.mission.deleteMany({ where: { userId: id } }),
-      this.prisma.habit.deleteMany({ where: { userId: id } }),
-      this.prisma.userData.deleteMany({ where: { userId: id, key: { notIn: ACCOUNT_DATA_KEYS } } }),
-      this.prisma.user.update({ where: { id }, data: { level: 1, xp: 0, coins: 0 } }),
-    ]);
-    return user;
+    const chosen = new Set(scopes);
+    const where = { userId: id };
+    const operations: Prisma.PrismaPromise<unknown>[] = [];
+    if (chosen.has('goals')) operations.push(this.prisma.habit.deleteMany({ where }));
+    if (chosen.has('missions')) operations.push(this.prisma.mission.deleteMany({ where }));
+    if (chosen.has('shop')) operations.push(
+      this.prisma.purchase.deleteMany({ where }),
+      this.prisma.rewardOverride.deleteMany({ where }),
+      this.prisma.reward.deleteMany({ where }),
+    );
+    if (chosen.has('motivation')) operations.push(this.prisma.motivation.deleteMany({ where }));
+    const keys = scopes.flatMap(scope => RESET_DATA_KEYS[scope]);
+    if (keys.length) operations.push(this.prisma.userData.deleteMany({ where: { userId: id, key: { in: keys } } }));
+    if (chosen.has('progress')) operations.push(this.prisma.user.update({ where: { id }, data: { level: 1, xp: 0, coins: 0 } }));
+
+    // A foto da motivação mora no Storage: guarda o caminho antes de apagar a linha
+    const photoPath = chosen.has('motivation') ? (await this.prisma.motivation.findUnique({ where }))?.photoPath ?? null : null;
+    await this.prisma.$transaction(operations);
+    if (photoPath) await this.storage.remove(MOTIVATION_BUCKET, [photoPath]);
+    return this.findOne(id);
   }
 
   /** Devolve XP e moedas de uma missão desfeita (nunca deixa negativo) e recalcula o nível */
