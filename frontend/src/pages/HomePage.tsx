@@ -8,7 +8,6 @@ import { SeedFab } from '../components/home/SeedFab';
 import type { GardenPlot } from '../components/WorldScenery';
 import { MissionDialog } from '../components/dialogs/MissionDialog';
 import { RewardDialog } from '../components/dialogs/RewardDialog';
-import { ConfirmPurchaseDialog } from '../components/dialogs/ConfirmPurchaseDialog';
 import { NewGoalDialog } from '../components/goals/NewGoalDialog';
 import { useGoalTracker, useToday } from '../hooks/useGoalTracker';
 import { useAcceptedMissions } from '../hooks/useMissionBoard';
@@ -46,10 +45,11 @@ export function HomePage({ onNavigate }: { onNavigate: (page: AppPage) => void }
   const setAnnouncement = toast;
   const [dialogKind, setDialogKind] = useState<ItemKind | null>(null);
   const [poppedId, setPoppedId] = useState<string | null>(null);
-  const [confirming, setConfirming] = useState<Reward | null>(null);
+  const [buyingRewardId, setBuyingRewardId] = useState<string | null>(null);
+  const purchaseLocked = useRef(false);
   const [perfectDate, setPerfectDate] = useState(() => { try { return localStorage.getItem(PERFECT_KEY); } catch { return null; } });
   const [celebrating, setCelebrating] = useState(false);
-  const [wishId] = useState(() => readWishes()[0] ?? null);
+  const [wishIds] = useState(readWishes);
   const coins = player?.coins ?? 0;
   const catalog = rewards;
 
@@ -153,24 +153,24 @@ export function HomePage({ onNavigate }: { onNavigate: (page: AppPage) => void }
     });
   }
 
-  // Comprar pela Casa pede confirmação antes
-  function buyReward(id: string) {
+  // O botão de moedas compra diretamente; a ref bloqueia cliques antes do próximo render.
+  async function buyReward(id: string) {
+    if (purchaseLocked.current) return;
     const reward = catalog.find(item => item.id === id);
-    if (reward && player && coins >= reward.price) setConfirming(reward);
-  }
-
-  // Todas as compras passam pela mesma transação no backend.
-  async function purchase(reward: Reward): Promise<boolean> {
-    if (!player) return false;
+    if (!reward || !player || coins < reward.price) return;
+    purchaseLocked.current = true;
+    setBuyingRewardId(id);
     try {
       const { remainingCoins } = await claimReward(reward.id);
-      setPlayer(current => current && { ...current, coins: remainingCoins });
+      const updated = { ...player, coins: remainingCoins };
+      setPlayer(updated);
+      window.dispatchEvent(new CustomEvent<Player>(PLAYER_EVENT, { detail: updated }));
       setAnnouncement(`${reward.name} foi para suas compras! Aproveite.`);
-      setConfirming(null);
-      return true;
     } catch (error) {
       setAnnouncement(`${reward.name}: ${errorMessage(error)}`);
-      return false;
+    } finally {
+      purchaseLocked.current = false;
+      setBuyingRewardId(null);
     }
   }
 
@@ -194,7 +194,7 @@ export function HomePage({ onNavigate }: { onNavigate: (page: AppPage) => void }
     <div className="functional-panel">
       <GoalsPanel goals={goals} log={log} today={today} onCheck={(goal, origin)=>harvest(goal, origin)} onOpen={()=>onNavigate('goals')} onEdit={goal=>setEditingGoalId(goal.id)}/>
       <MissionsPanel missions={missions} accepted={accepted} loading={loading} error={loadError} pendingId={pendingId} onComplete={completeFromHome} onOpen={()=>onNavigate('missions')}/>
-      <CoinsPanel coins={coins} rewards={catalog} wishId={wishId} onBuy={buyReward} onOpen={()=>onNavigate('shop')}/>
+      <CoinsPanel coins={coins} rewards={catalog} wishIds={wishIds} buyingId={buyingRewardId} onBuy={buyReward} onOpen={()=>onNavigate('shop')}/>
     </div>
     <p role="status" className="world-status">{loadError || 'Toque nas plantinhas da horta para colher as metas de hoje.'}</p>
     <SeedFab onPick={setDialogKind}/>
@@ -203,6 +203,5 @@ export function HomePage({ onNavigate }: { onNavigate: (page: AppPage) => void }
       onSave={changes=>{ updateGoal(editingGoal.id, changes); setEditingGoalId(null); setAnnouncement(`${changes.title}: meta atualizada!`); }}/>}
     {dialogKind === 'mission' && <MissionDialog onSave={addItem} onClose={()=>setDialogKind(null)}/>}
     {dialogKind === 'reward' && <RewardDialog onSave={addItem} onClose={()=>setDialogKind(null)}/>}
-    {confirming && <ConfirmPurchaseDialog reward={confirming} coins={coins} onConfirm={()=>purchase(confirming)} onClose={()=>setConfirming(null)}/>}
   </MainLayout>;
 }

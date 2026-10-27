@@ -98,7 +98,7 @@
 .home-shop-label { margin: 4px 0; font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; color: #7a4a26; }
 .home-shop-list li { display: flex; align-items: center; gap: 8px; padding: 6px 0; font-size: 13px; font-weight: bold; border-bottom: 1px dashed #e0c79a; }
 .home-shop-icon { width: 28px; height: 28px; flex-shrink: 0; }
-.home-shop-list .buy-button { gap: 4px; }
+.home-shop-list .buy-button { gap: 4px; width: 88px; min-width: 88px; flex-shrink: 0; justify-content: center; font-variant-numeric: tabular-nums; }
 
 /* --- Botão-semente "+" --- */
 .seed-fab { position: fixed; right: 24px; bottom: 24px; z-index: 45; }
@@ -191,3 +191,7 @@
 .scenery-window-sky stop { transition: stop-color 2s ease; }
 .goals-hero { transition: background 2s ease; }
 .goals-hero > .sky-layer { z-index: -2; }
+
+.home-shop-name { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.home-shop-heart { flex-shrink: 0; color: #c4456a; font-size: 14px; line-height: 1; }
+.home-shop-missing { margin-top: 3px; font-size: 10px; font-weight: normal; color: #8a6136; }
