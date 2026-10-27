@@ -236,3 +236,30 @@
 .reward-editor-delete, .reward-editor-confirm { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 12px; background: #f7dfc5; border: 2px dashed #bd7f58; }
 .reward-editor-delete p, .reward-editor-confirm p { flex: 1 1 180px; font-size: 11px; line-height: 1.6; color: #765337; }
 @media (hover: none) { .product-edit-trigger span { opacity: 1; transform: translate(-50%, 0); } }
+
+/* ===== Carregando a vitrine: ratinho levando o pote de mel de um lado da prateleira para o outro (ciclo de 6s) ===== */
+.shelf-loading { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.shelf-loading-art { width: min(320px, 100%); height: auto; }
+.shelf-loading p { font-size: 13px; color: #765337; }
+/* Anda em passinhos de pixel; ida de 6% a 40%, volta de 56% a 90% */
+.shelf-mouse-walk { animation: shelf-walk 6s steps(10) infinite; }
+/* Na volta vira de lado em torno do pote (o pote continua no mesmo lugar sobre a cabeça) */
+.shelf-mouse-face { animation: shelf-face 6s steps(1) infinite; }
+.shelf-mouse-hop { animation: shelf-hop 6s steps(1) infinite; }
+.shelf-mouse-legs.is-a { animation: shelf-legs-a .3s steps(1) infinite; }
+.shelf-mouse-legs.is-b { opacity: 0; animation: shelf-legs-b .3s steps(1) infinite; }
+.shelf-mouse-tail { transform-box: fill-box; transform-origin: 100% 50%; animation: shelf-tail .8s steps(2) infinite alternate; }
+/* Pote: na prateleira (lado A), na cabeça, no lado B, na cabeça de novo, de volta ao A */
+.shelf-slot.is-a { animation: shelf-slot-a 6s steps(1) infinite; }
+.shelf-slot.is-b { opacity: 0; animation: shelf-slot-b 6s steps(1) infinite; }
+.shelf-carried { opacity: 0; animation: shelf-carried 6s steps(1) infinite; }
+
+@keyframes shelf-walk { 0%, 6% { transform: translateX(0); } 40%, 56% { transform: translateX(70px); } 90%, 100% { transform: translateX(0); } }
+@keyframes shelf-face { 0%, 55.9% { transform: none; } 56%, 99.9% { transform: translateX(21px) scaleX(-1); } }
+@keyframes shelf-hop { 0%, 100% { transform: none; } 2% { transform: translateY(-4px); } 5%, 41% { transform: none; } 43% { transform: translateY(-4px); } 46%, 52% { transform: none; } 54% { transform: translateY(-4px); } 57%, 90% { transform: none; } 93% { transform: translateY(-4px); } 96% { transform: none; } }
+@keyframes shelf-legs-a { 50% { opacity: 0; } }
+@keyframes shelf-legs-b { 50% { opacity: 1; } }
+@keyframes shelf-tail { from { transform: rotate(-12deg); } to { transform: rotate(12deg); } }
+@keyframes shelf-slot-a { 0%, 3.9% { opacity: 1; } 4%, 93.9% { opacity: 0; } 94%, 100% { opacity: 1; } }
+@keyframes shelf-slot-b { 0%, 43.9% { opacity: 0; } 44%, 53.9% { opacity: 1; } 54%, 100% { opacity: 0; } }
+@keyframes shelf-carried { 0%, 3.9% { opacity: 0; } 4%, 43.9% { opacity: 1; } 44%, 53.9% { opacity: 0; } 54%, 93.9% { opacity: 1; } 94%, 100% { opacity: 0; } }

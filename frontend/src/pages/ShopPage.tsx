@@ -8,6 +8,7 @@ import { ChestPanel } from '../components/shop/ChestPanel';
 import { EditRewardDialog } from '../components/dialogs/EditRewardDialog';
 import { RewardDialog } from '../components/dialogs/RewardDialog';
 import { ShopkeeperDialog } from '../components/shop/ShopkeeperDialog';
+import { ShelfLoading } from '../components/shop/ShelfLoading';
 import { PixelIcon } from '../components/PixelIcon';
 import { useShop } from '../hooks/useShop';
 import type { NewItem, Reward } from '../types/world';
@@ -75,7 +76,7 @@ export function ShopPage({ onNavigate }: { onNavigate: (page: AppPage) => void }
           <div className="view-tabs" role="group" aria-label="Filtrar produtos">{FILTERS.map(item => <button key={item.id} type="button" className="view-tab" aria-pressed={filter === item.id} onClick={()=>setFilter(item.id)}>{item.label}</button>)}</div>
         </header>
         <div className="showcase" role="region" aria-label="Produtos da vitrine" tabIndex={0}>
-          {shop.loading && <p className="quest-board-note">Arrumando as prateleiras…</p>}
+          {shop.loading && <ShelfLoading/>}
           {shop.error && <p role="alert" className="quest-board-note is-error">Não foi possível carregar a vitrine: {shop.error}</p>}
           {!shop.loading && shown.length === 0 && <div className="quest-board-note">
             <p>{filter === 'ready' ? 'Nada cabe no bolso ainda. Que tal uma missão?' : filter === 'saving' ? 'Você já pode levar tudo da vitrine! 🎉' : 'A vitrine está vazia.'}</p>
