@@ -259,6 +259,15 @@
 .crate-tag { font-family: 'Courier New', monospace; font-size: 7.5px; font-weight: 900; fill: #3b2418; }
 .crate-tag-progress { font-family: 'Courier New', monospace; font-size: 7px; font-weight: 900; fill: #a86d1c; }
 .crate-tag-progress.is-done { fill: #3f6b35; }
+/* Etiqueta do caixote: nome inteiro em até duas linhas (sem reticências) e o progresso embaixo */
+.crate-label { display: flex; height: 100%; flex-direction: column; align-items: center; justify-content: center; gap: 1px; padding: 2px 3px; text-align: center;
+ font-family: 'Courier New', monospace; color: #3b2418; background: #fff1c7; border: 1.5px solid #8a5838; }
+.crate-label.is-done { background: #e8f0c4; }
+.crate-label-name { display: block; width: 100%; font-weight: 900; line-height: 1.05; overflow-wrap: anywhere; }
+.crate-label-progress { font-size: 6.5px; font-weight: 900; line-height: 1; color: #a86d1c; }
+.crate-label.is-done .crate-label-progress { color: #3f6b35; }
+/* Celular: grade de cestas (escondida no desktop, onde as metas ficam na própria banca) */
+.stand-grid { display: none; }
 .crate-plaque { transform-box: fill-box; transform-origin: 50% 100%; animation: plaque-in .25s cubic-bezier(.34, 1.56, .64, 1) backwards; }
 .crate-plaque-text { font-family: 'Courier New', monospace; font-size: 10px; font-weight: 900; fill: #3b2418; }
 @keyframes produce-bounce { to { transform: translateY(-2px); } }
@@ -351,3 +360,21 @@
 .goal-edit-trigger:hover { text-decoration: underline 2px #d2ac71; text-underline-offset: 3px; }
 .goal-edit-trigger:focus-visible { outline: 2px dashed #3f6b35; outline-offset: 2px; }
 .goal-plot .is-editable { cursor: pointer; }
+
+/* Celular: a banca fica como ilustração (sem os caixotes) e as metas viram uma grade de cestas em 2 colunas logo abaixo */
+@media (max-width: 767px) {
+ .goal-stand { position: relative; inset: auto; z-index: 0; width: calc(100% + 24px); height: auto; aspect-ratio: 1000 / 330; margin: 0 -12px; }
+ .goal-stand-front { z-index: 1; margin-top: calc(-.33 * (100% + 24px)); }
+ .stand-crates { display: none; }
+ .stand-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 0 -12px; padding: 10px 10px 12px;
+  background: #a86b35 repeating-linear-gradient(90deg, transparent 0 38px, #8a5838 38px 40px); border-top: 3px solid #57311f; }
+ .stand-basket { display: flex; width: 100%; height: 100%; flex-direction: column; align-items: center; gap: 4px; padding: 8px 6px; text-align: center;
+  font-family: 'Courier New', monospace; color: #3b2418; background: #fff1c7; border: 2px solid #57311f; box-shadow: 2px 2px 0 #3b241855; cursor: pointer; }
+ .stand-basket.is-done { background: #e8f0c4; cursor: default; }
+ .stand-basket svg { width: 52px; height: auto; }
+ .stand-basket-name { font-size: 13px; font-weight: 900; line-height: 1.15; overflow-wrap: anywhere; }
+ .stand-basket-progress { font-size: 11px; font-weight: 900; color: #a86d1c; }
+ .stand-basket.is-done .stand-basket-progress { color: #3f6b35; }
+ .stand-basket:focus-visible { outline: 3px dashed #f2c453; outline-offset: 2px; }
+ .stand-grid-count { grid-column: 1 / -1; justify-self: end; padding: 2px 10px; font-family: 'Courier New', monospace; font-size: 13px; font-weight: 900; color: #fff6dd; background: #3f4a3c; border: 2px solid #8a5838; }
+}
