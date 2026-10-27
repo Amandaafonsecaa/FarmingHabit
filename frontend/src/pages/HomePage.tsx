@@ -173,7 +173,7 @@ export function HomePage({ onNavigate }: { onNavigate: (page: AppPage) => void }
     <div className="functional-panel">
       <GoalsPanel goals={goals} log={log} today={today} onCheck={(goal, origin)=>harvest(goal, origin)} onOpen={()=>onNavigate('goals')} onEdit={goal=>setEditingGoalId(goal.id)}/>
       <MissionsPanel missions={missions} accepted={accepted} loading={loading} error={loadError} pendingId={pendingId} onComplete={completeFromHome} onOpen={()=>onNavigate('missions')}/>
-      <CoinsPanel coins={coins} rewards={catalog} wishIds={wishIds} buyingId={buyingRewardId} onBuy={buyReward} onOpen={()=>onNavigate('shop')}/>
+      <CoinsPanel coins={coins} rewards={catalog} loading={loading} wishIds={wishIds} buyingId={buyingRewardId} onBuy={buyReward} onOpen={()=>onNavigate('shop')}/>
     </div>
     <p role="status" className="world-status">{loadError}</p>
     <SeedFab onPick={setDialogKind}/>

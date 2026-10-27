@@ -1,18 +1,19 @@
 import type { Reward } from '../types/world';
 import { itemKindFor } from '../lib/shop';
 import { GamePanel } from './GamePanel';
+import { PixelSpinner } from './PixelSpinner';
 import { PixelIcon } from './PixelIcon';
 import { ItemIcon } from './shop/ItemIcon';
 
 /** Vitrine da Casa: favoritos primeiro, depois personalizados, independentemente do saldo. */
-export function CoinsPanel({ coins, rewards, wishIds, buyingId, onBuy, onOpen }: {
-  coins: number; rewards: Reward[]; wishIds: string[]; buyingId: string | null; onBuy: (id: string) => void; onOpen: () => void;
+export function CoinsPanel({ coins, rewards, loading, wishIds, buyingId, onBuy, onOpen }: {
+  coins: number; rewards: Reward[]; loading: boolean; wishIds: string[]; buyingId: string | null; onBuy: (id: string) => void; onOpen: () => void;
 }) {
   const favorites = new Set(wishIds);
   const priority = (reward: Reward) => favorites.has(reward.id) ? 0 : !reward.fixed ? 1 : 2;
   const showcase = [...rewards].sort((a, b) => priority(a) - priority(b)).slice(0, 3);
   return <GamePanel id="coins" title="Loja" icon="coin" onOpen={onOpen}>
-    {showcase.length ? <ul className="home-shop-list">{showcase.map(reward => {
+    {loading ? <PixelSpinner label="Carregando a loja"/> : showcase.length ? <ul className="home-shop-list">{showcase.map(reward => {
       const favorite = favorites.has(reward.id);
       const affordable = coins >= reward.price;
       return <li key={reward.id}>

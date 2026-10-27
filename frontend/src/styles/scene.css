@@ -194,3 +194,11 @@
 .home-shop-name { display: flex; align-items: center; gap: 6px; min-width: 0; }
 .home-shop-heart { flex-shrink: 0; color: #c4456a; font-size: 14px; line-height: 1; }
 .home-shop-missing { margin-top: 3px; font-size: 10px; font-weight: normal; color: #8a6136; }
+
+/* Carregando dos painéis da Casa: anel de moedinhas girando em volta do broto (o brilho anda em degraus, deixando rastro) */
+/* O anel ocupa o espaço do painel e fica no centro (sem vazio embaixo) */
+.panel-content:has(> .pixel-spinner) { display: flex; flex-direction: column; }
+.pixel-spinner { flex: 1; display: grid; place-items: center; min-height: 140px; padding: 24px 0; }
+.pixel-spinner svg { width: 64px; height: 64px; }
+.pixel-spinner-dot { opacity: .45; animation: pixel-spinner-trail .8s steps(1) infinite; }
+@keyframes pixel-spinner-trail { 0% { opacity: 1; } 12.5% { opacity: .8; } 25% { opacity: .6; } 37.5%, 100% { opacity: .35; } }

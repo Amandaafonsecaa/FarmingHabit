@@ -1,5 +1,6 @@
 import type { Mission } from '../types/world';
 import { GamePanel } from './GamePanel';
+import { PixelSpinner } from './PixelSpinner';
 import { PixelIcon } from './PixelIcon';
 
 /** Recompensa da missão no estilo "cartaz de recompensa": baúzinho, moedas douradas e XP */
@@ -20,7 +21,7 @@ export function MissionsPanel({ missions, accepted, loading, error, pendingId, o
     .sort((a, b) => Number(accepted.includes(b.id)) - Number(accepted.includes(a.id)));
   const shown = open.slice(0, 3);
   return <GamePanel id="missions" title="Missões" icon="mission" onOpen={onOpen}>
-    {loading && <p className="panel-empty">Desenrolando os pergaminhos…</p>}
+    {loading && <PixelSpinner label="Carregando missões"/>}
     {error && <p role="alert" className="text-sm font-bold text-[#8c3027]">{error}</p>}
     {!loading && !error && open.length === 0 && <p className="panel-empty">Nenhuma missão no quadro. Viu algo curioso? Toque na semente <strong>+</strong>.</p>}
     <ul className="panel-list home-goal-list">{shown.map(mission => {
