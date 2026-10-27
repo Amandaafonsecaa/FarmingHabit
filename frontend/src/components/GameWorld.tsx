@@ -14,7 +14,7 @@ const XP_PER_LEVEL = 100;
 
 interface GameWorldProps {
   player: { name: string; level: number; xp: number } | null; coins: number | null; today: Date;
-  plots: GardenPlot[]; onHarvest: (goalId: string, element: Element, index: number) => void; poppedId: string | null;
+  plots: GardenPlot[]; onPlotTap: (goalId: string) => void; poppedId: string | null;
   perfectDay: boolean; celebrating: boolean;
 }
 
@@ -22,7 +22,7 @@ interface GameWorldProps {
  * A fazenda da Casa: o céu segue a hora real (amanhecer, dia, entardecer, noite) e a estação do ano,
  * a horta são as metas de hoje, o contador de moedas recebe as moedinhas voando e o dia perfeito ganha pétalas e um arco-íris passageiro.
  */
-export function GameWorld({ player, coins, today, plots, onHarvest, poppedId, perfectDay, celebrating }: GameWorldProps) {
+export function GameWorld({ player, coins, today, plots, onPlotTap, poppedId, perfectDay, celebrating }: GameWorldProps) {
   const [{ farmName }] = useSettings();
   const now = useNow();
   const phase = phaseFor(now);
@@ -51,7 +51,7 @@ export function GameWorld({ player, coins, today, plots, onHarvest, poppedId, pe
     <h1 id="world-heading" className="sr-only">{farmName} · {SEASON_NAMES[season]}, {PHASE_NAMES[phase].toLowerCase()}</h1>
     <CoinHud coins={coins} className="world-coin-hud"/>
     <header className="world-header"><WorldInfo level={player?.level ?? null} totalXp={player?.xp ?? null} xpPerLevel={XP_PER_LEVEL} farmName={farmName} today={today}/></header>
-    <WorldScenery level={player?.level ?? 1} plots={plots} onHarvest={onHarvest} poppedId={poppedId} perfectDay={perfectDay}/>
+    <WorldScenery level={player?.level ?? 1} plots={plots} onPlotTap={onPlotTap} poppedId={poppedId} perfectDay={perfectDay}/>
     <div className="world-tint" aria-hidden="true"/>
     <SeasonParticles season={season}/>
     {celebrating && <PetalRain/>}

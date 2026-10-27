@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useStorageChange } from './useStorageChange';
 import type { Mission } from '../types/world';
 import type { NewMission, Player } from '../services/api';
 import { completeMission, uncompleteMission, updateMission, createMission, deleteMission, listMissions, loadPlayer } from '../services/api';
@@ -71,6 +72,9 @@ export function useAcceptedMissions() {
   useEffect(() => {
     try { localStorage.setItem(ACCEPTED_KEY, JSON.stringify(accepted)); } catch { /* modo privado: segue só em memória */ }
   }, [accepted]);
+  useStorageChange(ACCEPTED_KEY, () => {
+    try { const saved = JSON.parse(localStorage.getItem(ACCEPTED_KEY) ?? '[]'); setAccepted(Array.isArray(saved) ? saved : []); } catch { /* mantém o atual */ }
+  });
   const accept = (id: string) => setAccepted(current => current.includes(id) ? current : [...current, id]);
   const abandon = (id: string) => setAccepted(current => current.filter(item => item !== id));
   return { accepted, accept, abandon };

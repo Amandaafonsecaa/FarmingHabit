@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { usePerfectDay } from '../hooks/usePerfectDay';
 import { toast } from '../lib/toast';
 import { GameWorld } from '../components/GameWorld';
 import { GoalsPanel } from '../components/GoalsPanel';
@@ -11,7 +12,7 @@ import { RewardDialog } from '../components/dialogs/RewardDialog';
 import { NewGoalDialog } from '../components/goals/NewGoalDialog';
 import { useGoalTracker, useToday } from '../hooks/useGoalTracker';
 import { useAcceptedMissions } from '../hooks/useMissionBoard';
-import { amountOn, dailyTarget, isDoneOn, isScheduled, progressFor, toKey, weekChecks } from '../lib/goalLogic';
+import { amountOn, dailyTarget, goalsDueToday, isDoneOn, progressFor, toKey } from '../lib/goalLogic';
 import type { NewTrackedGoal, TrackedGoal } from '../types/goals';
 import type { ItemKind, Mission, NewItem, Reward } from '../types/world';
 import { MainLayout } from '../layouts/MainLayout';
@@ -23,8 +24,6 @@ import type { Player } from '../services/api';
 import type { AppPage } from '../types/navigation';
 import { claimReward, completeMission, createMission, createReward, listMissions, listRewards, loadPlayer } from '../services/api';
 
-const PERFECT_KEY = 'farminghabit.perfect-day';
-const CELEBRATION_MS = 9000;
 const errorMessage = (error: unknown) => error instanceof Error ? error.message : 'Não foi possível falar com o servidor.';
 
 export function HomePage({ onNavigate }: { onNavigate: (page: AppPage) => void }) {
@@ -47,18 +46,13 @@ export function HomePage({ onNavigate }: { onNavigate: (page: AppPage) => void }
   const [poppedId, setPoppedId] = useState<string | null>(null);
   const [buyingRewardId, setBuyingRewardId] = useState<string | null>(null);
   const purchaseLocked = useRef(false);
-  const [perfectDate, setPerfectDate] = useState(() => { try { return localStorage.getItem(PERFECT_KEY); } catch { return null; } });
-  const [celebrating, setCelebrating] = useState(false);
   const [wishIds] = useState(readWishes);
   const coins = player?.coins ?? 0;
   const catalog = rewards;
 
   // Horta: um canteiro por meta que cobra hoje (semanais já batidas na semana ficam de fora)
-  const dueToday = goals.filter(goal => goal.frequency.kind === 'weekly'
-    ? weekChecks(goal, log, today) < goal.frequency.timesPerWeek || isDoneOn(goal, log, today)
-    : isScheduled(goal, today));
+  const dueToday = goalsDueToday(goals, log, today);
   const plots: GardenPlot[] = dueToday.slice(0, 15).map(goal => ({ id: goal.id, title: goal.title, progress: progressFor(goal, log, today), done: isDoneOn(goal, log, today) }));
-  const perfectNow = dueToday.length > 0 && dueToday.every(goal => isDoneOn(goal, log, today));
 
   useEffect(() => {
     let active = true;
@@ -80,21 +74,8 @@ export function HomePage({ onNavigate }: { onNavigate: (page: AppPage) => void }
     return () => window.removeEventListener(PLAYER_EVENT, onPlayer);
   }, []);
 
-  // Dia perfeito: no momento em que todas as metas de hoje ficam completas, chovem pétalas e o arco-íris
-  // aparece por alguns segundos e some. Não repete ao recarregar a página; some na hora se alguma meta deixar de estar completa.
-  const wasPerfect = useRef(perfectNow);
-  useEffect(() => {
-    const before = wasPerfect.current;
-    wasPerfect.current = perfectNow;
-    if (!perfectNow) { setCelebrating(false); return; }
-    if (before) return;
-    try { localStorage.setItem(PERFECT_KEY, todayKey); } catch { /* ignora */ }
-    setPerfectDate(todayKey);
-    setCelebrating(true);
-    setAnnouncement('🌈 Dia perfeito! Todas as metas de hoje foram colhidas.');
-    const timer = window.setTimeout(() => setCelebrating(false), CELEBRATION_MS);
-    return () => window.clearTimeout(timer);
-  }, [perfectNow, todayKey]);
+  // Dia perfeito: arco-íris, pétalas e toast no momento em que a última meta de hoje é colhida
+  const { celebrating, perfectDay } = usePerfectDay(goals, log, today);
 
   async function run(id: string, label: string, action: () => Promise<void>) {
     if (pendingId) return;
@@ -124,12 +105,10 @@ export function HomePage({ onNavigate }: { onNavigate: (page: AppPage) => void }
     return true;
   }
 
-  // Na horta: a fruta pula e as moedas voam até o contador
-  function harvestFromGarden(goalId: string, origin: Element) {
-    const goal = goals.find(item => item.id === goalId);
-    if (!goal) return;
-    harvest(goal, origin);
-    setPoppedId(goalId);
+  // Na horta a planta só pula (brincadeira visual); a meta se cumpre no painel de Metas, nunca pelo clique na planta
+  function playWithPlot(goalId: string) {
+    setPoppedId(null);
+    window.requestAnimationFrame(() => setPoppedId(goalId));
     window.setTimeout(() => setPoppedId(current => current === goalId ? null : current), 900);
   }
 
@@ -190,13 +169,13 @@ export function HomePage({ onNavigate }: { onNavigate: (page: AppPage) => void }
   }
 
   return <MainLayout page="home" onNavigate={onNavigate} world={<GameWorld player={player} coins={player ? coins : null} today={today} plots={plots}
-    onHarvest={harvestFromGarden} poppedId={poppedId} perfectDay={perfectDate === todayKey} celebrating={celebrating}/>}>
+    onPlotTap={playWithPlot} poppedId={poppedId} perfectDay={perfectDay} celebrating={celebrating}/>}>
     <div className="functional-panel">
       <GoalsPanel goals={goals} log={log} today={today} onCheck={(goal, origin)=>harvest(goal, origin)} onOpen={()=>onNavigate('goals')} onEdit={goal=>setEditingGoalId(goal.id)}/>
       <MissionsPanel missions={missions} accepted={accepted} loading={loading} error={loadError} pendingId={pendingId} onComplete={completeFromHome} onOpen={()=>onNavigate('missions')}/>
       <CoinsPanel coins={coins} rewards={catalog} wishIds={wishIds} buyingId={buyingRewardId} onBuy={buyReward} onOpen={()=>onNavigate('shop')}/>
     </div>
-    <p role="status" className="world-status">{loadError || 'Toque nas plantinhas da horta para colher as metas de hoje.'}</p>
+    <p role="status" className="world-status">{loadError}</p>
     <SeedFab onPick={setDialogKind}/>
     {dialogKind === 'goal' && <NewGoalDialog onSave={plantGoal} onClose={()=>setDialogKind(null)}/>}
     {editingGoal && <NewGoalDialog key={editingGoal.id} goal={editingGoal} onClose={()=>setEditingGoalId(null)}

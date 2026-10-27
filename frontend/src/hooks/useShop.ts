@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import type { Reward } from '../types/world';
 import { claimReward, createReward, hideReward, updateReward, deleteReward, listRewards, listPurchases, setPurchaseUsed, loadPlayer, type Player } from '../services/api';
 import { WISH_KEY, readWishes, type Purchase } from '../lib/shop';
+import { useStorageChange } from './useStorageChange';
 import { PLAYER_EVENT } from '../lib/harvestRewards';
 
 /** Vitrine, saldo e compras no backend; somente os itens desejados ficam no navegador. */
@@ -10,6 +11,7 @@ export function useShop() {
   const [rewards, setRewards] = useState<Reward[]>([]);
   const [purchases, setPurchases] = useState<Purchase[]>([]);
   const [wishIds, setWishIds] = useState<string[]>(readWishes);
+  useStorageChange(WISH_KEY, () => setWishIds(readWishes()));
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 

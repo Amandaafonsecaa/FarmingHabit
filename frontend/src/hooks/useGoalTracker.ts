@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useStorageChange } from './useStorageChange';
 import { addDays, toKey } from '../lib/goalLogic';
 import type { GoalLog, NewTrackedGoal, TrackedGoal } from '../types/goals';
 
@@ -51,6 +52,7 @@ export function useToday() {
 
 export function useGoalTracker() {
   const [state, setState] = useState<TrackerState>(() => load() ?? seed(new Date()));
+  useStorageChange(STORAGE_KEY, () => { const next = load(); if (next) setState(next); });
   useEffect(() => {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch { /* modo privado: segue só em memória */ }
   }, [state]);

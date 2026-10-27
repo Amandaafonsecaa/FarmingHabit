@@ -13,6 +13,7 @@ import type { NewTrackedGoal, TrackedGoal } from '../types/goals';
 import { reachesHarvest, requestHarvest, rewardLabel } from '../lib/harvestRewards';
 import { flyCoins } from '../lib/coinFlight';
 import { usePlayerCoins } from '../hooks/usePlayerCoins';
+import { usePerfectDay } from '../hooks/usePerfectDay';
 import type { AppPage } from '../types/navigation';
 
 const VINE_LEAVES = [0.08, 0.2, 0.32, 0.44, 0.56, 0.68, 0.8, 0.92];
@@ -42,6 +43,7 @@ export function GoalsPage({ onNavigate }: { onNavigate: (page: AppPage) => void 
     setVineProgress(scrollHeight <= clientHeight ? 1 : Math.min(1, (scrollTop + clientHeight * 0.35) / (scrollHeight - clientHeight * 0.65)));
   }
   const coins = usePlayerCoins();
+  const { celebrating } = usePerfectDay(goals, log, today);
   // Pendentes em cima, colhidas descem para o fim da lista
   const shown = sortByPending(view === 'today' ? goals.filter(goal => isScheduled(goal, today)) : goals, log, today);
   const plotsRef = useFlipList<HTMLUListElement>(shown.map(goal => goal.id).join());
@@ -87,7 +89,7 @@ export function GoalsPage({ onNavigate }: { onNavigate: (page: AppPage) => void 
     setAnnouncement(`${title}: meta arrancada do canteiro.`);
   }
 
-  return <MainLayout page="goals" onNavigate={onNavigate} world={<GoalsHero goals={goals} log={log} today={today} coins={coins} onPlant={()=>setDialogOpen(true)} onHarvest={harvestFromStand}/>}>
+  return <MainLayout page="goals" onNavigate={onNavigate} world={<GoalsHero goals={goals} log={log} today={today} coins={coins} celebrating={celebrating} onPlant={()=>setDialogOpen(true)} onHarvest={harvestFromStand}/>}>
     <div className="goals-layout">
       <section className="world-panel pixel-frame goals-board-panel" aria-labelledby="plots-heading">
         <header className="panel-heading">

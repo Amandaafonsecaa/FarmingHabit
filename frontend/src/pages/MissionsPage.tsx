@@ -9,7 +9,8 @@ import { PixelIcon } from '../components/PixelIcon';
 import { useAcceptedMissions, useMissionBoard } from '../hooks/useMissionBoard';
 import type { Mission, NewItem } from '../types/world';
 import { recordAdventure } from '../lib/diary';
-import { foundChests, readTreasure, saveOpenedChest, type FoundChest } from '../lib/treasure';
+import { TREASURE_KEY, foundChests, readTreasure, saveOpenedChest, type FoundChest } from '../lib/treasure';
+import { useStorageChange } from '../hooks/useStorageChange';
 import { toKey } from '../lib/goalLogic';
 import { PLAYER_EVENT } from '../lib/harvestRewards';
 import { openTreasureChest } from '../services/api';
@@ -32,6 +33,7 @@ export function MissionsPage({ onNavigate }: { onNavigate: (page: AppPage) => vo
   // Avisos de ação aparecem como toast
   const setAnnouncement = toast;
   const [treasure, setTreasure] = useState(readTreasure);
+  useStorageChange(TREASURE_KEY, () => setTreasure(readTreasure()));
   const [openingChest, setOpeningChest] = useState<FoundChest | null>(null);
 
   // Cumpridas continuam no quadro com o carimbo, abaixo das em aberto (as em jornada vêm primeiro).

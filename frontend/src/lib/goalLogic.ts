@@ -181,3 +181,8 @@ export function harvestsBetween(goals: TrackedGoal[], log: GoalLog, from: Date, 
   for (let day = from; day <= to; day = addDays(day, 1)) total += goals.filter(goal => isDoneOn(goal, log, day)).length;
   return total;
 }
+
+/** Metas que cobram hoje (horta da Casa e vendinha das Metas): semanais já batidas na semana saem, a não ser que tenham sido feitas hoje */
+export const goalsDueToday = (goals: TrackedGoal[], log: GoalLog, today: Date) => goals.filter(goal => goal.frequency.kind === 'weekly'
+  ? weekChecks(goal, log, today) < goal.frequency.timesPerWeek || isDoneOn(goal, log, today)
+  : isScheduled(goal, today));

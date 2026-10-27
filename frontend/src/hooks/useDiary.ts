@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { DIARY_KEY, hasContent, readAdventures, readDiary, type DiaryEntry } from '../lib/diary';
+import { ADVENTURES_KEY, DIARY_KEY, hasContent, readAdventures, readDiary, type DiaryEntry } from '../lib/diary';
+import { useStorageChange } from './useStorageChange';
 import { addDays, toKey } from '../lib/goalLogic';
 
 const EMPTY: DiaryEntry = { gratitude: '', note: '' };
@@ -7,7 +8,9 @@ const EMPTY: DiaryEntry = { gratitude: '', note: '' };
 /** Páginas do diário guardadas neste navegador (o backend ainda não tem diário) */
 export function useDiary() {
   const [entries, setEntries] = useState<Record<string, DiaryEntry>>(readDiary);
-  const [adventures] = useState(readAdventures);
+  const [adventures, setAdventures] = useState(readAdventures);
+  useStorageChange(DIARY_KEY, () => setEntries(readDiary()));
+  useStorageChange(ADVENTURES_KEY, () => setAdventures(readAdventures()));
   useEffect(() => {
     try { localStorage.setItem(DIARY_KEY, JSON.stringify(entries)); } catch { /* modo privado: segue só em memória */ }
   }, [entries]);

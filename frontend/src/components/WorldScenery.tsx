@@ -59,12 +59,12 @@ function GardenPlaque({ x, y, title }: { x: number; y: number; title: string }) 
   </g>;
 }
 
-/** Fazenda da Casa. A horta mostra as metas de hoje (clique para colher) e os canteiros grandes amadurecem com o nível. */
-export function WorldScenery({ level, plots, onHarvest, poppedId, perfectDay }: {
-  level: number; plots: GardenPlot[]; onHarvest: (goalId: string, element: Element, index: number) => void; poppedId: string | null; perfectDay: boolean;
+/** Fazenda da Casa. A horta mostra as metas de hoje (clicar só faz a planta pular; metas se cumprem no painel de Metas) e os canteiros grandes amadurecem com o nível. */
+export function WorldScenery({ level, plots, onPlotTap, poppedId, perfectDay }: {
+  level: number; plots: GardenPlot[]; onPlotTap: (goalId: string) => void; poppedId: string | null; perfectDay: boolean;
 }) {
   const [hovered, setHovered] = useState<number | null>(null);
-  const onPlotKey = (event: KeyboardEvent, plot: GardenPlot, index: number) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onHarvest(plot.id, event.currentTarget, index); } };
+  const onPlotKey = (event: KeyboardEvent, plot: GardenPlot) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onPlotTap(plot.id); } };
   const bedStage = level >= 3 ? 3 : level === 2 ? 2 : 1;
   // Ground contact determines painter order. Tree artwork ends at local y=126.
   const trees = [
@@ -138,7 +138,7 @@ export function WorldScenery({ level, plots, onHarvest, poppedId, perfectDay }: 
   if (!plot) return <g key={`empty-${index}`} transform={`translate(${x} ${y})`}><path d="M-8 7h17v4H-8Z" fill="#8f6b47"/></g>;
   const stage = plot.done ? 3 : plot.progress >= 50 ? 2 : plot.progress > 0 ? 1 : 0;
   return <g key={plot.id} transform={`translate(${x} ${y})`} className={`garden-plot ${plot.done ? 'is-done' : ''} ${poppedId === plot.id ? 'is-popping' : ''}`} role="button" tabIndex={0}
-    aria-label={`${plot.title}: ${plot.done ? 'colhida hoje' : `${plot.progress}%. Colher`}`} onClick={event=>onHarvest(plot.id, event.currentTarget, index)} onKeyDown={event=>onPlotKey(event, plot, index)}
+    aria-label={`${plot.title}: ${plot.done ? 'colhida hoje' : `${plot.progress}%`}`} onClick={()=>onPlotTap(plot.id)} onKeyDown={event=>onPlotKey(event, plot)}
     onMouseEnter={()=>setHovered(index)} onMouseLeave={()=>setHovered(null)} onFocus={()=>setHovered(index)} onBlur={()=>setHovered(null)}>
     <rect className="plot-hit" x="-13" y="-12" width="28" height="26" fill="transparent"/>
     <g className="crop-sway" style={{ animationDelay: `${-index * 0.3}s` }}><GardenCrop key={stage} stage={stage} fruit={['#f6aa30','#df5438','#e7b52e'][index%3]}/></g>

@@ -2,10 +2,11 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
 import { AuthScreen } from './components/auth/AuthScreen';
+import { BootSplash } from './components/auth/BootSplash';
 import { currentAccessToken } from './lib/auth';
 import { supabase } from './lib/supabase';
-import { applySettings, readSettings } from './lib/settings';
-import { startCloudSync } from './lib/cloudSync';
+import { SETTINGS_KEY, applySettings, readSettings } from './lib/settings';
+import { hasLocalSnapshot, startCloudSync } from './lib/cloudSync';
 import './styles/global.css';
 import './styles/goals.css';
 import './styles/home.css';
@@ -26,13 +27,28 @@ supabase?.auth.onAuthStateChange(event => {
   window.location.reload();
 });
 
-// Com sessão: traz do servidor os dados da conta antes do primeiro desenho, depois aplica as preferências e desenha o app.
-// Sem sessão: mostra a entrada. Ao entrar, a tela recarrega e cai no caminho com sessão.
+// Preferências que chegam da conta (ou de outra aba) valem na hora: modo calmo, celebrações, bichinhos
+window.addEventListener('storage', event => { if (event.key === SETTINGS_KEY || event.key === null) applySettings(readSettings()); });
+
+// Sem sessão: mostra a entrada (ao entrar, a tela recarrega e cai no caminho com sessão).
+// Com sessão: o sítio abre na hora com os dados deste navegador e a conta sincroniza em segundo plano.
+// Só no primeiro acesso da conta neste navegador (nada guardado ainda) a porteira espera os dados chegarem.
 async function boot() {
+  const root = createRoot(document.getElementById('root')!);
   const signedIn = (await currentAccessToken()) !== null;
-  if (signedIn) await startCloudSync();
+  if (!signedIn) {
+    applySettings(readSettings());
+    root.render(<StrictMode><AuthScreen/></StrictMode>);
+    return;
+  }
+  const firstOpen = !hasLocalSnapshot();
+  const sync = startCloudSync();
+  if (firstOpen) {
+    root.render(<StrictMode><BootSplash/></StrictMode>);
+    await sync;
+  }
   applySettings(readSettings());
-  createRoot(document.getElementById('root')!).render(<StrictMode>{signedIn ? <App/> : <AuthScreen/>}</StrictMode>);
+  root.render(<StrictMode><App/></StrictMode>);
 }
 
 void boot();

@@ -82,24 +82,41 @@ export async function flushSync(key: string) {
 
 const withTimeout = <T,>(promise: Promise<T>) => Promise.race([promise, new Promise<never>((_, reject) => window.setTimeout(() => reject(new Error('timeout')), PULL_TIMEOUT_MS))]);
 
-/** Chamar antes de desenhar o app: traz do servidor o que for mais novo e começa a vigiar as gravações */
+/** Este navegador já guardou dados desta conta antes? (sem isso, não há o que mostrar até a conta responder) */
+export const hasLocalSnapshot = () => Object.keys(readMeta()).length > 0;
+
+/**
+ * Começa a vigiar as gravações (na hora) e traz da conta o que for mais novo (em segundo plano).
+ * Chaves que mudarem avisam as telas abertas com um evento "storage", e elas se atualizam sozinhas.
+ */
 export async function startCloudSync() {
+  // Chaves que o navegador ainda não tinha ao abrir: se a tela gravar um valor padrão nelas antes de a
+  // conta responder (ex.: metas de exemplo), vale o que está na conta
+  const absentAtBoot = new Set([...SYNC_KEYS].filter(key => localStorage.getItem(key) === null));
   watchLocalStorage();
   try {
     const remote = await withTimeout(listUserData());
     ready = true;
     const meta = readMeta();
     const onServer = new Set<string>();
+    const changed: { key: string; oldValue: string | null; newValue: string }[] = [];
     for (const item of remote) {
       if (!SYNC_KEYS.has(item.key)) continue;
       onServer.add(item.key);
       const remoteTime = Date.parse(item.updatedAt);
       const local = localStorage.getItem(item.key);
-      if (local === null || remoteTime > (meta[item.key] ?? 0)) {
+      if (local === null || absentAtBoot.has(item.key) || remoteTime > (meta[item.key] ?? 0)) {
+        if (local !== item.value) changed.push({ key: item.key, oldValue: local, newValue: item.value });
         nativeSet.call(localStorage, item.key, item.value);
         writeMeta(item.key, remoteTime);
+        // O valor da conta venceu: o que estava esperando para subir (ex.: um padrão gravado ao abrir) não sobe mais
+        window.clearTimeout(timers.get(item.key));
+        timers.delete(item.key);
+        waiting.delete(item.key);
       } else if (local !== item.value) schedule(item.key);
     }
+    // As telas já desenhadas trocam para os dados da conta
+    for (const change of changed) window.dispatchEvent(new StorageEvent('storage', { ...change, storageArea: localStorage }));
     // O que só existe neste navegador (dados de antes da sincronização) sobe para o servidor
     for (const key of SYNC_KEYS) if (!onServer.has(key) && localStorage.getItem(key) !== null) schedule(key);
     for (const key of waiting) schedule(key);

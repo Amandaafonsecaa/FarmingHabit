@@ -47,9 +47,8 @@
 
 /* --- Horta: canteiros clicáveis --- */
 .garden-plot { cursor: pointer; outline: none; }
-.garden-plot.is-done { cursor: default; }
-.garden-plot:not(.is-done) .crop-stage { animation: sprout-pop .6s cubic-bezier(.34, 1.56, .64, 1) backwards, npc-glint 5s steps(1) infinite; }
-.garden-plot:not(.is-done):hover .crop-stage, .garden-plot:not(.is-done):focus-visible .crop-stage { filter: drop-shadow(1px 0 0 #ffe38b) drop-shadow(-1px 0 0 #ffe38b) drop-shadow(0 1px 0 #ffe38b) drop-shadow(0 -1px 0 #ffe38b); animation: none; }
+.garden-plot:not(.is-done) .crop-stage { animation: sprout-pop .6s cubic-bezier(.34, 1.56, .64, 1) backwards; }
+.garden-plot:hover .crop-stage, .garden-plot:focus-visible .crop-stage { filter: drop-shadow(1px 0 0 #ffe38b) drop-shadow(-1px 0 0 #ffe38b) drop-shadow(0 1px 0 #ffe38b) drop-shadow(0 -1px 0 #ffe38b); animation: none; }
 .garden-plot:hover .crop-sway, .garden-plot:focus-visible .crop-sway { animation-duration: .8s; }
 .garden-plot.is-popping .crop-stage { animation: crop-pop .7s cubic-bezier(.34, 1.56, .64, 1); }
 .garden-plaque { transform-box: fill-box; transform-origin: 50% 100%; animation: plaque-in .25s cubic-bezier(.34, 1.56, .64, 1) backwards; }
