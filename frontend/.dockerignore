@@ -1,0 +1,7 @@
+# O container instala e compila tudo do zero: nada da máquina local entra na imagem
+node_modules
+dist
+.git
+# O .env do front fica: o Vite lê as variáveis VITE_* durante o build, e elas são públicas (vão para o navegador)
+.env.*
+!.env.example
