@@ -87,8 +87,11 @@ export async function saveMotivation(userId: string, motivation: { text: string;
 }
 
 /** Apaga missões, compras e recompensas próprias e zera nível, XP e moedas; a conta continua */
-export async function resetPlayerData(id: string): Promise<Player> {
-  return toPlayer(await request<Player>(`/users/${id}/data`, { method: 'DELETE' }));
+/** Partes que o servidor sabe apagar separadamente (a conta fica) */
+export type ResetScope = 'goals' | 'diary' | 'missions' | 'shop' | 'treasure' | 'motivation' | 'progress';
+
+export async function resetPlayerData(id: string, scopes: ResetScope[]): Promise<Player> {
+  return toPlayer(await request<Player>(`/users/${id}/data?scopes=${scopes.join(',')}`, { method: 'DELETE' }));
 }
 
 // --- Missões ---

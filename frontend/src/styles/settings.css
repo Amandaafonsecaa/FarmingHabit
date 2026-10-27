@@ -94,6 +94,24 @@ html.no-critters .butterfly, html.no-critters .sky-birds, html.no-critters .fish
 .danger-button { background: #f2b8a2; border-color: #7a2e17; color: #5e1f10; box-shadow: inset 2px 2px #ffd6c6, inset -2px -2px #c46a52, 2px 3px #5e1f10; }
 .danger-button:hover:not(:disabled) { background: #f7c9b6; }
 
+/* Zona do espantalho: lista de marcar o que apagar (nada vem marcado) */
+.wipe-options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; max-height: 46vh; overflow-y: auto; padding: 2px 4px 4px 2px; }
+.wipe-option { position: relative; display: flex; align-items: flex-start; gap: 8px; height: 100%; padding: 8px; border: 2px solid #8a5838; background: #fff8dd; cursor: pointer; box-shadow: 1px 2px #8a5838; }
+.wipe-option input { position: absolute; opacity: 0; pointer-events: none; }
+.wipe-check { display: grid; flex: none; place-items: center; width: 18px; height: 18px; border: 2px solid #8a5838; background: #fff; color: transparent; box-shadow: inset 1px 1px #d7ba83; }
+.wipe-text { display: flex; min-width: 0; flex-direction: column; gap: 3px; font-size: 12px; overflow-wrap: anywhere; }
+.wipe-text small { font-size: 10px; line-height: 1.35; color: #765337; }
+.wipe-option:hover { border-color: #7a2e17; }
+.wipe-option:has(input:checked) { background: #fdeee4; border-color: #7a2e17; box-shadow: inset 2px 2px #ffd6c6, 1px 2px #7a2e17; }
+.wipe-option input:checked + .wipe-check { background: #f2b8a2; border-color: #7a2e17; color: #5e1f10; }
+.wipe-option input:focus-visible + .wipe-check { outline: 3px solid #3f6b35; outline-offset: 2px; }
+.wipe-option:has(input:disabled) { cursor: default; opacity: .65; }
+.wipe-confirm { display: grid; gap: 6px; font-size: 12px; }
+.wipe-confirm strong { color: #a8432a; letter-spacing: 1px; }
+.wipe-confirm .settings-input { width: 100%; text-transform: uppercase; }
+.wipe-backup { justify-self: start; }
+@media (max-width: 520px) { .wipe-options { grid-template-columns: minmax(0, 1fr); } }
+
 /* --- Animações --- */
 @keyframes tool-sway { from { transform: rotate(-3deg); } to { transform: rotate(3deg); } }
 @keyframes gear-spin { to { transform: rotate(360deg); } }

@@ -9,10 +9,11 @@ import { useSettings } from '../hooks/useSettings';
 import { useProfile } from '../hooks/useProfile';
 import { CharacterCreator } from '../components/profile/CharacterCreator';
 import { PixelAvatar } from '../components/PixelAvatar';
-import { ACCOUNT_KEYS, LOCAL_KEYS, exportBackup, importBackup } from '../lib/settings';
+import { exportBackup, importBackup } from '../lib/settings';
+import { WIPE_FLASH_KEY, WipeDialog } from '../components/settings/WipeDialog';
 import { JOURNEY_LENGTH } from '../lib/journey';
 import { HARVEST_REWARD, WEEK_BONUS } from '../lib/harvestRewards';
-import { loadPlayer, resetPlayerData, updatePlayerName, type Player } from '../services/api';
+import { loadPlayer, updatePlayerName, type Player } from '../services/api';
 import type { AppPage } from '../types/navigation';
 
 type Section = 'profile' | 'appearance' | 'data' | 'about';
@@ -23,12 +24,11 @@ const SECTIONS: { id: Section; label: string; icon: PixelIconName; hint: string 
   { id: 'about', label: 'Sobre', icon: 'leaf', hint: 'Versão e como o jogo funciona' },
 ];
 
-const GOALS_KEY = 'farminghabit.goals.v1';
 const readJson = (key: string) => { try { return JSON.parse(localStorage.getItem(key) ?? 'null'); } catch { return null; } };
 
 /** Resumo do que está guardado neste navegador */
 function localSummary() {
-  const goals = readJson(GOALS_KEY);
+  const goals = readJson('farminghabit.goals.v1');
   const diary = readJson('farminghabit.diary.v1') ?? {};
   const adventures = readJson('farminghabit.adventures.v1') ?? [];
   const goalList: { id: string }[] = Array.isArray(goals?.goals) ? goals.goals : [];
@@ -47,7 +47,8 @@ export function SettingsPage({ onNavigate }: { onNavigate: (page: AppPage) => vo
   const [farm, setFarm] = useState(settings.farmName);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
-  const [summary, setSummary] = useState(localSummary);
+  const [summary] = useState(localSummary);
+  const [wiping, setWiping] = useState(false);
   // Avisos de ação aparecem como toast
   const setAnnouncement = toast;
   const fileRef = useRef<HTMLInputElement>(null);
@@ -58,6 +59,13 @@ export function SettingsPage({ onNavigate }: { onNavigate: (page: AppPage) => vo
       .then(user => { if (active) { setPlayer(user); setName(user.name); setServerOnline(true); } })
       .catch(() => { if (active) setServerOnline(false); });
     return () => { active = false; };
+  }, []);
+
+  // Depois de apagar a página recarrega: volta para "Dados e backup" e mostra o aviso
+  useEffect(() => {
+    let message: string | null = null;
+    try { message = sessionStorage.getItem(WIPE_FLASH_KEY); sessionStorage.removeItem(WIPE_FLASH_KEY); } catch { /* modo privado */ }
+    if (message) { setSection('data'); toast(message, 'success'); }
   }, []);
 
   // Se o perfil mudar por fora (ex.: refez as boas-vindas), o rascunho acompanha
@@ -106,32 +114,6 @@ export function SettingsPage({ onNavigate }: { onNavigate: (page: AppPage) => vo
     } catch (error) {
       setAnnouncement(error instanceof Error ? error.message : 'Não foi possível ler o arquivo.');
     }
-  }
-
-  function removeExamples() {
-    const state = readJson(GOALS_KEY);
-    if (!state || !window.confirm('Remover as metas de exemplo e o histórico delas?')) return;
-    const isExample = (id: string) => id.startsWith('exemplo-');
-    const log = Object.fromEntries(Object.entries(state.log as Record<string, Record<string, number>>).map(([day, entries]) => [day, Object.fromEntries(Object.entries(entries).filter(([id]) => !isExample(id)))]));
-    localStorage.setItem(GOALS_KEY, JSON.stringify({ goals: state.goals.filter((goal: { id: string }) => !isExample(goal.id)), log }));
-    setSummary(localSummary());
-    setAnnouncement('Metas de exemplo removidas. Agora o canteiro é todo seu!');
-  }
-
-  // Apaga todo o progresso (servidor e navegador), mas mantém a conta: nome, e-mail, personagem e preferências
-  async function wipeAll() {
-    if (!window.confirm('Apagar missões, compras, metas, diário, baús e coleção, e zerar nível, XP e moedas? Sua conta, seu personagem e suas preferências continuam.')) return;
-    if (!window.confirm('Tem certeza? Isso não pode ser desfeito (a menos que você tenha um backup).')) return;
-    try {
-      if (player) await resetPlayerData(player.id);
-    } catch (error) {
-      setAnnouncement(`Não foi possível apagar os dados do servidor: ${error instanceof Error ? error.message : 'erro desconhecido'}`);
-      return;
-    }
-    LOCAL_KEYS.filter(key => !ACCOUNT_KEYS.includes(key)).forEach(key => localStorage.removeItem(key));
-    // Canteiro vazio de propósito: sem isso, as metas de exemplo voltariam
-    localStorage.setItem(GOALS_KEY, JSON.stringify({ goals: [], log: {} }));
-    window.location.reload();
   }
 
   const current = SECTIONS.find(item => item.id === section)!;
@@ -214,7 +196,7 @@ export function SettingsPage({ onNavigate }: { onNavigate: (page: AppPage) => vo
           </>}
 
           {section === 'data' && <>
-            <SettingsGroup title="Armazenamento" footer="Missões, moedas e nível ficam no servidor e não entram no backup nem na limpeza.">
+            <SettingsGroup title="Armazenamento" footer="Missões, moedas e nível ficam no servidor e não entram no backup.">
               <ul className="data-crates">
                 <li><strong>{summary.goals}</strong><span>metas</span></li>
                 <li><strong>{summary.pages}</strong><span>páginas do diário</span></li>
@@ -231,16 +213,12 @@ export function SettingsPage({ onNavigate }: { onNavigate: (page: AppPage) => vo
                 <input ref={fileRef} type="file" accept="application/json,.json" className="sr-only" tabIndex={-1} onChange={restoreBackup}/>
               </SettingsRow>
             </SettingsGroup>
-            <SettingsGroup title="Limpeza">
-              <SettingsRow label="Metas de exemplo" description={summary.examples > 0 ? `${summary.examples} metas de exemplo com histórico inventado. Elas entram nas contas da Evolução.` : 'Nenhuma meta de exemplo no canteiro.'}>
-                <button type="button" className="pixel-button" disabled={summary.examples === 0} onClick={removeExamples}>Remover</button>
+            <SettingsGroup title="Zona do espantalho" tone="danger" footer="Não dá para desfazer. Faça um backup antes.">
+              <SettingsRow label="Apagar dados" description="Você escolhe o que vai embora: metas, diário, missões, loja, baús, motivação ou progresso.">
+                <button type="button" className="pixel-button danger-button" onClick={()=>setWiping(true)}>Escolher…</button>
               </SettingsRow>
             </SettingsGroup>
-            <SettingsGroup title="Zona do espantalho" tone="danger" footer="Faça um backup antes. Não dá para desfazer.">
-              <SettingsRow label="Apagar todos os dados" description="Remove missões, compras, metas, diário, baús e coleção, e zera nível, XP e moedas. Sua conta, seu personagem e suas preferências continuam.">
-                <button type="button" className="pixel-button danger-button" disabled={!player} onClick={()=>{ void wipeAll(); }}>Apagar tudo</button>
-              </SettingsRow>
-            </SettingsGroup>
+            {wiping && <WipeDialog playerId={player?.id ?? null} examples={summary.examples} onBackup={downloadBackup} onClose={()=>setWiping(false)}/>}
           </>}
 
           {section === 'about' && <>
