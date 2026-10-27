@@ -1,4 +1,5 @@
-import { deleteUserData, listUserData, loadPlayer, saveUserData, userDataUrl } from '../services/api';
+import { deleteUserData, listUserData, saveUserData, userDataUrl } from '../services/api';
+import { cachedAuthHeader } from './auth';
 
 /**
  * Sincroniza com o servidor os dados que a pessoa coloca no site e que as telas guardam no navegador.
@@ -22,7 +23,8 @@ const PULL_TIMEOUT_MS = 3000;
 
 const nativeSet = Storage.prototype.setItem;
 const nativeRemove = Storage.prototype.removeItem;
-let userId: string | null = null;
+// Só envia depois que o servidor respondeu ao primeiro pedido (com o token da sessão)
+let ready = false;
 const timers = new Map<string, number>();
 const waiting = new Set<string>();
 
@@ -35,11 +37,11 @@ function writeMeta(key: string, time: number) {
 
 async function push(key: string) {
   timers.delete(key);
-  if (!userId) { waiting.add(key); return; }
+  if (!ready) { waiting.add(key); return; }
   const value = localStorage.getItem(key);
   try {
-    if (value === null) await deleteUserData(userId, key);
-    else writeMeta(key, Date.parse((await saveUserData(userId, key, value)).updatedAt));
+    if (value === null) await deleteUserData(key);
+    else writeMeta(key, Date.parse((await saveUserData(key, value)).updatedAt));
   } catch { waiting.add(key); /* sem servidor: tenta de novo na próxima abertura ou alteração */ }
 }
 
@@ -62,12 +64,12 @@ function watchLocalStorage() {
   };
   // Ao fechar a aba, envia o que ainda está esperando (keepalive deixa a requisição terminar)
   window.addEventListener('pagehide', () => {
-    if (!userId) return;
+    if (!ready) return;
     for (const key of [...timers.keys(), ...waiting]) {
       const value = localStorage.getItem(key);
-      void fetch(userDataUrl(userId, key), value === null
-        ? { method: 'DELETE', keepalive: true }
-        : { method: 'PUT', keepalive: true, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ value }) }).catch(() => {});
+      void fetch(userDataUrl(key), value === null
+        ? { method: 'DELETE', keepalive: true, headers: cachedAuthHeader() }
+        : { method: 'PUT', keepalive: true, headers: { 'Content-Type': 'application/json', ...cachedAuthHeader() }, body: JSON.stringify({ value }) }).catch(() => {});
     }
   });
 }
@@ -78,8 +80,8 @@ const withTimeout = <T,>(promise: Promise<T>) => Promise.race([promise, new Prom
 export async function startCloudSync() {
   watchLocalStorage();
   try {
-    userId = (await withTimeout(loadPlayer())).id;
-    const remote = await withTimeout(listUserData(userId));
+    const remote = await withTimeout(listUserData());
+    ready = true;
     const meta = readMeta();
     const onServer = new Set<string>();
     for (const item of remote) {

@@ -15,13 +15,12 @@ Não há testes automatizados nem linter configurado no frontend; a checagem de 
 
 ## Variáveis de ambiente
 
-Crie `frontend/.env` com as variáveis abaixo (só são lidas no `npm run dev`/`build`, então reinicie o Vite ao alterá-las). Todas as variáveis `VITE_*` vão para o navegador, então nunca coloque segredos aqui.
+Crie `frontend/.env` com as variáveis abaixo (só são lidas no `npm run dev`/`build`, então reinicie o Vite ao alterá-las). Todas as variáveis `VITE_*` vão para o navegador, então nunca coloque segredos aqui: use só a chave **anon/public** do Supabase.
 
 | Variável | Uso |
 | --- | --- |
+| `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` | Obrigatórias: login e sessão (`src/lib/supabase.ts`). Sem elas, a tela de entrada mostra o aviso de configuração |
 | `VITE_API_URL` | Endereço do backend (padrão `http://localhost:3000`) |
-| `VITE_USER_ID` | Opcional: fixa o jogador. Sem ela, usa o usuário mais recente do banco |
-| `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` | Cliente Supabase em `src/lib/supabase.ts`. Hoje não é usado pelas telas |
 
 ## Organização
 
@@ -37,7 +36,8 @@ src/
 ```
 
 - **Navegação:** por hash da URL (`#metas`, `#loja`...), sem biblioteca de rotas.
-- **Dados:** missões, recompensas e compras vêm do backend. Metas, diário e preferências ficam no `localStorage` (chaves `farminghabit.*`) e são sincronizados com o servidor por `src/lib/cloudSync.ts`.
+- **Login:** e-mail e senha pelo Supabase Auth (`components/auth/AuthScreen.tsx`). Sem sessão, aparece só a tela de entrada; o token vai em todo pedido à API (`services/api.ts`).
+- **Dados:** missões, recompensas e compras vêm do backend. Metas, diário e preferências ficam no `localStorage` (chaves `farminghabit.*`) e são sincronizados com a conta por `src/lib/cloudSync.ts`. Ao sair, o navegador limpa esses dados.
 - **Ilustrações:** SVG e pixel art feitos à mão, em componentes TSX. Não há arquivos de imagem de terceiros.
 
 As diretrizes de design e de UX usadas neste projeto estão no [CLAUDE.md](../CLAUDE.md).

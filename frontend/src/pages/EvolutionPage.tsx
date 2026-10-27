@@ -27,7 +27,7 @@ export function EvolutionPage({ onNavigate }: { onNavigate: (page: AppPage) => v
       const user = await loadPlayer();
       if (active) setPlayer(user);
       // Missões entram em moedas e XP da semana (pela data em que foram cumpridas)
-      const list = await listMissions(user.id);
+      const list = await listMissions();
       if (active) setMissions(list);
     })().catch(() => { if (active) setOffline(true); });
     return () => { active = false; };

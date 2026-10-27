@@ -9,8 +9,7 @@ import { CharacterCreator } from './CharacterCreator';
 const STEPS = ['Quem é você?', 'Seu personagem', 'Tudo pronto!'];
 
 /**
- * Primeira visita: nome, sítio e personagem. Hoje faz o papel da "criação de conta";
- * quando o login existir, estes mesmos passos entram no cadastro.
+ * Primeira visita de cada conta: nome, sítio e personagem (o jogador já entrou com e-mail e senha).
  */
 export function WelcomeWizard() {
   const [profile, updateProfile] = useProfile();
@@ -38,7 +37,7 @@ export function WelcomeWizard() {
     if (saving) return;
     setSaving(true);
     try {
-      if (player && name.trim() && name.trim() !== player.name) await updatePlayerName(player.id, name.trim());
+      if (player && name.trim() && name.trim() !== player.name) await updatePlayerName(name.trim());
     } catch { /* servidor fora do ar: o nome pode ser trocado depois em Configurações */ }
     saveSettings({ ...readSettings(), farmName: farm.trim() || readSettings().farmName });
     updateProfile({ avatar, onboarded: true });

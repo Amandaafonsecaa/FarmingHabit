@@ -64,7 +64,7 @@ export function HomePage({ onNavigate }: { onNavigate: (page: AppPage) => void }
     let active = true;
     (async () => {
       const user = await loadPlayer();
-      const [userMissions, userRewards] = await Promise.all([listMissions(user.id), listRewards(user.id)]);
+      const [userMissions, userRewards] = await Promise.all([listMissions(), listRewards()]);
       if (!active) return;
       setPlayer(user); setMissions(userMissions); setRewards(userRewards);
     })()
@@ -144,7 +144,7 @@ export function HomePage({ onNavigate }: { onNavigate: (page: AppPage) => void }
     const mission = missions.find(item => item.id === id);
     if (!mission || !player) return;
     run(id, mission.title, async () => {
-      const result = await completeMission(id, player.id);
+      const result = await completeMission(id);
       recordAdventure(mission.title);
       abandon(id);
       setMissions(current => current.map(item => item.id === id ? { ...result.mission, rewarded: true } : item));
@@ -164,7 +164,7 @@ export function HomePage({ onNavigate }: { onNavigate: (page: AppPage) => void }
   async function purchase(reward: Reward): Promise<boolean> {
     if (!player) return false;
     try {
-      const { remainingCoins } = await claimReward(reward.id, player.id);
+      const { remainingCoins } = await claimReward(reward.id);
       setPlayer(current => current && { ...current, coins: remainingCoins });
       setAnnouncement(`${reward.name} foi para suas compras! Aproveite.`);
       setConfirming(null);
@@ -179,8 +179,8 @@ export function HomePage({ onNavigate }: { onNavigate: (page: AppPage) => void }
   async function addItem(item: NewItem): Promise<boolean> {
     if (!player) { setAnnouncement(`${item.title}: servidor indisponível, não foi possível salvar.`); return false; }
     try {
-      if (item.kind === 'mission') { const created = await createMission(player.id, item); setMissions(current => [created, ...current]); }
-      else { const created = await createReward(player.id, item.title, item.price); setRewards(current => [created, ...current]); }
+      if (item.kind === 'mission') { const created = await createMission(item); setMissions(current => [created, ...current]); }
+      else { const created = await createReward(item.title, item.price); setRewards(current => [created, ...current]); }
       setAnnouncement(`${item.title}: ${item.kind === 'mission' ? 'missão pregada no quadro' : 'recompensa na vitrine'}!`);
       setDialogKind(null);
       return true;

@@ -25,9 +25,9 @@ export function DiaryPage({ onNavigate }: { onNavigate: (page: AppPage) => void 
   const selectedKey = toKey(selected);
   const entry = diary.entryFor(selectedKey);
   // O cantinho da motivação precisa do jogador (a frase fica no servidor)
-  const [playerId, setPlayerId] = useState<string | null>(null);
-  useEffect(() => { let active = true; loadPlayer().then(user => { if (active) setPlayerId(user.id); }).catch(() => {}); return () => { active = false; }; }, []);
-  const motivation = useMotivation(playerId);
+  const [playerReady, setPlayerReady] = useState(false);
+  useEffect(() => { let active = true; loadPlayer().then(() => { if (active) setPlayerReady(true); }).catch(() => {}); return () => { active = false; }; }, []);
+  const motivation = useMotivation(playerReady);
 
   function open(date: Date) {
     const key = toKey(date);
@@ -56,7 +56,7 @@ export function DiaryPage({ onNavigate }: { onNavigate: (page: AppPage) => void 
       <div className="diary-main">
         <DiaryBook dateKey={selectedKey} date={selected} entry={entry} turn={turn} canNext={selectedKey < todayKey} harvests={harvests} adventures={adventures}
           onChange={patch=>diary.update(selectedKey, patch)} onPrev={()=>open(addDays(selected, -1))} onNext={()=>open(addDays(selected, 1))}/>
-        <MotivationCorner motivation={motivation.motivation} disabled={!playerId}
+        <MotivationCorner motivation={motivation.motivation} disabled={!playerReady}
           onSave={async changes=>{ await motivation.save(changes); toast('Motivação salva! Ela vai estar no quadro todos os dias.'); }}/>
       </div>
       <div className="diary-aside">

@@ -17,7 +17,7 @@ export function useShop() {
     let active = true;
     (async () => {
       const user = await loadPlayer();
-      const [list, history] = await Promise.all([listRewards(user.id), listPurchases(user.id)]);
+      const [list, history] = await Promise.all([listRewards(), listPurchases()]);
       if (!active) return;
       setPlayer(user); setRewards(list); setPurchases(history);
     })()
@@ -40,7 +40,7 @@ export function useShop() {
   async function buy(reward: Reward) {
     if (!player) throw new Error('Servidor indisponível.');
     if (player.coins < reward.price) throw new Error('Moedas insuficientes.');
-    const { remainingCoins, purchase } = await claimReward(reward.id, player.id);
+    const { remainingCoins, purchase } = await claimReward(reward.id);
     const updatedPlayer = { ...player, coins: remainingCoins };
     setPlayer(updatedPlayer);
     window.dispatchEvent(new CustomEvent<Player>(PLAYER_EVENT, { detail: updatedPlayer }));
@@ -51,25 +51,25 @@ export function useShop() {
 
   async function create(title: string, price: number) {
     if (!player) throw new Error('Servidor indisponível.');
-    const created = await createReward(player.id, title, price);
+    const created = await createReward(title, price);
     setRewards(current => [created, ...current]);
   }
 
   async function hide(id: string) {
     if (!player) throw new Error('Servidor indisponível.');
-    await hideReward(id, player.id);
+    await hideReward(id);
     setRewards(current => current.filter(reward => reward.id !== id));
     dropWish(id);
   }
 
   async function edit(id: string, changes: { title: string; description: string; price: number }) {
     if (!player) throw new Error('Servidor indisponível.');
-    const updated = await updateReward(id, player.id, changes);
+    const updated = await updateReward(id, changes);
     setRewards(current => current.map(reward => reward.id === id ? updated : reward));
   }
   async function remove(id: string) {
     if (!player) throw new Error('Servidor indisponível.');
-    await deleteReward(id, player.id);
+    await deleteReward(id);
     setRewards(current => current.filter(reward => reward.id !== id));
     dropWish(id);
   }
@@ -80,7 +80,7 @@ export function useShop() {
     if (!player || !item || updatingIds.includes(id)) return;
     setUpdatingIds(current => [...current, id]);
     try {
-      const updated = await setPurchaseUsed(id, player.id, !item.used);
+      const updated = await setPurchaseUsed(id, !item.used);
       setPurchases(current => current.map(purchase => purchase.id === id ? updated : purchase));
     } finally { setUpdatingIds(current => current.filter(value => value !== id)); }
   }

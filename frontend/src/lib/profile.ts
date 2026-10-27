@@ -1,6 +1,6 @@
 import { DEFAULT_AVATAR, type AvatarConfig } from './avatar';
 
-/** Perfil do jogador guardado neste navegador (até o login existir) */
+/** Perfil do jogador guardado neste navegador (sincronizado com a conta) */
 export interface Profile { avatar: AvatarConfig; bio: string; onboarded: boolean }
 
 export const PROFILE_KEY = 'farminghabit.profile.v1';

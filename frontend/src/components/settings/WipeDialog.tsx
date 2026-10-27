@@ -34,13 +34,13 @@ function removeExampleGoals() {
   localStorage.setItem(GOALS_KEY, JSON.stringify({ goals: state.goals.filter((goal: { id: string }) => !isExample(goal.id)), log }));
 }
 
-interface Props { playerId: string | null; examples: number; onBackup: () => void; onClose: () => void }
+interface Props { online: boolean; examples: number; onBackup: () => void; onClose: () => void }
 
 /**
  * Zona do espantalho: a pessoa marca só o que quer apagar (nada vem marcado) e confirma digitando APAGAR.
  * Primeiro apaga no servidor; só se der certo limpa o navegador e recarrega.
  */
-export function WipeDialog({ playerId, examples, onBackup, onClose }: Props) {
+export function WipeDialog({ online, examples, onBackup, onClose }: Props) {
   const [chosen, setChosen] = useState<Set<WipePart>>(new Set());
   const [error, setError] = useState('');
 
@@ -70,8 +70,8 @@ export function WipeDialog({ playerId, examples, onBackup, onClose }: Props) {
     // "Metas" já inclui as de exemplo
     const serverScopes = [...chosen].filter((part): part is ResetScope => part !== 'examples');
     if (serverScopes.length) {
-      if (!playerId) { setError('O servidor está fora do ar. Tente de novo quando ele voltar.'); return false; }
-      try { await resetPlayerData(playerId, serverScopes); }
+      if (!online) { setError('O servidor está fora do ar. Tente de novo quando ele voltar.'); return false; }
+      try { await resetPlayerData(serverScopes); }
       catch (reason) { setError(`Não foi possível apagar: ${reason instanceof Error ? reason.message : 'erro desconhecido'}`); return false; }
     }
     if (chosen.has('goals')) localStorage.setItem(GOALS_KEY, JSON.stringify({ goals: [], log: {} })); // vazio de propósito: senão os exemplos voltam

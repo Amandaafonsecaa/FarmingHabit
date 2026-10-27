@@ -14,6 +14,7 @@ import { WIPE_FLASH_KEY, WipeDialog } from '../components/settings/WipeDialog';
 import { JOURNEY_LENGTH } from '../lib/journey';
 import { HARVEST_REWARD, WEEK_BONUS } from '../lib/harvestRewards';
 import { loadPlayer, updatePlayerName, type Player } from '../services/api';
+import { signOut } from '../lib/auth';
 import type { AppPage } from '../types/navigation';
 
 type Section = 'profile' | 'appearance' | 'data' | 'about';
@@ -83,7 +84,7 @@ export function SettingsPage({ onNavigate }: { onNavigate: (page: AppPage) => vo
     if (player && !trimmedName) { setAnnouncement('Seu nome não pode ficar em branco.'); return; }
     setSaving(true);
     try {
-      if (player && trimmedName !== player.name) setPlayer(await updatePlayerName(player.id, trimmedName));
+      if (player && trimmedName !== player.name) setPlayer(await updatePlayerName(trimmedName));
       updateSettings({ farmName: trimmedFarm });
       updateProfile({ avatar, bio: bio.trim() });
       setSaved(true);
@@ -164,11 +165,13 @@ export function SettingsPage({ onNavigate }: { onNavigate: (page: AppPage) => vo
               </SettingsRow>
             </SettingsGroup>
 
-            <SettingsGroup title="Conta" footer="Quando o login chegar, a criação do personagem passa a fazer parte do cadastro.">
-              <SettingsRow label="E-mail" description="Do seu jogador no servidor."><span className="settings-value">{player?.email ?? '–'}</span></SettingsRow>
-              <SettingsRow label="Login e senha" description="Ainda não há login: hoje o sítio usa o jogador salvo no servidor automaticamente."><span className="settings-badge">Em breve</span></SettingsRow>
+            <SettingsGroup title="Conta" footer="Seus dados ficam guardados no servidor. Ao sair, este navegador esquece o sítio.">
+              <SettingsRow label="E-mail" description="É com ele que você entra."><span className="settings-value">{player?.email ?? '–'}</span></SettingsRow>
               <SettingsRow label="Rever boas-vindas" description="Abre de novo a criação do personagem do começo.">
                 <button type="button" className="pixel-button" onClick={()=>updateProfile({ onboarded: false })}>Abrir</button>
+              </SettingsRow>
+              <SettingsRow label="Sair da conta" description="Volta para a tela de entrada.">
+                <button type="button" className="pixel-button" onClick={()=>void signOut()}>Sair</button>
               </SettingsRow>
             </SettingsGroup>
             <div className="settings-save-bar">
@@ -218,7 +221,7 @@ export function SettingsPage({ onNavigate }: { onNavigate: (page: AppPage) => vo
                 <button type="button" className="pixel-button danger-button" onClick={()=>setWiping(true)}>Escolher…</button>
               </SettingsRow>
             </SettingsGroup>
-            {wiping && <WipeDialog playerId={player?.id ?? null} examples={summary.examples} onBackup={downloadBackup} onClose={()=>setWiping(false)}/>}
+            {wiping && <WipeDialog online={player !== null} examples={summary.examples} onBackup={downloadBackup} onClose={()=>setWiping(false)}/>}
           </>}
 
           {section === 'about' && <>

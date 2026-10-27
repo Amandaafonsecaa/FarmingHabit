@@ -14,7 +14,7 @@ export function useMissionBoard() {
     let active = true;
     (async () => {
       const user = await loadPlayer();
-      const list = await listMissions(user.id);
+      const list = await listMissions();
       if (!active) return;
       setPlayer(user); setMissions(list);
     })()
@@ -25,7 +25,7 @@ export function useMissionBoard() {
 
   async function create(mission: NewMission) {
     if (!player) throw new Error('Servidor indisponível.');
-    const created = await createMission(player.id, mission);
+    const created = await createMission(mission);
     setMissions(current => [created, ...current]);
   }
 
@@ -37,7 +37,7 @@ export function useMissionBoard() {
   /** Conclui no backend: credita XP e moedas e devolve o saldo atualizado do jogador */
   async function complete(id: string) {
     if (!player) throw new Error('Servidor indisponível.');
-    const result = await completeMission(id, player.id);
+    const result = await completeMission(id);
     setMissions(current => current.map(mission => mission.id === id ? result.mission : mission));
     setPlayer(current => current && { ...current, ...result.user });
   }
@@ -45,7 +45,7 @@ export function useMissionBoard() {
   /** Desfaz no backend: a missão volta a ficar em aberto e o XP e as moedas saem do saldo */
   async function uncomplete(id: string) {
     if (!player) throw new Error('Servidor indisponível.');
-    const result = await uncompleteMission(id, player.id);
+    const result = await uncompleteMission(id);
     setMissions(current => current.map(mission => mission.id === id ? result.mission : mission));
     setPlayer(current => current && { ...current, ...result.user });
   }

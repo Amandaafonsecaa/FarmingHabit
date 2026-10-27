@@ -3,14 +3,14 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL?.trim();
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY?.trim();
 
-// Missing configuration must not prevent the existing mock-data page from loading.
-// No database schema is supplied until the product's tables have been defined.
+// Sem configuração, o app mostra a tela de login com o aviso de configuração (em vez de quebrar).
+// A sessão fica no navegador (localStorage do próprio Supabase, fora das chaves "farminghabit.*").
 export const supabase = supabaseUrl && supabaseAnonKey
   ? createClient(supabaseUrl, supabaseAnonKey, {
       auth: {
-        persistSession: false,
-        autoRefreshToken: false,
-        detectSessionInUrl: false,
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
       },
     })
   : null;

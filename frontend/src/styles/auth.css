@@ -1,0 +1,67 @@
+/* ===== Entrada do sítio: plaquinha de madeira no meio da praça, na porteira da fazenda ===== */
+/* Céu em faixas de cor sólidas (sem degradê suave), igual ao céu pixelado da Casa */
+.auth-screen { position: relative; isolation: isolate; overflow: hidden; min-height: 100dvh; background: linear-gradient(#74c9ef 0 52%, #8fd4f1 52% 66%, #b5e3f2 66%); }
+
+/* Cenário (fica atrás de tudo e não recebe clique) */
+.auth-backdrop { position: absolute; inset: 0; z-index: -1; pointer-events: none; }
+.auth-landscape { position: absolute; left: 0; bottom: 0; width: 100%; height: clamp(260px, 40vh, 380px); }
+.auth-layer-far { transform: translateX(calc(var(--px, 0) * -6px)); transition: transform .5s ease-out; }
+.auth-layer-mid { transform: translateX(calc(var(--px, 0) * -14px)); transition: transform .5s ease-out; }
+
+/* A plaquinha fica no centro da tela; o espaço de cima é para o selo que sobe acima dela */
+.auth-layout { position: relative; display: grid; place-items: center; min-height: 100dvh; padding: 64px 16px 32px; }
+
+/* ----- Plaquinha: moldura de madeira com veios, pregos nos cantos e sombra dura ----- */
+.auth-card { position: relative; width: min(400px, 100%); padding: 10px; border: 3px solid #3b2418;
+  background: #8a5838 repeating-linear-gradient(0deg, #8a5838 0 7px, #7a4c2e 7px 9px, #8a5838 9px 15px, #96613d 15px 16px);
+  box-shadow: inset 0 3px #b07a4c, inset 0 -3px #5b3826, inset 3px 0 #a06a42, inset -3px 0 #6b4426, 8px 8px 0 #3b241866; }
+.auth-nail { position: absolute; z-index: 2; width: 6px; height: 6px; border: 1px solid #3b2418; background: #d9a05a; box-shadow: inset 1px 1px #fff1c7, inset -1px -1px #a86d1c; }
+.auth-nail.is-tl { top: 2px; left: 2px; } .auth-nail.is-tr { top: 2px; right: 2px; }
+.auth-nail.is-bl { bottom: 2px; left: 2px; } .auth-nail.is-br { bottom: 2px; right: 2px; }
+
+/* Selo dourado com o brotinho, metade para fora da plaquinha */
+.auth-emblem { position: absolute; z-index: 3; top: -38px; left: 50%; display: grid; place-items: center; width: 64px; height: 64px; transform: translateX(-50%); border: 3px solid #3b2418; background: #e7b84b; box-shadow: inset 3px 3px #ffe38b, inset -3px -3px #b8862f, 4px 4px 0 #3b241866; }
+.auth-emblem svg { width: 36px; height: 36px; }
+
+/* Título numa tábua clara, separada do pergaminho */
+.auth-heading { margin-bottom: 10px; padding: 32px 12px 12px; border: 2px solid #3b2418; background: #ecc78a; text-align: center; box-shadow: inset 0 2px #fff1c7, inset 0 -2px #c99a5b; }
+.auth-heading h1 { font-size: 20px; font-weight: bold; letter-spacing: .5px; text-shadow: 2px 2px #fff1c7; }
+
+/* Pergaminho em relevo com o formulário */
+.auth-body { display: flex; flex-direction: column; gap: 18px; padding: 18px 16px 20px; border: 2px solid #3b2418; background-color: #fff1c7; background-image: radial-gradient(#af754918 .7px, transparent .7px); background-size: 7px 7px; box-shadow: inset 2px 2px #fffaf0, inset -2px -2px #e5c88f; }
+
+/* Abas: plaquinha de madeira que desliza para a aba escolhida */
+.auth-tabs { position: relative; display: grid; grid-template-columns: 1fr 1fr; padding: 3px; border: 2px solid #785030; background: #c9b17c; box-shadow: inset 1px 1px #8f774d, 1px 1px #fff7d8; }
+.auth-tab-marker { position: absolute; top: 3px; bottom: 3px; left: 3px; width: calc(50% - 3px); border: 2px solid #785030; background: #efd299; box-shadow: inset 1px 1px #fff4d0, inset -1px -1px #bf925b, 1px 2px #6f482b; transition: transform .28s cubic-bezier(.34, 1.35, .64, 1); }
+.auth-tabs[data-mode='signup'] .auth-tab-marker { transform: translateX(100%); }
+.auth-tab { position: relative; z-index: 1; min-height: 40px; border: 0; background: none; font: inherit; font-size: 14px; font-weight: bold; color: #765337; cursor: pointer; transition: color .2s; }
+.auth-tab[aria-selected='true'], .auth-tab:hover { color: #3b2418; }
+.auth-tab:active { transform: translateY(1px); }
+
+/* O formulário entra deslizando do lado da aba escolhida */
+.auth-form { display: flex; flex-direction: column; gap: 14px; animation: auth-panel-in .32s cubic-bezier(.2, .9, .3, 1.15) both; }
+.auth-form.is-signin { --auth-from: -14px; }
+.auth-form.is-signup { --auth-from: 14px; }
+.auth-field { display: flex; flex-direction: column; gap: 6px; }
+.auth-label { font-size: 15px; font-weight: bold; }
+.auth-input-row { display: flex; gap: 6px; }
+
+/* Campo com ícone: a moldura inteira ganha o foco */
+.auth-input { flex: 1; display: flex; align-items: center; min-width: 0; min-height: 44px; border: 2px solid #8a5838; background: #fff8dd; box-shadow: inset 2px 2px #d7ba83; transition: background .15s, border-color .15s; }
+.auth-input svg { flex: none; width: 20px; height: 20px; margin-left: 10px; }
+.auth-input input { flex: 1; width: 100%; min-width: 0; align-self: stretch; padding: 8px 10px; border: 0; border-radius: 0; background: transparent; color: #3b2418; font: inherit; }
+.auth-input input::placeholder { color: #a98a68; }
+.auth-input input:focus-visible { outline: none; }
+.auth-input:focus-within { border-color: #3b2418; background: #fffdf2; outline: 3px solid #3f6b35; outline-offset: 2px; }
+.auth-input input:-webkit-autofill { -webkit-text-fill-color: #3b2418; box-shadow: inset 0 0 0 40px #fff8dd; }
+.auth-reveal { flex: none; min-width: 74px; min-height: 44px; font-size: 13px; }
+
+/* Botão principal verde e encorpado: afunda de verdade ao clicar */
+.auth-submit { width: 100%; min-height: 50px; margin-top: 6px; border: 3px solid #3b2418; background: #6d9b45; color: #fff1c7; font: inherit; font-size: 17px; font-weight: bold; letter-spacing: .5px; text-shadow: 2px 2px #3f6b35; cursor: pointer;
+  box-shadow: inset 3px 3px #a3be63, inset -3px -3px #3f6b35, 0 4px 0 #3b2418; transition: background .15s; }
+.auth-submit:hover:not(:disabled) { background: #78a84d; }
+.auth-submit:active:not(:disabled) { transform: translateY(3px); box-shadow: inset 3px 3px #3f6b35, 0 1px 0 #3b2418; }
+.auth-submit:disabled { background: #8fa877; color: #eef0dc; cursor: default; }
+.auth-config { font-size: 14px; color: #765337; }
+
+@keyframes auth-panel-in { from { opacity: 0; transform: translateX(var(--auth-from, 0)); } }
