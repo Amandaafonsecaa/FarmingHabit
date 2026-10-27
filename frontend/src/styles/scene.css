@@ -10,8 +10,10 @@
 .world-moon { position: absolute; top: 11%; left: 70%; width: 36px; height: 36px; background: #fff3cf; box-shadow: 6px 0 #fff3cf, -6px 0 #fff3cf, 0 6px #fff3cf, 0 -6px #fff3cf, 0 0 0 16px #fff3cf1f; animation: moon-glow 4s steps(3) infinite alternate; }
 .world-moon::after { content: ''; position: absolute; left: 8px; top: 6px; width: 8px; height: 8px; background: #e6dbb8; box-shadow: 12px 12px 0 -2px #e6dbb8; }
 .sky-stars span { position: absolute; width: 3px; height: 3px; background: #fff6c2; animation: sparkle-blink 2.2s steps(1) infinite; }
-.sky-rainbow { position: absolute; left: 14%; top: 10%; width: 72%; height: 75%; opacity: 0; animation: rainbow-life 9s ease-in-out forwards;
- background: radial-gradient(circle at 50% 100%, transparent 0 54%, #9b7fd4 54% 57%, #5fa8d3 57% 60%, #72ad32 60% 63%, #f2c453 63% 66%, #f2a33a 66% 69%, #e8576f 69% 72%, transparent 72%); }
+.sky-rainbow { position: absolute; left: 14%; top: 3%; width: 72%; height: 82%; opacity: 0; animation: rainbow-life 9s ease-in-out forwards;
+ /* Explicit radii keep the complete arch inside its box at every viewport ratio.
+    The previous implicit circle grew with the width and clipped its apex. */
+ background: radial-gradient(ellipse 50% 100% at 50% 100%, transparent 0 74%, #9b7fd4 74% 78%, #5fa8d3 78% 82%, #72ad32 82% 86%, #f2c453 86% 90%, #f2a33a 90% 94%, #e8576f 94% 98%, transparent 98%); }
 .sky-clouds { position: absolute; inset: 0; }
 
 /* Tom do cenário em cada fase (o desenho é o mesmo, a luz muda) */
