@@ -162,7 +162,6 @@ export function WorldMap({ world, chapter, reached, loop, heading, freshNode, op
 
     {/* Capitão Bússola, guia da guilda: do tamanho do gato Bigode */}
     <g className="map-guide npc-clickable" onClick={onTalk} shapeRendering="crispEdges">
-      <ellipse cx="66" cy="294" rx="36" ry="6" fill="#3b2418" opacity=".22"/>
       <g className="guide-body"><foreignObject x="12" y="172" width="108" height="122"><GuideWarrior className="h-full w-full"/></foreignObject></g>
       <g className="talk-prompt"><rect x="30" y="146" width="72" height="20" fill="#57311f"/><rect x="32" y="148" width="68" height="16" fill="#fff1c7"/><rect x="62" y="166" width="8" height="4" fill="#57311f"/>
         <text x="66" y="160" textAnchor="middle" className="talk-prompt-text">Conversar</text></g>
