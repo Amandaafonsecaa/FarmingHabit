@@ -3,6 +3,7 @@ import { CHAPTERS, STOPS_PER_CHAPTER, journeyState } from '../../lib/journey';
 import { CHEST_STOPS } from '../../lib/treasure';
 import { toast } from '../../lib/toast';
 import { WorldMap } from './WorldMap';
+import { MapAtmosphere } from './MapAtmosphere';
 import { MAP_W, PIXEL_WORLDS } from './pixelWorlds';
 import { CoinHud } from '../home/CoinHud';
 import { GuideDialog } from './GuideDialog';
@@ -58,6 +59,7 @@ export function MissionsHero({ completed, loading = false, openCount = 0, travel
     <div ref={scrollRef} className="world-map-scroll">
       <WorldMap world={world} chapter={chapter} reached={reached} loop={loop} heading={!!activeMission} freshNode={freshNode} opened={opened} onOpenChest={onOpenChest} onTalk={()=>setTalking(true)}/>
     </div>
+    <MapAtmosphere/>
     <div className="missions-hero-top">
       {/* Placa minimalista com o título da página */}
       <div className="missions-sign is-minimal pixel-frame">

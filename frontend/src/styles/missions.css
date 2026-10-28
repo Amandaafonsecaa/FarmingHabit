@@ -418,3 +418,27 @@
 .collection-slot:not(.is-found):hover svg { animation: slot-curious .4s steps(3); }
 @keyframes slot-shine { from { left: -40%; opacity: .7; } to { left: 130%; opacity: .7; } }
 @keyframes slot-curious { 33% { rotate: -6deg; } 66% { rotate: 6deg; } }
+
+/* ===== Mapa: névoa nas bordas e corvos passando (MapAtmosphere) ===== */
+/* Fica por cima do mapa e embaixo das placas; nunca recebe cliques */
+.map-atmosphere { position: absolute; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; --fog: 255 241 199; --fog-top: 84px; --fog-side: 56px; }
+/* Névoa em faixas (degraus, sem degradê liso): mais forte na borda, some antes da trilha */
+.map-fog { position: absolute; inset: 0; background:
+  linear-gradient(to bottom, rgb(var(--fog) / .55) 0 calc(var(--fog-top) * .18), rgb(var(--fog) / .36) 0 calc(var(--fog-top) * .4), rgb(var(--fog) / .2) 0 calc(var(--fog-top) * .66), rgb(var(--fog) / .09) 0 var(--fog-top), transparent 0),
+  linear-gradient(to right, rgb(var(--fog) / .45) 0 calc(var(--fog-side) * .22), rgb(var(--fog) / .26) 0 calc(var(--fog-side) * .5), rgb(var(--fog) / .1) 0 var(--fog-side), transparent 0),
+  linear-gradient(to left, rgb(var(--fog) / .45) 0 calc(var(--fog-side) * .22), rgb(var(--fog) / .26) 0 calc(var(--fog-side) * .5), rgb(var(--fog) / .1) 0 var(--fog-side), transparent 0); }
+/* Cada corvo atravessa o mapa em ~40% do ciclo e espera fora da tela no resto */
+.map-crow { position: absolute; left: 0; width: 100%; animation: crow-fly var(--fly, 30s) linear var(--fly-delay, 0s) infinite backwards; }
+.map-crow-bob { width: fit-content; transform: scale(var(--crow-scale, 1)); transform-origin: left center; animation: crow-bob 1.4s steps(2) infinite alternate; }
+.map-crow-art { display: block; opacity: .85; }
+.crow-wing-up { animation: crow-flap-up .5s steps(1) infinite; }
+.crow-wing-down { opacity: 0; animation: crow-flap-down .5s steps(1) infinite; }
+@keyframes crow-fly { 0% { transform: translateX(-48px); } 40%, 100% { transform: translateX(calc(100% + 48px)); } }
+@keyframes crow-bob { to { translate: 0 -4px; } }
+@keyframes crow-flap-up { 0% { opacity: 1; } 50% { opacity: 0; } }
+@keyframes crow-flap-down { 0% { opacity: 0; } 50% { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .map-crow { display: none; } }
+/* Celular: só sobre a faixa do mapa que rola, para não apagar as placas */
+@media (max-width: 767px) {
+ .map-atmosphere { top: auto; bottom: 0; height: 208px; z-index: 1; --fog-top: 48px; --fog-side: 28px; }
+}
