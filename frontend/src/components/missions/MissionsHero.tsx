@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react';
 import { CHAPTERS, STOPS_PER_CHAPTER, journeyState } from '../../lib/journey';
 import { CHEST_STOPS } from '../../lib/treasure';
 import { toast } from '../../lib/toast';
-import { PixelIcon } from '../PixelIcon';
 import { WorldMap } from './WorldMap';
 import { MAP_W, PIXEL_WORLDS } from './pixelWorlds';
 import { CoinHud } from '../home/CoinHud';
@@ -11,9 +10,9 @@ import { loadPlayer } from '../../services/api';
 import { readTreasure } from '../../lib/treasure';
 
 /** Topo das Missões: placa minimalista, contador de moedas e o mapa-múndi da jornada */
-export function MissionsHero({ completed, loading = false, openCount = 0, traveling = 0, activeMission, opened, unopened, onCreate, onOpenChest, coins }: {
+export function MissionsHero({ completed, loading = false, openCount = 0, traveling = 0, activeMission, opened, unopened, onOpenChest, coins }: {
   completed: number; loading?: boolean; openCount?: number; traveling?: number; activeMission: { id: string; title: string } | null;
-  opened: string[]; unopened: number; onCreate: () => void; onFocusMission?: (id: string) => void; onOpenChest: (id?: string) => void; coins: number | null;
+  opened: string[]; unopened: number; onFocusMission?: (id: string) => void; onOpenChest: (id?: string) => void; coins: number | null;
 }) {
   const { loop, chapter, reached } = journeyState(completed);
   const [freshNode, setFreshNode] = useState<number | null>(null);
@@ -60,10 +59,9 @@ export function MissionsHero({ completed, loading = false, openCount = 0, travel
       <WorldMap world={world} chapter={chapter} reached={reached} loop={loop} heading={!!activeMission} freshNode={freshNode} opened={opened} onOpenChest={onOpenChest} onTalk={()=>setTalking(true)}/>
     </div>
     <div className="missions-hero-top">
-      {/* Placa minimalista: só o título e o botão de nova missão */}
+      {/* Placa minimalista com o título da página */}
       <div className="missions-sign is-minimal pixel-frame">
         <h1 id="missions-title">Quadro de Missões</h1>
-        <button type="button" className="pixel-button primary-button" onClick={onCreate}><PixelIcon name="plus" className="size-2.5"/>Nova missão</button>
       </div>
       {/* Placa com o nome do mundo: fora do mapa, para estar sempre visível; setinhas levam aos mundos já visitados */}
       <div className="world-title pixel-frame">

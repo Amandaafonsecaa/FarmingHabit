@@ -93,16 +93,16 @@
 /* Divisor entre a fazer e cumpridas: só uma linha tracejada com um rótulo pequeno */
 .quest-divider { display: flex; align-items: center; gap: 10px; margin: 26px 2px 22px; font-size: 11px; font-weight: 900; letter-spacing: 1px; text-transform: uppercase; color: #fff1c7; text-shadow: 1px 1px #57311f; }
 .quest-divider::before, .quest-divider::after { content: ''; flex: 1; border-top: 2px dashed #fff1c799; }
-.quest-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 26px 18px; }
+.quest-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 34px 22px; }
 
 .quest-scroll { position: relative; transform: rotate(var(--tilt, 0deg)); transform-origin: 50% 0; transition: transform .2s cubic-bezier(.34, 1.56, .64, 1); animation: scroll-unroll .5s cubic-bezier(.34, 1.4, .64, 1) backwards; }
 .quest-scroll:hover, .quest-scroll:focus-within { transform: rotate(0) translateY(-4px); z-index: 2; }
 .quest-scroll:hover .quest-paper { box-shadow: inset 0 0 0 2px #f5c477, 5px 7px 0 #42291666; }
 .quest-scroll.is-highlighted { animation: scroll-swing .7s ease-in-out 2; }
-.quest-pin { position: absolute; top: -9px; left: 50%; z-index: 3; width: 14px; height: 14px; margin-left: -7px; background: #d9574a; border: 2px solid #7a2e17; box-shadow: inset 3px 3px #f2998a, 2px 3px 0 #3b241866; }
+.quest-pin { position: absolute; top: -10px; left: 50%; z-index: 3; width: 16px; height: 16px; margin-left: -8px; background: #d9574a; border: 2px solid #7a2e17; box-shadow: inset 3px 3px #f2998a, 2px 3px 0 #3b241866; }
 .quest-scroll.is-active .quest-pin { background: #53922d; border-color: #23401f; box-shadow: inset 3px 3px #8cc65e, 2px 3px 0 #3b241866; }
 .quest-paper {
- position: relative; display: flex; flex-direction: column; height: 150px; min-width: 0; padding: 10px 10px 8px; color: #3b2418;
+ position: relative; display: flex; flex-direction: column; height: 200px; min-width: 0; padding: 14px 14px 12px; color: #3b2418;
  background: #f8e7bf repeating-linear-gradient(0deg, transparent 0 5px, #c9a46a14 5px 6px);
  border: 3px solid #8a5838; box-shadow: inset 0 0 0 2px #f5c477, 3px 4px 0 #42291655;
  transition: box-shadow .15s steps(2);
@@ -137,7 +137,7 @@
 .quest-scroll.is-done { animation: scroll-thud .4s ease-out .1s; }
 .quest-scroll.is-completed .quest-paper { filter: saturate(.75); }
 /* Já cumprida: o carimbo fica menor, no canto de baixo, sem cobrir o título e a recompensa */
-.quest-scroll.is-completed .quest-stamp { left: auto; top: auto; right: 40px; bottom: 14px; padding: 3px 8px; font-size: 13px; letter-spacing: 1px; border-width: 3px; transform: rotate(-8deg); animation: none; }
+.quest-scroll.is-completed .quest-stamp { left: auto; top: auto; right: 46px; bottom: 18px; padding: 4px 10px; font-size: 16px; letter-spacing: 1px; border-width: 3px; transform: rotate(-8deg); animation: none; }
 .quest-scroll .harvest-burst { left: 50%; top: 40%; }
 
 /* --- Animações --- */
@@ -373,16 +373,17 @@
  .missions-hero .chest-alert { bottom: 12px; right: 12px; }
 }
 
-/* Pergaminhos compactos: ações sempre dentro dos 150px. */
-.quest-paper .quest-rank { flex-shrink: 0; font-size: 9px; line-height: 14px; }
-.quest-paper .quest-title { margin-top: 3px; font-size: 13px; line-height: 1.2; height: 2.4em; }
-.quest-paper .quest-description { margin-top: 3px; -webkit-line-clamp: 1; line-clamp: 1; max-height: 1.4em; font-size: 11px; line-height: 1.4; }
-.quest-paper .quest-rewards { padding-top: 4px; font-size: 11px; line-height: 15px; }
-.quest-paper .quest-progress { margin-top: 2px; font-size: 9px; line-height: 12px; }
-.quest-paper .quest-actions { flex-wrap: nowrap; gap: 4px; margin-top: 4px; }
-.quest-paper .quest-actions .pixel-button { min-height: 26px; min-width: 0; padding: 4px 5px; font-size: 10px; line-height: 1.1; }
+/* Tamanho do pergaminho: ações sempre dentro dos 200px (título e descrição em até 2 linhas cada). */
+.quest-paper .quest-rank { flex-shrink: 0; font-size: 11px; line-height: 16px; }
+.quest-paper .quest-rank > span { font-size: 15px; }
+.quest-paper .quest-title { margin-top: 5px; font-size: 16px; line-height: 1.25; height: 2.5em; }
+.quest-paper .quest-description { margin-top: 4px; -webkit-line-clamp: 2; line-clamp: 2; max-height: 2.8em; font-size: 13px; line-height: 1.4; }
+.quest-paper .quest-rewards { gap: 14px; padding-top: 6px; font-size: 13px; line-height: 18px; }
+.quest-paper .quest-progress { margin-top: 4px; font-size: 11px; line-height: 14px; }
+.quest-paper .quest-actions { flex-wrap: nowrap; gap: 6px; margin-top: 8px; }
+.quest-paper .quest-actions .pixel-button { min-height: 32px; min-width: 0; padding: 5px 8px; font-size: 12px; line-height: 1.15; }
 .quest-paper .quest-actions .primary-button { flex: 1; }
-.quest-paper .quest-actions .plot-remove { flex-shrink: 0; width: 24px; height: 26px; }
+.quest-paper .quest-actions .plot-remove { flex-shrink: 0; width: 30px; height: 32px; }
 
 .quest-paper { cursor: pointer; }
 .quest-details-trigger { display: block; width: 100%; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; }

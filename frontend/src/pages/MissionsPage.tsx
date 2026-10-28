@@ -108,10 +108,10 @@ export function MissionsPage({ onNavigate }: { onNavigate: (page: AppPage) => vo
   return <MainLayout page="missions" onNavigate={onNavigate}
     world={<MissionsHero completed={completedCount} loading={board.loading} openCount={stillOpen.length} opened={treasure.opened} unopened={unopened.length} onOpenChest={showChest} coins={board.player?.coins ?? null}
       traveling={stillOpen.filter(mission => accepted.includes(mission.id)).length} activeMission={stillOpen.find(mission => accepted.includes(mission.id)) ?? null}
-      onCreate={()=>setDialogOpen(true)} onFocusMission={focusQuest}/>}>
+      onFocusMission={focusQuest}/>}>
     <div className="missions-layout">
       <section className="world-panel pixel-frame quest-board-panel" aria-labelledby="board-heading">
-        <header className="panel-heading"><h2 id="board-heading"><PixelIcon name="mission" className="size-5"/>Quadro de aventuras</h2><span className="panel-tag">{stillOpen.length} em aberto</span></header>
+        <header className="panel-heading"><h2 id="board-heading"><PixelIcon name="mission" className="size-5"/>Quadro de aventuras</h2><button type="button" className="pixel-button primary-button" onClick={()=>setDialogOpen(true)}><PixelIcon name="plus" className="size-2.5"/>Nova missão</button></header>
         <div className="quest-board">
           {board.loading && <p className="quest-board-note">Desenrolando os pergaminhos…</p>}
           {board.error && <p role="alert" className="quest-board-note is-error">Não foi possível carregar as missões: {board.error}</p>}
