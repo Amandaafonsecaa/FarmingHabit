@@ -9,6 +9,10 @@ export interface Placed { sprite: Sprite; x: number; y: number; scale: number }
 export interface PixelWorld {
   ground: string; speck: string; water: string[]; foam: Point[];
   start: Point; nodes: Point[]; exit: Point;
+  /** Duas cores de mancha no chão (mais clara e mais escura), para o solo não ficar liso */
+  patchColors: [string, string];
+  /** Manchas do solo em degraus, geradas a partir de patchColors */
+  patches: { d: string; fill: string }[];
   items: Placed[];
 }
 
@@ -39,6 +43,10 @@ const LOG: Sprite = { pal: { o: '#3b2418', b: '#8a5838', r: '#e3b268' }, rows: [
 const STUMP: Sprite = { pal: { o: '#3b2418', l: '#e3b268', r: '#c9995a', b: '#8a5838' }, rows: ['oooooo', 'olrrlo', 'obbbbo', 'oooooo'] };
 const TUFT: Sprite = { pal: { x: '#4f9a42' }, rows: ['x.x', 'x.x'] };
 const SNOW_TUFT: Sprite = { pal: { x: '#b9c7d6' }, rows: ['x.x', 'x.x'] };
+// Detalhes de solo para encher as margens: tufo alto, canteirinho de flores e pedrinhas
+const GRASS: Sprite = { pal: { d: '#3f8a3a', l: '#6fb85a' }, rows: ['l.d.l', 'ldldl', '.ddd.'] };
+const FLOWER_BED: Sprite = { pal: { p: '#f28fb0', y: '#ffe38b', w: '#fff6e8', g: '#4f9a42' }, rows: ['p.y.w', 'g.g.g', '.w.p.', '.g.g.'] };
+const PEBBLES: Sprite = { pal: { l: '#c9c2b6', d: '#8f857a' }, rows: ['.l..l', 'dd.ld', '...dd'] };
 const ICE: Sprite = { pal: { o: '#8fb8f2', i: '#d6eefc', I: '#ffffff' }, rows: ['...oooooooooo...', '.ooiiiIiiiiiioo.', 'oiiIiiiiiiIiiiio', 'oiiiiiiIiiiiiiio', '.ooiiiiiiiiiioo.', '...oooooooooo...'] };
 
 // --- Bichos ---
@@ -80,6 +88,9 @@ const BOAT: Sprite = { pal: { o: '#3b2418', s: '#fff1d6', h: '#8a5838', H: '#a86
 
 const at = (sprite: Sprite, x: number, y: number, scale = 2): Placed => ({ sprite, x, y, scale });
 
+/** Árvores e moitas: balançam de leve com o vento no mapa */
+export const SWAYING = new Set<Sprite>([TREE, PINE, BUSH]);
+
 /** Pontos ao longo da trilha, para os enfeites não caírem em cima dela */
 function trailSamples(points: Point[]): Point[] {
   return points.slice(1).flatMap((point, index) => {
@@ -91,7 +102,17 @@ function trailSamples(points: Point[]): Point[] {
 type Scatter = [sprites: Sprite[], area: [number, number, number, number], count: number, seed: number];
 
 /** Monta um mundo: posiciona os enfeites fixos e espalha os demais (sorteio fixo) longe da trilha, das paradas e uns dos outros */
-function makeWorld(base: Omit<PixelWorld, 'items'>, fixed: Placed[], scatters: Scatter[]): PixelWorld {
+/** Manchas do solo (sorteio fixo pela cor do chão): elipses em degraus, metade mais claras e metade mais escuras */
+function groundPatches([light, dark]: [string, string], ground: string): { d: string; fill: string }[] {
+  let s = parseInt(ground.slice(1), 16) % 233280;
+  const rand = () => { s = (s * 9301 + 49297) % 233280; return s / 233280; };
+  return Array.from({ length: 16 }, (_, index) => ({
+    d: pond(Math.round(140 + rand() * 1010), Math.round(20 + rand() * 280), Math.round(36 + rand() * 60), Math.round(10 + rand() * 14)),
+    fill: index % 2 ? light : dark,
+  }));
+}
+
+function makeWorld(base: Omit<PixelWorld, 'items' | 'patches'>, fixed: Placed[], scatters: Scatter[]): PixelWorld {
   const keepOut: Point[] = [...trailSamples([base.start, ...base.nodes, base.exit]), [65, 260], [65, 215], [110, 285]];
   // As construções das paradas têm ~50 de altura: reserva o espaço delas também
   const taken: Point[] = [...fixed.map(item => [item.x, item.y - 8] as Point), ...base.nodes.flatMap(([x, y]) => [[x, y - 20], [x, y - 42], [x - 20, y - 16], [x + 20, y - 16]] as Point[])];
@@ -107,7 +128,7 @@ function makeWorld(base: Omit<PixelWorld, 'items'>, fixed: Placed[], scatters: S
       }
     }
   }
-  return { ...base, items: items.sort((a, b) => a.y - b.y) };
+  return { ...base, patches: groundPatches(base.patchColors, base.ground), items: items.sort((a, b) => a.y - b.y) };
 }
 
 /** Contorno de água em degraus (cara de pixel): segue os pontos [y, x] de cima para baixo e fecha pela direita */
@@ -123,7 +144,7 @@ const START: Point = [160, 262];
 // Mundo 1: o vale do sítio, com o mar à direita
 const valleyNodes: Point[] = [[270, 250], [410, 192], [560, 248], [720, 190], [880, 246]];
 const valley = makeWorld({
-  ground: '#8fd46a', speck: '#79c257', start: START, nodes: valleyNodes, exit: [1080, 252],
+  ground: '#8fd46a', speck: '#79c257', patchColors: ['#9fdc78', '#80c75f'], start: START, nodes: valleyNodes, exit: [1080, 252],
   water: [coastRight([[-40, 1160], [20, 1150], [50, 1158], [80, 1144], [110, 1136], [140, 1144], [170, 1154], [200, 1142], [230, 1132], [260, 1124], [340, 1120]])],
   foam: [[1190, 60], [1250, 110], [1210, 170], [1280, 220], [1200, 280], [1300, 40]],
 }, [
@@ -136,12 +157,15 @@ const valley = makeWorld({
 ], [
   [[TREE, TREE, BUSH], [140, 20, 1100, 300], 22, 3],
   [[FLOWER, TUFT, TUFT, BLUE_FLOWER], [140, 20, 1110, 300], 30, 11],
+  [[TREE, BUSH, TREE, BUSH], [140, 8, 1100, 64], 10, 61],
+  [[BUSH, TREE, BUSH], [140, 272, 1100, 300], 12, 67],
+  [[GRASS, FLOWER_BED, GRASS, PEBBLES, FLOWER], [140, 20, 1110, 300], 40, 71],
 ]);
 
 // Mundo 2: a floresta, com um lago grande
 const forestNodes: Point[] = [[270, 240], [410, 270], [560, 214], [720, 264], [880, 220]];
 const woods = makeWorld({
-  ground: '#6cbf55', speck: '#58a845', start: START, nodes: forestNodes, exit: [1080, 252],
+  ground: '#6cbf55', speck: '#58a845', patchColors: ['#7cc962', '#5daf4a'], start: START, nodes: forestNodes, exit: [1080, 252],
   water: [pond(1210, 120, 92, 46), 'M1198 160h26V420h-26Z'],
   foam: [[1170, 110], [1230, 130], [1206, 240]],
 }, [
@@ -152,13 +176,15 @@ const woods = makeWorld({
   [[PINE, TREE, BUSH], [140, 180, 1150, 300], 18, 21],
   [[PINE, TREE], [1120, 180, 1350, 300], 8, 5],
   [[TUFT, FLOWER, TUFT, MUSHROOM], [140, 160, 1120, 300], 22, 17],
+  [[BUSH, PINE, BUSH], [140, 272, 1120, 300], 10, 79],
+  [[GRASS, FLOWER_BED, MUSHROOM, PEBBLES, GRASS], [140, 160, 1120, 300], 30, 73],
 ]);
 
 // Mundo 3: montanhas nevadas
 const mountainNodes: Point[] = [[270, 262], [410, 214], [560, 262], [720, 216], [880, 262]];
 const PEAKS: [number, number, number][] = [[140, 118, 4], [240, 104, 5], [350, 122, 4], [460, 100, 5], [580, 120, 4], [690, 102, 5], [810, 120, 4], [930, 98, 5], [1050, 118, 4], [1160, 102, 5], [1270, 120, 4]];
 const peaks = makeWorld({
-  ground: '#eef3f7', speck: '#d3dde8', start: START, nodes: mountainNodes, exit: [1080, 248],
+  ground: '#eef3f7', speck: '#d3dde8', patchColors: ['#f8fbfd', '#e1e9f1'], start: START, nodes: mountainNodes, exit: [1080, 248],
   water: [], foam: [],
 }, [
   ...PEAKS.map(([x, y, scale]) => at(SNOWY, x, y, scale)),
@@ -166,12 +192,14 @@ const peaks = makeWorld({
 ], [
   [[PINE, PINE, ROCK], [140, 130, 1340, 300], 26, 13],
   [[SNOW_TUFT, SNOW_TUFT, BLUE_FLOWER], [140, 130, 1340, 300], 20, 29],
+  [[PINE, PINE, ROCK], [140, 272, 1340, 300], 8, 89],
+  [[SNOW_TUFT, PEBBLES, SNOW_TUFT], [140, 140, 1340, 300], 24, 83],
 ]);
 
 // Mundo 4: o castelo, com o dragão dormindo no caminho
 const castleNodes: Point[] = [[270, 255], [410, 205], [560, 255], [720, 205], [880, 250]];
 const dragonCastle = makeWorld({
-  ground: '#9cc072', speck: '#86aa5e', start: START, nodes: castleNodes, exit: [1118, 266],
+  ground: '#9cc072', speck: '#86aa5e', patchColors: ['#aacb80', '#8db365'], start: START, nodes: castleNodes, exit: [1118, 266],
   water: [coastRight([[200, 1310], [220, 1290], [244, 1272], [270, 1262], [340, 1256]])],
   foam: [[1300, 280]],
 }, [
@@ -181,6 +209,8 @@ const dragonCastle = makeWorld({
 ], [
   [[TREE, PINE, TREE, BUSH], [140, 20, 1120, 300], 30, 41],
   [[TUFT, FLOWER, TUFT, ROCK], [140, 120, 1150, 300], 22, 43],
+  [[BUSH, TREE, BUSH], [140, 272, 1120, 300], 10, 91],
+  [[GRASS, FLOWER_BED, PEBBLES, GRASS], [140, 120, 1150, 300], 34, 97],
 ]);
 
 export const PIXEL_WORLDS: PixelWorld[] = [valley, woods, peaks, dragonCastle];

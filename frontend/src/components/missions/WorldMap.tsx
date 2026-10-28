@@ -4,7 +4,7 @@ import { CHEST_STOPS } from '../../lib/treasure';
 import { avatarColors } from '../../lib/avatar';
 import { useProfile } from '../../hooks/useProfile';
 import { GuideWarrior } from './GuideWarrior';
-import { MAP_H, MAP_W, PIXEL_WORLDS, spritePaths, type Placed } from './pixelWorlds';
+import { MAP_H, MAP_W, PIXEL_WORLDS, SWAYING, spritePaths, type Placed } from './pixelWorlds';
 import { GLYPHS } from './Landmarks';
 
 /** Mini personagem do jogador (cores do perfil); "!" quando está a caminho de uma missão */
@@ -22,15 +22,36 @@ function Explorer({ x, y, heading }: { x: number; y: number; heading: boolean })
   </g>;
 }
 
-/** Um enfeite do mapa em pixel art, ancorado pelo pé */
+/** Um enfeite do mapa em pixel art, ancorado pelo pé. Os maiores ganham sombra no chão; árvores e moitas balançam com o vento */
 function PixelSprite({ item, delay }: { item: Placed; delay: number }) {
   const { sprite, x, y, scale } = item;
-  const width = sprite.rows[0].length * scale, height = sprite.rows.length * scale;
+  const cols = sprite.rows[0].length;
+  const width = cols * scale, height = sprite.rows.length * scale;
+  const art = <g transform={`scale(${scale})`}>{spritePaths(sprite).map(({ fill, d }) => <path key={fill} d={d} fill={fill}/>)}</g>;
   // A animação mexe no transform do grupo do meio; a escala fica num grupo próprio para não ser sobrescrita
-  return <g transform={`translate(${x - width / 2} ${y - height})`}><g className="px-pop" style={{ '--d': `${delay.toFixed(2)}s` } as CSSProperties}><g transform={`scale(${scale})`}>
-    {spritePaths(sprite).map(({ fill, d }) => <path key={fill} d={d} fill={fill}/>)}
-  </g></g></g>;
+  return <g transform={`translate(${x - width / 2} ${y - height})`}><g className="px-pop" style={{ '--d': `${delay.toFixed(2)}s` } as CSSProperties}>
+    {/* Sombra em degraus no pé (só nos enfeites grandes: flores e tufos ficam sem) */}
+    {cols >= 8 && <path d={`M${width * .1} ${height - 1}h${width * .8}v2h${-width * .8}Z M${width * .22} ${height + 1}h${width * .56}v1h${-width * .56}Z`} fill="#1f3a2a" opacity=".16"/>}
+    {SWAYING.has(sprite) ? <g className="px-sway" style={{ '--sd': `${(-(x * 7 + y * 3) % 40 / 10).toFixed(1)}s` } as CSSProperties}>{art}</g> : art}
+  </g></g>;
 }
+
+/** Borboleta do mapa: passeia em volta de um ponto batendo as asas */
+function MapButterfly({ x, y, color, delay }: { x: number; y: number; color: string; delay: number }) {
+  return <g transform={`translate(${x} ${y})`} aria-hidden="true"><g className="map-butterfly" style={{ animationDelay: `${delay}s` }}>
+    <g className="map-butterfly-wings"><path d="M-5-3h4v3h-4Zm6 0h4v3H1Z" fill={color}/><path d="M-4 0h3v2h-3Zm5 0h3v2H1Z" fill={color} opacity=".75"/></g>
+    <path d="M-1-3h2v6h-2Z" fill="#3b2418"/>
+  </g></g>;
+}
+
+/** Sombra de nuvem: mancha em degraus atravessando o mapa devagar, por cima de tudo (menos das paradas) */
+const CLOUD_SHADOW = 'M0 12h20V6h28V0h52v6h30v8h18v14h-26v8H70v-6H24v-6H0Z';
+// Borboletas por mundo (o das montanhas já tem neve caindo)
+const BUTTERFLIES: Record<number, [number, number, string][]> = {
+  0: [[250, 160, '#f28fb0'], [690, 120, '#ffe38b'], [930, 210, '#8fb8f2']],
+  1: [[330, 190, '#ffe38b'], [780, 236, '#f28fb0']],
+  3: [[360, 150, '#fff6e8'], [870, 170, '#f2a33a']],
+};
 
 interface WorldMapProps {
   world: number; chapter: number; reached: number; loop: number; heading: boolean; freshNode: number | null;
@@ -70,11 +91,15 @@ export function WorldMap({ world, chapter, reached, loop, heading, freshNode, op
         <clipPath id={`trail-done-${world}`}><rect x="0" y="-100" width={traveledTo + 1} height={MAP_H + 200}/></clipPath>
       </defs>
       <rect x="-3000" y="-1000" width="8000" height="2400" fill={map.ground}/>
+      {/* Manchas mais claras e mais escuras no solo, para o chão não ficar liso */}
+      <g className="px-water" shapeRendering="crispEdges">{map.patches.map((patch, i) => <path key={i} d={patch.d} fill={patch.fill}/>)}</g>
       {/* Pontinhos no chão, como a grama dos jogos */}
       <g fill={map.speck} shapeRendering="crispEdges">{Array.from({ length: 140 }, (_, i) => <rect key={i} x={(i * 137) % MAP_W} y={(i * 71) % MAP_H} width="4" height="2"/>)}</g>
       <g className="px-water" shapeRendering="crispEdges">
         {map.water.map((d, i) => <path key={i} d={d} fill="#4fa3e0" stroke="#1d4f8a" strokeWidth="3"/>)}
         {map.foam.map(([x, y], i) => <path key={`f${i}`} d={`M${x} ${y}h14v2h-14Zm6 6h12v2h-12Z`} fill="#bfe6f7"/>)}
+        {/* Brilhos piscando na água */}
+        {map.foam.map(([x, y], i) => <rect key={`g${i}`} className="map-water-glint" x={x + 22} y={y - 8} width="3" height="3" fill="#ffffff" style={{ animationDelay: `${(i * .37) % 1.6}s` }}/>)}
       </g>
 
       {/* Trilha de terra: abre da esquerda para a direita; o trecho já andado ganha pegadas */}
@@ -85,6 +110,14 @@ export function WorldMap({ world, chapter, reached, loop, heading, freshNode, op
       </g>
 
       <g shapeRendering="crispEdges">{map.items.map((item, index) => <PixelSprite key={index} item={item} delay={.2 + index * step}/>)}</g>
+
+      {(BUTTERFLIES[world] ?? []).map(([x, y, color], i) => <MapButterfly key={i} x={x} y={y} color={color} delay={-i * 2.3}/>)}
+
+      {/* Sombras de nuvem passando devagar, por cima do chão e dos enfeites */}
+      <g className="map-cloud-shadows" shapeRendering="crispEdges" pointerEvents="none" aria-hidden="true">
+        <g transform="translate(0 40) scale(2)"><path className="map-cloud-shadow" d={CLOUD_SHADOW} fill="#1f3a2a" opacity=".07"/></g>
+        <g transform="translate(0 190) scale(1.6)"><path className="map-cloud-shadow is-slow" d={CLOUD_SHADOW} fill="#1f3a2a" opacity=".06"/></g>
+      </g>
 
       {/* Paradas: cada uma tem a sua construção (as mesmas da primeira versão do mapa); as com baú também ganham bandeira.
           A próxima ganha uma setinha pulando; as ainda não alcançadas ficam apagadinhas.

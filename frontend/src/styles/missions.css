@@ -392,3 +392,28 @@
 
 /* Desfazer missão cumprida (no modal de detalhes) */
 .mission-undo { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; padding-top: 10px; border-top: 1px dashed #c49a62; }
+
+/* ===== Mapa: profundidade e vida (vento nas árvores, nuvens passando, água brilhando, borboletas) ===== */
+.px-sway { transform-box: fill-box; transform-origin: 50% 100%; animation: px-sway 3.8s ease-in-out var(--sd, 0s) infinite alternate; }
+.map-water-glint { animation: sparkle-blink 1.6s steps(1) infinite; }
+.map-cloud-shadow { transform-box: view-box; animation: cloud-shadow-drift 48s linear infinite; }
+.map-cloud-shadow.is-slow { animation-duration: 70s; animation-delay: -32s; }
+.map-butterfly { transform-box: fill-box; animation: map-butterfly-drift 9s ease-in-out infinite alternate; }
+.map-butterfly-wings { transform-box: fill-box; transform-origin: center; animation: map-butterfly-flap .28s steps(2) infinite; }
+@keyframes px-sway { from { transform: skewX(-1.4deg); } to { transform: skewX(1.4deg); } }
+@keyframes cloud-shadow-drift { from { transform: translateX(-240px); } to { transform: translateX(860px); } }
+@keyframes map-butterfly-drift { 0% { transform: translate(0, 0); } 25% { transform: translate(22px, -12px); } 50% { transform: translate(40px, 4px); } 75% { transform: translate(18px, 14px); } 100% { transform: translate(-6px, -6px); } }
+@keyframes map-butterfly-flap { 50% { transform: scaleX(.4); } }
+
+/* ===== Micro-interações do quadro e da coleção ===== */
+/* A tachinha balança quando o mouse passa no pergaminho */
+.quest-scroll:hover .quest-pin { animation: quest-pin-wiggle .45s ease-in-out; }
+@keyframes quest-pin-wiggle { 25% { rotate: -14deg; } 60% { rotate: 10deg; } }
+/* Achados sobem e ganham um brilho atravessando; os que faltam dão uma tremidinha de curiosidade */
+.collection-slot { position: relative; overflow: hidden; transition: translate .18s cubic-bezier(.34, 1.56, .64, 1), box-shadow .18s; }
+.collection-slot.is-found:hover { translate: 0 -3px; box-shadow: 0 4px 0 #8a583855; }
+.collection-slot.is-found::after { content: ''; position: absolute; top: -10%; bottom: -10%; left: -40%; width: 18%; background: #fffdf2; opacity: 0; transform: skewX(-18deg); pointer-events: none; }
+.collection-slot.is-found:hover::after { animation: slot-shine .6s steps(6) forwards; }
+.collection-slot:not(.is-found):hover svg { animation: slot-curious .4s steps(3); }
+@keyframes slot-shine { from { left: -40%; opacity: .7; } to { left: 130%; opacity: .7; } }
+@keyframes slot-curious { 33% { rotate: -6deg; } 66% { rotate: 6deg; } }
