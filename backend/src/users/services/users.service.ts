@@ -161,6 +161,8 @@ export class UsersService {
       this.prisma.rewardOverride.deleteMany({ where }),
       this.prisma.reward.deleteMany({ where }),
     );
+    if (chosen.has('goals'))
+      operations.push(this.prisma.goalCheckin.deleteMany({ where }));
     if (chosen.has('motivation')) operations.push(this.prisma.motivation.deleteMany({ where }));
     const keys = scopes.flatMap(scope => RESET_DATA_KEYS[scope]);
     if (keys.length) operations.push(this.prisma.userData.deleteMany({ where: { userId: id, key: { in: keys } } }));

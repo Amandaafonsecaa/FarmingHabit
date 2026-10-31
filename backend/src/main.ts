@@ -40,6 +40,10 @@ async function bootstrap() {
     .addTag('users', 'Operações de usuários, perfis e progresso do jogador (Level, XP, Moedas)')
     .addTag('missions', 'Desafios e missões com recompensas de XP e Moedas')
     .addTag('rewards', 'Catálogo de itens e resgate de recompensas com moedas')
+    .addTag(
+      'goals',
+      'Check-ins das metas e colheita da recompensa num único pedido',
+    )
     .addTag('progress', 'Ganhos do jogador (colheitas e bônus da semana), calculados pelo servidor')
     .addBearerAuth()
     .build();

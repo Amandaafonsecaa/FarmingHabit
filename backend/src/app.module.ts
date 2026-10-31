@@ -5,6 +5,7 @@ import { UsersModule } from './users/users.module';
 import { MissionsModule } from './missions/missions.module';
 import { RewardsModule } from './rewards/rewards.module';
 import { ProgressModule } from './progress/progress.module';
+import { GoalsModule } from './goals/goals.module';
 import { AuthGuard } from './auth/auth.guard';
 
 @Module({
@@ -14,6 +15,7 @@ import { AuthGuard } from './auth/auth.guard';
     MissionsModule,
     RewardsModule,
     ProgressModule,
+    GoalsModule,
   ],
   controllers: [],
   // Login obrigatório em todas as rotas: o AuthGuard confere o token do Supabase
