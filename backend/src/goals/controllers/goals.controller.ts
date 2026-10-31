@@ -15,6 +15,7 @@ import {
 } from '../services/goals.service';
 import {
   CheckinParamsDto,
+  GoalParamsDto,
   ImportCheckinsDto,
   SetCheckinDto,
 } from '../dto/checkin.dto';
@@ -61,7 +62,7 @@ export class GoalsController {
 
   @Delete(':goalId/checkins')
   @ApiOperation({ summary: 'Apagar todo o histórico de uma meta' })
-  removeGoal(@CurrentUser() user: AuthUser, @Param('goalId') goalId: string) {
-    return this.goalsService.removeGoal(user.id, goalId);
+  removeGoal(@CurrentUser() user: AuthUser, @Param() params: GoalParamsDto) {
+    return this.goalsService.removeGoal(user.id, params.goalId);
   }
 }

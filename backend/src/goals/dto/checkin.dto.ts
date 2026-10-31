@@ -11,13 +11,15 @@ import {
 } from 'class-validator';
 import { DAY_PATTERN } from '../../progress/economy';
 
-export class CheckinParamsDto {
+export class GoalParamsDto {
   @ApiProperty({ example: 'leitura' })
   @IsString()
   @IsNotEmpty()
   @MaxLength(100)
   goalId: string;
+}
 
+export class CheckinParamsDto extends GoalParamsDto {
   @ApiProperty({
     example: '2026-10-31',
     description: 'Dia do jogador (AAAA-MM-DD)',
