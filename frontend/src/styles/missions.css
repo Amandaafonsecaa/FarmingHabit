@@ -36,7 +36,7 @@
 /* Divisor entre a fazer e cumpridas: só uma linha tracejada com um rótulo pequeno */
 .quest-divider { display: flex; align-items: center; gap: 10px; margin: 26px 2px 22px; font-size: 11px; font-weight: 900; letter-spacing: 1px; text-transform: uppercase; color: #fff1c7; text-shadow: 1px 1px #57311f; }
 .quest-divider::before, .quest-divider::after { content: ''; flex: 1; border-top: 2px dashed #fff1c799; }
-.quest-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 34px 22px; }
+.quest-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); gap: 34px 22px; }
 
 .quest-scroll { position: relative; transform: rotate(var(--tilt, 0deg)); transform-origin: 50% 0; transition: transform .2s cubic-bezier(.34, 1.56, .64, 1); animation: scroll-unroll .5s cubic-bezier(.34, 1.4, .64, 1) backwards; }
 .quest-scroll:hover, .quest-scroll:focus-within { transform: rotate(0) translateY(-4px); z-index: 2; }
@@ -44,7 +44,7 @@
 .quest-pin { position: absolute; top: -10px; left: 50%; z-index: 3; width: 16px; height: 16px; margin-left: -8px; background: #d9574a; border: 2px solid #7a2e17; box-shadow: inset 3px 3px #f2998a, 2px 3px 0 #3b241866; }
 .quest-scroll.is-active .quest-pin { background: #53922d; border-color: #23401f; box-shadow: inset 3px 3px #8cc65e, 2px 3px 0 #3b241866; }
 .quest-paper {
- position: relative; display: flex; flex-direction: column; height: 200px; min-width: 0; padding: 14px 14px 12px; color: #3b2418;
+ position: relative; display: flex; flex-direction: column; min-height: 200px; min-width: 0; padding: 14px 14px 12px; color: #3b2418;
  background: #f8e7bf repeating-linear-gradient(0deg, transparent 0 5px, #c9a46a14 5px 6px);
  border: 3px solid #8a5838; box-shadow: inset 0 0 0 2px #f5c477, 3px 4px 0 #42291655;
  transition: box-shadow .15s steps(2);
@@ -117,11 +117,13 @@
 
 .quest-paper .quest-rewards { gap: 14px; padding-top: 6px; font-size: 13px; line-height: 18px; }
 .quest-paper .quest-progress { margin-top: 4px; font-size: 11px; line-height: 14px; }
-.quest-paper .quest-actions { flex-wrap: nowrap; gap: 6px; margin-top: 8px; }
+/* Sem largura para os dois botões lado a lado, eles descem de linha e o pergaminho cresce junto */
+.quest-paper .quest-actions { flex-wrap: wrap; gap: 6px; margin-top: auto; padding-top: 8px; }
 .quest-paper .quest-actions .pixel-button { min-height: 32px; min-width: 0; padding: 5px 8px; font-size: 12px; line-height: 1.15; }
 /* Os dois botões da missão em andamento crescem juntos e nunca quebram o texto em duas linhas */
 .quest-paper .quest-actions .pixel-button { flex: 1 0 auto; white-space: nowrap; }
-.quest-paper .quest-actions .plot-remove { flex-shrink: 0; width: 30px; height: 32px; }
+/* Rasgar fica no canto de cima, na linha da categoria: os botões têm a largura toda para não quebrar */
+.quest-paper .quest-actions .plot-remove { position: absolute; top: 8px; right: 8px; width: 30px; height: 30px; margin: 0; }
 
 .quest-paper { cursor: pointer; }
 .quest-details-trigger { display: block; width: 100%; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; }
