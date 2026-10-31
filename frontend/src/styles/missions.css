@@ -19,7 +19,7 @@
 /* --- Layout --- */
 .missions-layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; max-width: 1600px; margin: auto; padding: 18px 16px 12px; }
 @media (min-width: 1100px) {
- .missions-layout { grid-template-columns: minmax(0, 1.55fr) minmax(320px, 1fr); align-items: start; }
+ .missions-layout { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); align-items: start; }
  /* Quadro de aventuras e Coleção de achados com a mesma altura fixa; o conteúdo rola por dentro */
  .quest-board-panel{ height: 640px; }
  .quest-board{ flex: 1 1 auto; min-height: 0; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #a47545 #f6dfa6; }
@@ -170,9 +170,60 @@
 @keyframes sea-roll { from { transform: translateX(0); } to { transform: translateX(-60px); } }
 @keyframes sea-clouds { from { transform: translateX(0); } to { transform: translateX(-120px); } }
 
-/* Sem o álbum ao lado, o quadro ocupa a página inteira (pedido da autora) */
-.missions-layout.is-single { max-width: none; }
-@media (min-width: 1100px) { .missions-layout.is-single { grid-template-columns: minmax(0, 1fr); } }
+/* Quadro em 2/3 e o caderno em 1/3, na largura toda da página (pedido da autora) */
+.missions-layout { max-width: none; }
+
+/* --- Caderno de dúvidas: fechado ao lado do quadro, aberto no centro da tela --- */
+.notebook-slot { display: flex; justify-content: center; align-items: center; min-width: 0; }
+.notebook-closed { position: relative; display: block; width: min(100%, 380px); aspect-ratio: 300 / 424; padding: 0; border: 0; background: none; cursor: pointer; transition: transform .15s steps(2), filter .15s steps(2); }
+.notebook-closed:hover { transform: translateY(-4px) rotate(-1deg); filter: drop-shadow(2px 0 0 #fff1c7) drop-shadow(-2px 0 0 #fff1c7) drop-shadow(0 2px 0 #fff1c7) drop-shadow(0 -2px 0 #fff1c7) drop-shadow(5px 7px 0 #42291666); }
+.notebook-closed:focus-visible { outline: 3px solid #e7b84b; outline-offset: 4px; }
+.notebook-closed.is-away { visibility: hidden; }
+.notebook-cover-art { display: block; width: 100%; height: 100%; filter: drop-shadow(5px 7px 0 #42291655); }
+.notebook-closed { container-type: inline-size; }
+.notebook-label { position: absolute; left: 21.3%; top: 27.4%; width: 56.7%; height: 15%; display: flex; align-items: center; justify-content: center; text-align: center; font-size: clamp(10px, 6cqw, 22px); font-weight: 900; line-height: 1.15; color: #3b2418; }
+@media (min-width: 1100px) { .notebook-slot { align-self: stretch; } }
+@media (max-width: 1099px) {
+ /* Celular e tablet: caderninho acima do quadro */
+ .notebook-slot { order: -1; }
+ .notebook-closed { width: 140px; }
+}
+
+.notebook-dialog { width: min(920px, calc(100vw - 24px)); max-width: none; max-height: calc(100dvh - 24px); padding: 0; border: 0; background: transparent; overflow: visible; color: #3b2418; }
+.notebook-dialog::backdrop { background: #1d120bcc; }
+.notebook-open { position: relative; padding: 18px; background: #7a4a2a; border: 3px solid #3b2418; box-shadow: inset 0 0 0 3px #9a6438, inset 0 0 0 9px #5b3826, 8px 10px 0 #0006; }
+.notebook-close { position: absolute; top: -14px; right: -14px; z-index: 3; min-height: 34px; width: 34px; padding: 0; }
+.notebook-spread { position: relative; display: grid; grid-template-columns: 1fr 1fr; min-height: min(460px, calc(100dvh - 90px)); perspective: 1600px; }
+.notebook-page { min-width: 0; max-height: calc(100dvh - 90px); overflow-y: auto; padding: 26px 26px 22px; background: #fff1c7 repeating-linear-gradient(0deg, transparent 0 25px, #d2ac7155 25px 26px); }
+.notebook-page.is-index { border-right: 3px solid #d2ac71; box-shadow: inset -10px 0 0 #f6dfa6; }
+.notebook-page.is-answer { box-shadow: inset 10px 0 0 #f6dfa6; }
+.notebook-heading { margin-bottom: 14px; font-size: 13px; font-weight: 900; letter-spacing: 1px; text-transform: uppercase; color: #8a5838; }
+.notebook-questions { display: grid; gap: 10px; counter-reset: note; }
+.notebook-questions li { counter-increment: note; }
+.notebook-questions button { display: flex; gap: 8px; width: 100%; padding: 8px 10px; border: 2px dashed transparent; background: none; font: inherit; font-size: 15px; font-weight: 700; line-height: 1.3; text-align: left; color: #3b2418; cursor: pointer; }
+.notebook-questions button::before { content: counter(note) "."; color: #b96845; }
+.notebook-questions button:hover, .notebook-questions button.is-current { border-color: #b96845; background: #f6dfa6; }
+.notebook-questions button:focus-visible { outline: 3px solid #e7b84b; outline-offset: 1px; }
+.notebook-question { margin-bottom: 12px; font-size: 18px; font-weight: 900; line-height: 1.25; }
+.notebook-page.is-answer p { margin-bottom: 12px; font-size: 15px; line-height: 1.6; }
+.notebook-back { display: none; margin-bottom: 12px; padding: 0; border: 0; background: none; font: inherit; font-size: 13px; font-weight: 900; color: #8a5838; cursor: pointer; }
+.notebook-turn { display: flex; align-items: center; justify-content: flex-end; gap: 10px; margin-top: 18px; font-size: 13px; font-weight: 700; color: #765337; }
+.notebook-turn .pixel-button { min-height: 32px; width: 36px; padding: 0; }
+/* Capa sobre a página da direita: vira para a esquerda e some */
+.notebook-flap { position: absolute; top: -8px; bottom: -8px; left: 50%; width: 50%; transform-origin: left center; backface-visibility: hidden; pointer-events: none; animation: notebook-flap .6s steps(6, end) .42s forwards; }
+.notebook-flap .notebook-cover-art { width: 100%; height: 100%; filter: none; }
+@keyframes notebook-flap { to { transform: rotateY(-180deg); visibility: hidden; } }
+@media (prefers-reduced-motion: reduce) { .notebook-flap { display: none; } }
+@media (max-width: 767px) {
+ .notebook-open { padding: 12px; }
+ .notebook-spread { grid-template-columns: minmax(0, 1fr); min-height: min(420px, calc(100dvh - 70px)); }
+ .notebook-page.is-index { border-right: 0; box-shadow: none; }
+ .notebook-page.is-answer { display: none; box-shadow: none; }
+ .notebook-spread.has-answer .is-index { display: none; }
+ .notebook-spread.has-answer .is-answer { display: block; }
+ .notebook-back { display: inline-flex; gap: 6px; }
+ .notebook-flap { left: 0; width: 100%; }
+}
 
 @media (max-width: 767px) {
  .missions-hero.is-sea { aspect-ratio: auto; min-height: 380px; padding: 70px 12px 12px; }

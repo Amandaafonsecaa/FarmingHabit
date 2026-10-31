@@ -5,6 +5,7 @@ import { MissionsHero } from '../components/missions/MissionsHero';
 import { QuestScroll } from '../components/missions/QuestScroll';
 import { EditMissionDialog } from '../components/dialogs/EditMissionDialog';
 import { MissionDialog } from '../components/dialogs/MissionDialog';
+import { AdventureNotebook } from '../components/missions/AdventureNotebook';
 import { PixelIcon } from '../components/PixelIcon';
 import { useAcceptedMissions, useMissionBoard } from '../hooks/useMissionBoard';
 import type { Mission, NewItem } from '../types/world';
@@ -72,7 +73,7 @@ export function MissionsPage({ onNavigate }: { onNavigate: (page: AppPage) => vo
   return <MainLayout page="missions" onNavigate={onNavigate}
     world={<MissionsHero completed={completedCount} openCount={stillOpen.length} coins={board.player?.coins ?? null}
       traveling={stillOpen.filter(mission => accepted.includes(mission.id)).length}/>}>
-    <div className="missions-layout is-single">
+    <div className="missions-layout">
       <section className="world-panel pixel-frame quest-board-panel" aria-labelledby="board-heading">
         <header className="panel-heading"><h2 id="board-heading"><PixelIcon name="mission" className="size-5"/>Quadro de aventuras</h2><button type="button" className="pixel-button primary-button" onClick={()=>setDialogOpen(true)}><PixelIcon name="plus" className="size-2.5"/>Nova missão</button></header>
         <div className="quest-board">
@@ -102,6 +103,7 @@ export function MissionsPage({ onNavigate }: { onNavigate: (page: AppPage) => vo
           </>}
         </div>
       </section>
+      <AdventureNotebook/>
     </div>
     <p role="status" className="world-status">{'Toda grande descoberta começa com uma pequena curiosidade.'}</p>
     {editing && <EditMissionDialog key={editing.id} mission={editing} active={accepted.includes(editing.id)} onClose={()=>setEditing(null)}
