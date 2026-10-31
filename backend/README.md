@@ -11,6 +11,8 @@ Copie `.env.example` para `.env` e preencha:
 - `SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY`: usadas só no backend; a service_role nunca vai para o frontend
 - `SUPABASE_JWT_SECRET`: opcional, só para projetos antigos com login em HS256. Projetos novos são verificados pela JWKS do `SUPABASE_URL`
 - `PORT`: padrão `3000`
+- `CORS_ORIGIN`: endereços do site que podem chamar a API, separados por vírgula (padrão `http://localhost:5173,http://localhost:8080`); em produção, o domínio do site
+- `NODE_ENV=production` desliga o Swagger em `/api`
 
 ## Scripts
 

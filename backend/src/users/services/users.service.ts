@@ -14,8 +14,17 @@ import { randomUUID } from 'node:crypto';
 import { SupabaseStorageService } from '../../storage/supabase-storage.service';
 
 const MOTIVATION_BUCKET = 'motivation-photos';
-/** Só chaves do próprio jogo ("farminghabit.algo.v1") */
-const DATA_KEY = /^farminghabit\.[a-z0-9.-]{1,60}$/;
+/** Chaves que o navegador sincroniza (mesma lista do SYNC_KEYS do front); qualquer outra é recusada */
+export const SYNC_DATA_KEYS = new Set([
+  'farminghabit.goals.v1',
+  'farminghabit.diary.v1',
+  'farminghabit.adventures.v1',
+  'farminghabit.missions.accepted.v1',
+  'farminghabit.profile.v1',
+  'farminghabit.wish.v1',
+  'farminghabit.perfect-day',
+  'farminghabit.settings.v1',
+]);
 /** Chaves sincronizadas do navegador que pertencem a cada parte apagável (perfil e preferências ficam de fora) */
 const RESET_DATA_KEYS: Record<ResetScope, string[]> = {
   goals: ['farminghabit.goals.v1', 'farminghabit.perfect-day'],
@@ -43,6 +52,9 @@ export class UsersService {
       return await this.prisma.user.create({ data: { id, email, name } });
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+        // Pedidos paralelos do primeiro acesso: outro já criou este jogador, então vale o que ficou salvo
+        const created = await this.prisma.user.findUnique({ where: { id } });
+        if (created) return created;
         throw new ConflictException('Este e-mail já está ligado a outro jogador.');
       }
       throw error;
@@ -117,7 +129,7 @@ export class UsersService {
   }
 
   async saveData(userId: string, key: string, dto: SaveUserDataDto): Promise<{ key: string; updatedAt: Date }> {
-    if (!DATA_KEY.test(key)) throw new BadRequestException('Chave de dados inválida.');
+    if (!SYNC_DATA_KEYS.has(key)) throw new BadRequestException('Chave de dados inválida.');
     await this.findOne(userId);
     const saved = await this.prisma.userData.upsert({
       where: { userId_key: { userId, key } },
@@ -128,7 +140,7 @@ export class UsersService {
   }
 
   async deleteData(userId: string, key: string): Promise<{ key: string }> {
-    if (!DATA_KEY.test(key)) throw new BadRequestException('Chave de dados inválida.');
+    if (!SYNC_DATA_KEYS.has(key)) throw new BadRequestException('Chave de dados inválida.');
     await this.findOne(userId);
     await this.prisma.userData.deleteMany({ where: { userId, key } });
     return { key };

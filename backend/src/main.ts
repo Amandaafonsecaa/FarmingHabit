@@ -12,8 +12,14 @@ async function bootstrap() {
   // A foto da motivação viaja como data URL: o limite padrão de 100 KB do corpo é pouco
   app.useBodyParser('json', { limit: '1mb' });
 
-  // Habilita CORS para conexão com o frontend
-  app.enableCors();
+  // CORS só para o site do jogo (CORS_ORIGIN, separado por vírgula; padrão: dev e Docker locais)
+  const origins = (
+    process.env.CORS_ORIGIN || 'http://localhost:5173,http://localhost:8080'
+  )
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+  app.enableCors({ origin: origins });
 
   // Validação global com class-validator
   app.useGlobalPipes(
@@ -38,13 +44,17 @@ async function bootstrap() {
     .addBearerAuth()
     .build();
 
-  const document = SwaggerModule.createDocument(app, swaggerConfig);
-  SwaggerModule.setup('api', app, document);
+  // Documentação só fora de produção: em produção a API não se descreve para quem chega
+  if (process.env.NODE_ENV !== 'production') {
+    const document = SwaggerModule.createDocument(app, swaggerConfig);
+    SwaggerModule.setup('api', app, document);
+  }
 
   const port = process.env.PORT ?? 3000;
   await app.listen(port);
   console.log(`🎮 Backend rodando em: http://localhost:${port}`);
-  console.log(`📚 Swagger disponível em: http://localhost:${port}/api`);
+  if (process.env.NODE_ENV !== 'production')
+    console.log(`📚 Swagger disponível em: http://localhost:${port}/api`);
 }
 
 bootstrap();
