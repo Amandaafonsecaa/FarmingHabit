@@ -28,11 +28,10 @@ async function bootstrap() {
   const swaggerConfig = new DocumentBuilder()
     .setTitle('Gamified Habit Tracker API')
     .setDescription(
-      'API REST para Habit Tracker gamificado com módulos de Usuários, Hábitos, Missões e Recompensas.',
+      'API REST para Habit Tracker gamificado com módulos de Usuários, Metas, Missões e Recompensas.',
     )
     .setVersion('1.0.0')
     .addTag('users', 'Operações de usuários, perfis e progresso do jogador (Level, XP, Moedas)')
-    .addTag('habits', 'Gerenciamento de hábitos e acompanhamento percentual de progresso (0-100%)')
     .addTag('missions', 'Desafios e missões com recompensas de XP e Moedas')
     .addTag('rewards', 'Catálogo de itens e resgate de recompensas com moedas')
     .addTag('progress', 'Ganhos do jogador (colheitas, bônus da semana e baús), calculados pelo servidor')

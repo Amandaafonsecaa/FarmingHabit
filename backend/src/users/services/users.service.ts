@@ -52,14 +52,7 @@ export class UsersService {
   }
 
   async findOne(id: string): Promise<User> {
-    const user = await this.prisma.user.findUnique({
-      where: { id },
-      include: {
-        habits: true,
-        missions: true,
-        rewards: true,
-      },
-    });
+    const user = await this.prisma.user.findUnique({ where: { id } });
 
     if (!user) {
       throw new NotFoundException(`Usuário com ID ${id} não encontrado.`);
@@ -152,7 +145,6 @@ export class UsersService {
     const chosen = new Set(scopes);
     const where = { userId: id };
     const operations: Prisma.PrismaPromise<unknown>[] = [];
-    if (chosen.has('goals')) operations.push(this.prisma.habit.deleteMany({ where }));
     if (chosen.has('missions')) operations.push(this.prisma.mission.deleteMany({ where }));
     if (chosen.has('shop')) operations.push(
       this.prisma.purchase.deleteMany({ where }),

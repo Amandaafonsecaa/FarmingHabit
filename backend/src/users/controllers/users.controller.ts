@@ -45,8 +45,8 @@ export class UsersController {
 
   @Patch()
   @ApiOperation({
-    summary: 'Atualizar dados ou progresso do jogador',
-    description: 'Nome, nível, XP e moedas do jogador logado.',
+    summary: 'Atualizar o nome do jogador',
+    description: 'Nome do jogador logado. Moedas, XP e nível só mudam por ações que o servidor confere.',
   })
   @ApiResponse({ status: HttpStatus.OK, description: 'Jogador atualizado com sucesso.', type: User })
   async update(@CurrentUser() user: AuthUser, @Body() updateUserDto: UpdateUserDto): Promise<User> {

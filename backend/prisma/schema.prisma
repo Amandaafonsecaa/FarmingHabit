@@ -21,7 +21,6 @@ model User {
   coins     Int       @default(0)
   createdAt DateTime  @default(now())
 
-  habits    Habit[]
   missions  Mission[]
   rewards   Reward[]
   purchases Purchase[]
@@ -31,17 +30,6 @@ model User {
   rewardClaims RewardClaim[]
 
   @@map("users")
-}
-
-model Habit {
-  id        String   @id @default(uuid())
-  title     String
-  progress  Int      @default(0)
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
-
-  @@map("habits")
 }
 
 model Mission {
