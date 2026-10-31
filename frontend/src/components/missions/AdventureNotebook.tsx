@@ -91,21 +91,30 @@ export function AdventureNotebook() {
   </aside>;
 }
 
+/** closed: só a capa, viajando até o centro · flipping: a capa vira na lombada · open: páginas liberadas */
+type Phase = 'closed' | 'flipping' | 'open';
+
 export function NotebookDialog({ origin, onClose }: { origin: HTMLElement | null; onClose: () => void }) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const bookRef = useRef<HTMLDivElement>(null);
+  const coverRef = useRef<HTMLDivElement>(null);
   const closing = useRef(false);
   const titleId = useId();
+  const [phase, setPhase] = useState<Phase>(() => reducedMotion() ? 'open' : 'closed');
   // Desktop abre direto na primeira resposta; no celular (uma página só) começa pelo índice
   const [selected, setSelected] = useState<number | null>(() => window.matchMedia('(min-width: 768px)').matches ? 0 : null);
   const note = selected === null ? null : ADVENTURE_NOTES[selected];
 
-  /** Do lugar do caderno fechado até o centro (ou o caminho de volta) */
+  /** A capa (fechada) vai do lugar do caderno no quadro até o centro, ou faz o caminho de volta */
   function travel(direction: 'in' | 'out') {
     const book = bookRef.current;
-    if (!book || !origin || reducedMotion()) return Promise.resolve();
+    const cover = coverRef.current;
+    if (!book || !cover || !origin || reducedMotion()) return Promise.resolve();
     const from = origin.getBoundingClientRect();
-    const to = book.getBoundingClientRect();
+    const box = book.getBoundingClientRect();
+    const to = cover.getBoundingClientRect();
+    // Escala a partir do centro da capa, para ela sair exatamente de cima do caderno fechado
+    book.style.transformOrigin = `${to.left + to.width / 2 - box.left}px ${to.top + to.height / 2 - box.top}px`;
     const away = `translate(${from.left + from.width / 2 - (to.left + to.width / 2)}px, ${from.top + from.height / 2 - (to.top + to.height / 2)}px) scale(${from.height / to.height})`;
     const frames = direction === 'in' ? [{ transform: away }, { transform: 'none' }] : [{ transform: 'none' }, { transform: away, opacity: 0 }];
     return book.animate(frames, { duration: MOVE_MS, easing: 'steps(8, end)', fill: 'forwards' }).finished.then(() => undefined);
@@ -116,29 +125,32 @@ export function NotebookDialog({ origin, onClose }: { origin: HTMLElement | null
     dialog?.showModal();
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
-    void travel('in');
+    void travel('in').then(() => setPhase(current => current === 'closed' && !closing.current ? 'flipping' : current));
     return () => { dialog?.close(); document.body.style.overflow = previousOverflow; origin?.focus(); };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  /** Fecha a capa por cima das páginas e o caderno volta para o lugar dele */
   function close() {
     if (closing.current) return;
     closing.current = true;
-    void travel('out').then(onClose);
+    if (reducedMotion()) { onClose(); return; }
+    setPhase('closed');
+    window.requestAnimationFrame(() => { void travel('out').then(onClose); });
   }
 
   return <dialog ref={dialogRef} className="notebook-dialog" aria-labelledby={titleId}
     onCancel={event=>{ event.preventDefault(); close(); }}
     onClick={event=>{ if (event.target === dialogRef.current) close(); }}>
-    <div ref={bookRef} className="notebook-open">
+    <div ref={bookRef} className={`notebook-open is-${phase}`}>
       <h2 id={titleId} className="sr-only">Diário do Aventureiro</h2>
       <button type="button" className="notebook-close pixel-button" onClick={close} aria-label="Fechar o caderno"><PixelIcon name="close" className="size-3"/></button>
       <div className={`notebook-spread ${note ? 'has-answer' : ''}`}>
-        <section className="notebook-page is-index" aria-label="Perguntas">
+        <section className="notebook-page is-index" aria-label="Perguntas" inert={phase !== 'open'}>
           <p className="notebook-heading">Dúvidas a bordo</p>
           <ol className="notebook-questions">{ADVENTURE_NOTES.map((item, index) =>
             <li key={item.id}><button type="button" className={index === selected ? 'is-current' : ''} aria-current={index === selected ? 'true' : undefined} onClick={()=>setSelected(index)}>{item.question}</button></li>)}</ol>
         </section>
-        <section className="notebook-page is-answer" aria-live="polite">
+        <section className="notebook-page is-answer" aria-live="polite" inert={phase !== 'open'}>
           {note && <>
             <button type="button" className="notebook-back" onClick={()=>setSelected(null)}><span aria-hidden="true">◀</span> Perguntas</button>
             <h3 className="notebook-question">{note.question}</h3>
@@ -150,8 +162,8 @@ export function NotebookDialog({ origin, onClose }: { origin: HTMLElement | null
             </div>
           </>}
         </section>
-        {/* A capa vira para a esquerda logo depois de o caderno chegar ao centro */}
-        <div className="notebook-flap" aria-hidden="true"><NotebookCover/></div>
+        {/* Capa: cobre a página da direita enquanto o caderno viaja; depois vira presa na lombada */}
+        <div ref={coverRef} className="notebook-flap" aria-hidden="true" onAnimationEnd={()=>setPhase(current => current === 'flipping' ? 'open' : current)}><NotebookCover/><span className="notebook-label">Diário do<br/>Aventureiro</span></div>
       </div>
     </div>
   </dialog>;
