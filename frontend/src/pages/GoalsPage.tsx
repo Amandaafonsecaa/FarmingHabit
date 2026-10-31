@@ -10,8 +10,7 @@ import { useGoalTracker, useToday } from '../hooks/useGoalTracker';
 import { useFlipList } from '../hooks/useFlipList';
 import { amountOn, dailyTarget, isScheduled, sortByPending, toKey } from '../lib/goalLogic';
 import type { NewTrackedGoal, TrackedGoal } from '../types/goals';
-import { reachesHarvest, requestHarvest, rewardLabel } from '../lib/harvestRewards';
-import { flyCoins } from '../lib/coinFlight';
+import { settleCheckin } from '../lib/harvestRewards';
 import { usePlayerCoins } from '../hooks/usePlayerCoins';
 import { usePerfectDay } from '../hooks/usePerfectDay';
 import type { AppPage } from '../types/navigation';
@@ -59,14 +58,9 @@ export function GoalsPage({ onNavigate }: { onNavigate: (page: AppPage) => void 
     if (next < dailyTarget(goal) && goal.measure.kind === 'quantity') setAnnouncement(`${goal.title}: ${next}/${dailyTarget(goal)} ${goal.measure.unit}.`);
   }
 
-  // Grava o dia; se ele acabou de ser cumprido, o servidor confere e paga a colheita
+  // Grava o dia; se ele acabou de ser cumprido, o servidor paga a colheita no mesmo pedido
   function updateAmount(goal: TrackedGoal, amount: number, origin?: Element) {
-    const day = toKey(today);
-    const harvests = reachesHarvest(goal, log, day, amount);
-    setAmount(goal.id, day, amount);
-    if (harvests) requestHarvest(goal, day)
-      .then(result => { if (!result.coins && !result.xp) return; flyCoins(origin, result.coins); setAnnouncement(`${goal.title}: ${rewardLabel(result)}`); })
-      .catch(error => setAnnouncement(`${goal.title}: colhida, mas as moedas não foram creditadas (${error instanceof Error ? error.message : 'servidor indisponível'}).`));
+    settleCheckin(goal.title, setAmount(goal.id, toKey(today), amount), origin);
   }
 
   function plant(goal: NewTrackedGoal) {
@@ -79,13 +73,13 @@ export function GoalsPage({ onNavigate }: { onNavigate: (page: AppPage) => void 
   // Recaída: zera o contador de dias sem e desmarca o "evitei" de hoje (as moedas já ganhas ficam)
   function registerRelapse(goalId: string, title: string) {
     if (!window.confirm(`Registrar uma recaída em "${title}"? O contador de dias sem recomeça do zero — e tudo bem, recomeçar também é progresso.`)) return;
-    relapse(goalId, toKey(today));
+    settleCheckin(title, relapse(goalId, toKey(today)));
     setAnnouncement(`${title}: contador reiniciado. Amanhã é um novo dia 🌱`);
   }
 
   function uproot(goalId: string, title: string) {
     if (!window.confirm(`Arrancar a meta "${title}"? O histórico dela também será apagado.`)) return;
-    removeGoal(goalId);
+    removeGoal(goalId).catch(error => setAnnouncement(`${title}: ${error instanceof Error ? error.message : 'não foi possível apagar o histórico.'}`));
     setAnnouncement(`${title}: meta arrancada do canteiro.`);
   }
 

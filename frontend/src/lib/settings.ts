@@ -1,4 +1,5 @@
 import { farmName as DEFAULT_FARM_NAME } from '../data/world';
+import { readLog } from './checkins';
 
 /** Preferências do jogo, guardadas neste navegador e aplicadas como classes no <html> */
 export interface Settings { farmName: string; calmMode: boolean; celebrations: boolean; critters: boolean }
@@ -33,7 +34,8 @@ export const LOCAL_KEYS = ['farminghabit.goals.v1', 'farminghabit.diary.v1', 'fa
 
 export function exportBackup() {
   const data = Object.fromEntries(LOCAL_KEYS.map(key => { try { return [key, JSON.parse(localStorage.getItem(key) ?? 'null')]; } catch { return [key, null]; } }));
-  return JSON.stringify({ app: 'FarmingHabit', version: 1, exportedAt: new Date().toISOString(), data }, null, 2);
+  // O histórico das metas mora no servidor: vai a cópia local, que a abertura do app mantém em dia
+  return JSON.stringify({ app: 'FarmingHabit', version: 1, exportedAt: new Date().toISOString(), data, checkins: readLog() }, null, 2);
 }
 
 /** Restaura um backup gerado por exportBackup; recusa arquivos de outra origem */
@@ -44,4 +46,7 @@ export function importBackup(text: string) {
     const value = parsed.data[key];
     if (value === null || value === undefined) localStorage.removeItem(key); else localStorage.setItem(key, JSON.stringify(value));
   }
+  // Histórico do backup volta para dentro das metas: ao recarregar, o syncCheckins o sobe ao servidor (sem pagar)
+  const goals = parsed.data['farminghabit.goals.v1'];
+  if (goals && parsed.checkins && typeof parsed.checkins === 'object') localStorage.setItem('farminghabit.goals.v1', JSON.stringify({ ...goals, log: parsed.checkins }));
 }

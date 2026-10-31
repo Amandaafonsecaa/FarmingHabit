@@ -3,6 +3,7 @@ import type { Purchase } from '../lib/shop';
 import type { Loot } from '../lib/treasure';
 import { toKey } from '../lib/goalLogic';
 import { currentAccessToken } from '../lib/auth';
+import type { GoalLog } from '../types/goals';
 
 const API_URL = (import.meta.env.VITE_API_URL ?? 'http://localhost:3000').replace(/\/+$/, '');
 
@@ -14,6 +15,9 @@ const toPurchase = (item: ApiPurchase): Purchase => ({ id: item.id, rewardId: it
 type PlayerStats = Pick<Player, 'id' | 'level' | 'xp' | 'coins'>;
 export interface NewMission { title: string; description: string; xp: number; coins: number }
 
+/** O pedido nem chegou ao servidor (sem internet ou servidor fora do ar): dá para tentar de novo depois */
+export class NetworkError extends Error {}
+
 /** Todo pedido leva o token da sessão: o backend descobre o jogador por ele, nunca por um id na URL */
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const token = await currentAccessToken();
@@ -24,7 +28,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
       headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}), ...init?.headers },
     });
   } catch {
-    throw new Error(`Servidor indisponível em ${API_URL}. O backend está rodando?`);
+    throw new NetworkError(`Servidor indisponível em ${API_URL}. O backend está rodando?`);
   }
   const body = await response.json().catch(() => null);
   if (!response.ok) {
@@ -90,15 +94,9 @@ export async function resetPlayerData(scopes: ResetScope[]): Promise<Player> {
 
 // --- Ganhos (o servidor confere a ação, decide o valor e paga uma vez só) ---
 
-export interface HarvestResult { coins: number; xp: number; weekBonus: boolean; user: Player }
 export interface ChestResult { loot: Loot[]; coins: number; xp: number; alreadyOpened: boolean; user: Player }
 export interface RewardClaim { key: string; kind: 'harvest' | 'week' | 'chest'; day: string; coins: number; xp: number }
 
-/** Colheita da meta cumprida hoje (o servidor confere nas metas salvas na conta). Repetir paga 0. */
-export async function harvestGoal(goalId: string, date: string): Promise<HarvestResult> {
-  const result = await request<HarvestResult>('/progress/harvest', { method: 'POST', body: JSON.stringify({ goalId, date }) });
-  return { ...result, user: toPlayer(result.user) };
-}
 
 /** Abre um baú alcançado na jornada: o conteúdo é sorteado no servidor */
 export async function openTreasureChest(chestId: string, date: string): Promise<ChestResult> {
@@ -192,4 +190,30 @@ export async function updateReward(id: string, changes: { title: string; price: 
 
 export async function deleteReward(id: string): Promise<void> {
   await request<void>(`/rewards/${id}`, { method: 'DELETE' });
+}
+
+// --- Check-ins das metas (histórico no servidor; marcar e colher é um pedido só) ---
+
+/** Quantidade feita numa meta num dia (AAAA-MM-DD) */
+export interface Checkin { goalId: string; day: string; amount: number }
+/** O check-in gravado e o que ele pagou agora (0 se o dia já tinha sido pago, é outro dia ou a meta não foi cumprida) */
+export interface CheckinResult extends Checkin { coins: number; xp: number; weekBonus: boolean; user: Player }
+
+export async function listCheckins(): Promise<Checkin[]> {
+  return request<Checkin[]>('/goals/checkins');
+}
+
+/** Grava a quantidade do dia (0 apaga) e, se cumpriu a meta hoje, o servidor paga a colheita na mesma hora */
+export async function saveCheckin(goalId: string, day: string, amount: number): Promise<CheckinResult> {
+  const result = await request<CheckinResult>(`/goals/${encodeURIComponent(goalId)}/checkins/${day}`, { method: 'PUT', body: JSON.stringify({ amount }) });
+  return { ...result, user: toPlayer(result.user) };
+}
+
+export async function deleteGoalCheckins(goalId: string): Promise<{ goalId: string; removed: number }> {
+  return request(`/goals/${encodeURIComponent(goalId)}/checkins`, { method: 'DELETE' });
+}
+
+/** Sobe um histórico antigo (do navegador ou de um backup) sem pagar nada; o que já existe no servidor fica */
+export async function importCheckins(log: GoalLog): Promise<{ imported: number }> {
+  return request('/goals/checkins/import', { method: 'POST', body: JSON.stringify({ log }) });
 }

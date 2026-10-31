@@ -1,41 +1,29 @@
 import { useEffect, useState } from 'react';
 import { useStorageChange } from './useStorageChange';
-import { addDays, toKey } from '../lib/goalLogic';
+import { toKey } from '../lib/goalLogic';
+import { CHECKINS_EVENT, readLog, removeGoalCheckins, sendCheckin, setLocalAmount } from '../lib/checkins';
+import type { CheckinResult } from '../services/api';
 import type { GoalLog, NewTrackedGoal, TrackedGoal } from '../types/goals';
 
-// O backend ainda não tem frequência nem histórico diário: por ora tudo fica no navegador.
-// Para integrar, basta trocar load/persist por chamadas à API mantendo esta mesma interface.
+// Definição das metas: blob sincronizado pelo cloudSync. Histórico de cada dia: servidor (ver lib/checkins).
 const STORAGE_KEY = 'farminghabit.goals.v1';
-interface TrackerState { goals: TrackedGoal[]; log: GoalLog }
 
-function load(): TrackerState | null {
+function load(): TrackedGoal[] | null {
   try {
     const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? 'null');
-    return parsed && Array.isArray(parsed.goals) && typeof parsed.log === 'object' ? parsed : null;
+    return parsed && Array.isArray(parsed.goals) ? parsed.goals : null;
   } catch { return null; }
 }
 
-/** Um exemplo de cada tipo de meta, com algumas semanas de histórico para o calendário não nascer vazio */
-function seed(today: Date): TrackerState {
-  const createdOn = toKey(addDays(today, -40));
-  const goals: TrackedGoal[] = [
+/** Um exemplo de cada tipo de meta (sem histórico inventado: o histórico agora é dado real da conta) */
+function seed(today: Date): TrackedGoal[] {
+  const createdOn = toKey(today);
+  return [
     { id: 'exemplo-leitura', title: 'Ler 20 páginas', icon: 'book', frequency: { kind: 'daily' }, measure: { kind: 'check' }, createdOn },
     { id: 'exemplo-academia', title: 'Ir à academia', icon: 'flame', frequency: { kind: 'weekly', timesPerWeek: 5 }, measure: { kind: 'check' }, createdOn },
     { id: 'exemplo-estudo', title: 'Estudar inglês', icon: 'target', frequency: { kind: 'weekdays', days: [1, 3, 5] }, measure: { kind: 'check' }, createdOn },
     { id: 'exemplo-agua', title: 'Beber 2 litros de água', icon: 'water', frequency: { kind: 'daily' }, measure: { kind: 'quantity', target: 8, unit: 'copos', step: 1 }, createdOn },
   ];
-  const log: GoalLog = {};
-  for (let daysAgo = 40; daysAgo >= 1; daysAgo--) {
-    const date = addDays(today, -daysAgo);
-    // Pseudoaleatório determinístico: o mesmo histórico a cada carregamento
-    const random = (salt: number) => { const x = Math.sin(daysAgo * 12.9898 + salt * 78.233) * 43758.5453; return x - Math.floor(x); };
-    const day: Record<string, number> = { 'exemplo-agua': Math.min(8, 2 + Math.floor(random(4) * 8)) };
-    if (random(1) < 0.78) day['exemplo-leitura'] = 1;
-    if (random(2) < 0.62) day['exemplo-academia'] = 1;
-    if ([1, 3, 5].includes(date.getDay()) && random(3) < 0.8) day['exemplo-estudo'] = 1;
-    log[toKey(date)] = day;
-  }
-  return { goals, log };
 }
 
 /** "Hoje" que vira sozinho à meia-noite, para metas diárias e semanais reiniciarem sem recarregar */
@@ -51,52 +39,50 @@ export function useToday() {
 }
 
 export function useGoalTracker() {
-  const [state, setState] = useState<TrackerState>(() => load() ?? seed(new Date()));
-  useStorageChange(STORAGE_KEY, () => { const next = load(); if (next) setState(next); });
+  const [goals, setGoals] = useState<TrackedGoal[]>(() => load() ?? seed(new Date()));
+  const [log, setLog] = useState<GoalLog>(readLog);
+  useStorageChange(STORAGE_KEY, () => { const next = load(); if (next) setGoals(next); });
   useEffect(() => {
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch { /* modo privado: segue só em memória */ }
-  }, [state]);
+    try {
+      // Histórico antigo dentro do blob fica até o syncCheckins subi-lo ao servidor (ele mesmo o tira daqui)
+      const legacyLog = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? 'null')?.log;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(legacyLog ? { goals, log: legacyLog } : { goals }));
+    } catch { /* modo privado: segue só em memória */ }
+  }, [goals]);
+  // Histórico atualizado por outra tela, pela sincronização ou pela volta da internet
+  useEffect(() => {
+    const refresh = () => setLog(readLog());
+    window.addEventListener(CHECKINS_EVENT, refresh);
+    return () => window.removeEventListener(CHECKINS_EVENT, refresh);
+  }, []);
 
-  function setAmount(goalId: string, key: string, amount: number) {
-    setState(current => {
-      const day = { ...current.log[key] };
-      if (amount > 0) day[goalId] = amount; else delete day[goalId];
-      return { ...current, log: { ...current.log, [key]: day } };
-    });
+  /** Grava o dia: a tela muda na hora e o servidor confere e paga (null = sem conexão, sobe depois) */
+  function setAmount(goalId: string, key: string, amount: number): Promise<CheckinResult | null> {
+    setLog(setLocalAmount(goalId, key, amount));
+    return sendCheckin(goalId, key, amount);
   }
 
   function addGoal(goal: NewTrackedGoal) {
     const created: TrackedGoal = { ...goal, id: crypto.randomUUID(), createdOn: toKey(new Date()) };
-    setState(current => ({ ...current, goals: [...current.goals, created] }));
+    setGoals(current => [...current, created]);
     return created;
   }
 
   /** Edita a meta (nome, semente, ritmo, medida e área); id, data de plantio e histórico continuam */
   function updateGoal(goalId: string, changes: NewTrackedGoal) {
-    setState(current => ({ ...current, goals: current.goals.map(goal => goal.id === goalId ? { ...goal, ...changes } : goal) }));
+    setGoals(current => current.map(goal => goal.id === goalId ? { ...goal, ...changes } : goal));
   }
 
   /** Recaída numa meta de largar: registra o dia (zera o contador de dias sem) e desmarca o "evitei" desse dia */
   function relapse(goalId: string, key: string) {
-    setState(current => {
-      const day = { ...current.log[key] };
-      delete day[goalId];
-      return {
-        log: { ...current.log, [key]: day },
-        goals: current.goals.map(goal => goal.id === goalId ? { ...goal, relapses: [...new Set([...(goal.relapses ?? []), key])] } : goal),
-      };
-    });
+    setGoals(current => current.map(goal => goal.id === goalId ? { ...goal, relapses: [...new Set([...(goal.relapses ?? []), key])] } : goal));
+    return setAmount(goalId, key, 0);
   }
 
   function removeGoal(goalId: string) {
-    setState(current => ({
-      goals: current.goals.filter(goal => goal.id !== goalId),
-      log: Object.fromEntries(Object.entries(current.log).map(([key, day]) => {
-        const { [goalId]: _removed, ...rest } = day;
-        return [key, rest];
-      })),
-    }));
+    setGoals(current => current.filter(goal => goal.id !== goalId));
+    return removeGoalCheckins(goalId);
   }
 
-  return { goals: state.goals, log: state.log, setAmount, addGoal, updateGoal, relapse, removeGoal };
+  return { goals, log, setAmount, addGoal, updateGoal, relapse, removeGoal };
 }

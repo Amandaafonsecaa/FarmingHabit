@@ -19,7 +19,7 @@ import { MainLayout } from '../layouts/MainLayout';
 import { recordAdventure } from '../lib/diary';
 import { readWishes } from '../lib/shop';
 import { flyCoins } from '../lib/coinFlight';
-import { PLAYER_EVENT, reachesHarvest, requestHarvest, rewardLabel } from '../lib/harvestRewards';
+import { PLAYER_EVENT, settleCheckin } from '../lib/harvestRewards';
 import type { Player } from '../services/api';
 import type { AppPage } from '../types/navigation';
 import { claimReward, completeMission, createMission, createReward, listMissions, listRewards, loadPlayer } from '../services/api';
@@ -85,22 +85,14 @@ export function HomePage({ onNavigate }: { onNavigate: (page: AppPage) => void }
     finally { setPendingId(null); }
   }
 
-  // Meta cumprida no dia: o servidor confere e paga (uma vez por dia) e as moedinhas voam da origem até o contador
-  function payHarvest(goal: TrackedGoal, nextAmount: number, origin: Element) {
-    if (!reachesHarvest(goal, log, todayKey, nextAmount)) return;
-    requestHarvest(goal, todayKey)
-      .then(result => { if (!result.coins && !result.xp) return; flyCoins(origin, result.coins); setAnnouncement(`${goal.title}: colhida! ${rewardLabel(result)}`); })
-      .catch(error => setAnnouncement(`${goal.title}: colhida, mas as moedas não foram creditadas (${errorMessage(error)}).`));
-  }
-
   /** Colher (no painel ou na horta): check único conclui o dia, quantidade soma um passo */
   function harvest(goal: TrackedGoal, origin: Element) {
     const amount = amountOn(goal, log, todayKey);
     const target = dailyTarget(goal);
     if (amount >= target) { setAnnouncement(`${goal.title}: já colhida hoje 🌻`); return false; }
     const next = goal.measure.kind === 'quantity' ? amount + goal.measure.step : 1;
-    payHarvest(goal, next, origin);
-    setAmount(goal.id, todayKey, next);
+    // Meta cumprida no dia: o servidor paga no mesmo pedido (uma vez por dia) e as moedinhas voam até o contador
+    settleCheckin(goal.title, setAmount(goal.id, todayKey, next), origin);
     if (next < target && goal.measure.kind === 'quantity') setAnnouncement(`${goal.title}: ${next}/${target} ${goal.measure.unit}.`);
     return true;
   }

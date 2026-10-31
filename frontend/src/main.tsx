@@ -7,6 +7,7 @@ import { currentAccessToken } from './lib/auth';
 import { supabase } from './lib/supabase';
 import { SETTINGS_KEY, applySettings, readSettings } from './lib/settings';
 import { hasLocalSnapshot, startCloudSync } from './lib/cloudSync';
+import { syncCheckins } from './lib/checkins';
 import './styles/global.css';
 import './styles/goals.css';
 import './styles/home.css';
@@ -43,7 +44,8 @@ async function boot() {
     return;
   }
   const firstOpen = !hasLocalSnapshot();
-  const sync = startCloudSync();
+  // O histórico das metas vem depois do blob: ele pode trazer histórico antigo para subir ao servidor
+  const sync = startCloudSync().then(syncCheckins);
   if (firstOpen) {
     root.render(<StrictMode><BootSplash/></StrictMode>);
     await sync;

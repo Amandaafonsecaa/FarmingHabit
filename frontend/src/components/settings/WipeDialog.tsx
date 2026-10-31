@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { GameDialog } from '../dialogs/GameDialog';
 import { PixelIcon } from '../PixelIcon';
 import { resetPlayerData, type ResetScope } from '../../services/api';
+import { clearCheckins, removeGoalCheckins } from '../../lib/checkins';
 
 /** "examples" só existe no navegador; as outras partes também são apagadas no servidor */
 export type WipePart = ResetScope | 'examples';
@@ -26,12 +27,13 @@ const LOCAL_KEYS_BY_PART: Record<WipePart, string[]> = {
 const readGoals = () => { try { return JSON.parse(localStorage.getItem(GOALS_KEY) ?? 'null'); } catch { return null; } };
 const isExample = (id: string) => id.startsWith('exemplo-');
 
-function removeExampleGoals() {
+/** Tira as metas de exemplo e o histórico delas (que mora no servidor) */
+async function removeExampleGoals() {
   const state = readGoals();
   if (!state) return;
-  const log = Object.fromEntries(Object.entries(state.log as Record<string, Record<string, number>>)
-    .map(([day, entries]) => [day, Object.fromEntries(Object.entries(entries).filter(([id]) => !isExample(id)))]));
-  localStorage.setItem(GOALS_KEY, JSON.stringify({ goals: state.goals.filter((goal: { id: string }) => !isExample(goal.id)), log }));
+  const examples: string[] = state.goals.map((goal: { id: string }) => goal.id).filter(isExample);
+  await Promise.all(examples.map(removeGoalCheckins));
+  localStorage.setItem(GOALS_KEY, JSON.stringify({ goals: state.goals.filter((goal: { id: string }) => !isExample(goal.id)) }));
 }
 
 interface Props { online: boolean; examples: number; onBackup: () => void; onClose: () => void }
@@ -74,8 +76,14 @@ export function WipeDialog({ online, examples, onBackup, onClose }: Props) {
       try { await resetPlayerData(serverScopes); }
       catch (reason) { setError(`Não foi possível apagar: ${reason instanceof Error ? reason.message : 'erro desconhecido'}`); return false; }
     }
-    if (chosen.has('goals')) localStorage.setItem(GOALS_KEY, JSON.stringify({ goals: [], log: {} })); // vazio de propósito: senão os exemplos voltam
-    else if (chosen.has('examples')) removeExampleGoals();
+    if (chosen.has('goals')) {
+      localStorage.setItem(GOALS_KEY, JSON.stringify({ goals: [] })); // vazio de propósito: senão os exemplos voltam
+      clearCheckins();
+    } else if (chosen.has('examples')) {
+      if (!online) { setError('O servidor está fora do ar. Tente de novo quando ele voltar.'); return false; }
+      try { await removeExampleGoals(); }
+      catch (reason) { setError(`Não foi possível apagar: ${reason instanceof Error ? reason.message : 'erro desconhecido'}`); return false; }
+    }
     chosen.forEach(part => LOCAL_KEYS_BY_PART[part].forEach(key => localStorage.removeItem(key)));
     const labels = parts.filter(part => chosen.has(part.value)).map(part => part.label);
     try { sessionStorage.setItem(WIPE_FLASH_KEY, `Apagado: ${labels.join(', ')}.`); } catch { /* sem aviso, sem problema */ }

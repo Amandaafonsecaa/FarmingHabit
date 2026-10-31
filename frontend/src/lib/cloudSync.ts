@@ -74,9 +74,11 @@ function watchLocalStorage() {
   });
 }
 
-/** Envia já uma chave que está esperando o agrupamento (ex.: as metas, antes de pedir a colheita ao servidor) */
-export async function flushSync(key: string) {
+/** Envia já uma chave que ainda espera para subir (ex.: meta recém-criada, antes do check-in que o servidor vai pagar) */
+export async function flushIfPending(key: string) {
+  if (!timers.has(key) && !waiting.has(key)) return;
   window.clearTimeout(timers.get(key));
+  waiting.delete(key);
   await push(key);
 }
 
