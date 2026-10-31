@@ -28,6 +28,7 @@ model User {
   motivation Motivation?
   data       UserData[]
   rewardClaims RewardClaim[]
+  goalCheckins GoalCheckin[]
 
   @@map("users")
 }
@@ -143,4 +144,17 @@ model RewardClaim {
   @@id([userId, key])
   @@index([userId, day])
   @@map("reward_claims")
+}
+
+model GoalCheckin {
+  userId    String
+  goalId    String
+  day       String   /// AAAA-MM-DD, dia do jogador
+  amount    Int
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, goalId, day])
+  @@index([userId, day])
+  @@map("goal_checkins")
 }

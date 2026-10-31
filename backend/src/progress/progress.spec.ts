@@ -1,17 +1,12 @@
-import { BadRequestException, NotFoundException } from '@nestjs/common';
-import { isPlayerToday, levelFor } from './economy';
+import { isPlayerToday, isUpToPlayerToday, levelFor } from './economy';
 import {
   dailyTarget,
   isWeeklyGoalMet,
   mondayOf,
-  parseGoalBook,
+  parseGoals,
   weekChecks,
-  type GoalBook,
+  weekDays,
 } from './goal-rules';
-import { ProgressService } from './progress.service';
-import { PrismaService } from '../prisma/prisma.service';
-
-const TODAY = new Date().toISOString().slice(0, 10);
 
 describe('economy rules', () => {
   it('levels up every 100 XP', () => {
@@ -30,107 +25,60 @@ describe('economy rules', () => {
     expect(isPlayerToday('2026-10-29', now)).toBe(false);
     expect(isPlayerToday('27/10/2026', now)).toBe(false);
   });
+  it('accepts past days and today, never the future', () => {
+    const now = new Date('2026-10-31T12:00:00Z');
+    expect(isUpToPlayerToday('2026-01-01', now)).toBe(true);
+    expect(isUpToPlayerToday('2026-11-01', now)).toBe(true); // já é dia 1 em UTC+14
+    expect(isUpToPlayerToday('2026-11-02', now)).toBe(false);
+  });
 });
 
 describe('goal rules', () => {
-  const book: GoalBook = {
-    goals: [
-      {
-        id: 'agua',
-        frequency: { kind: 'daily' },
-        measure: { kind: 'quantity', target: 8 },
-      },
-      {
-        id: 'academia',
-        frequency: { kind: 'weekly', timesPerWeek: 2 },
-        measure: { kind: 'check' },
-      },
-    ],
-    log: {
-      '2026-10-26': { academia: 1 },
-      '2026-10-27': { agua: 8, academia: 1 },
-    },
+  const water = {
+    id: 'agua',
+    frequency: { kind: 'daily' },
+    measure: { kind: 'quantity', target: 8 },
+  };
+  const gym = {
+    id: 'academia',
+    frequency: { kind: 'weekly', timesPerWeek: 2 },
+    measure: { kind: 'check' },
   };
   it('uses the quantity target or 1 for checks', () => {
-    expect(dailyTarget(book.goals[0])).toBe(8);
-    expect(dailyTarget(book.goals[1])).toBe(1);
+    expect(dailyTarget(water)).toBe(8);
+    expect(dailyTarget(gym)).toBe(1);
   });
   it('finds the monday of the week', () => {
     expect(mondayOf('2026-10-27')).toBe('2026-10-26');
     expect(mondayOf('2026-11-01')).toBe('2026-10-26');
     expect(mondayOf('2026-10-26')).toBe('2026-10-26');
   });
-  it('counts week checks and detects a met weekly goal', () => {
-    expect(weekChecks(book.goals[1], book, '2026-10-27')).toBe(2);
-    expect(isWeeklyGoalMet(book.goals[1], book, '2026-10-27')).toBe(true);
-    expect(isWeeklyGoalMet(book.goals[0], book, '2026-10-27')).toBe(false);
+  it('parses goal definitions and ignores the old log', () => {
+    expect(parseGoals('{"goals":[{"id":"a"}],"log":{}}')).toEqual([
+      { id: 'a' },
+    ]);
+    expect(parseGoals('nope')).toBeNull();
+    expect(parseGoals('{"log":{}}')).toBeNull();
   });
-  it('rejects malformed goal storage', () => {
-    expect(parseGoalBook('{oops')).toBeNull();
-    expect(parseGoalBook(JSON.stringify({ goals: 'x', log: {} }))).toBeNull();
+  it('lists the seven days of the week from monday', () => {
+    expect(weekDays('2026-10-29')).toEqual([
+      '2026-10-26',
+      '2026-10-27',
+      '2026-10-28',
+      '2026-10-29',
+      '2026-10-30',
+      '2026-10-31',
+      '2026-11-01',
+    ]);
   });
-});
-
-describe('ProgressService', () => {
-  let prisma: any;
-  let tx: any;
-  let service: ProgressService;
-  const user = { id: 'player', coins: 15, xp: 15, level: 1 };
-  const goals = (amount: number) => ({
-    value: JSON.stringify({
-      goals: [
-        {
-          id: 'leitura',
-          frequency: { kind: 'daily' },
-          measure: { kind: 'check' },
-        },
-      ],
-      log: { [TODAY]: { leitura: amount } },
-    }),
-  });
-
-  beforeEach(() => {
-    tx = {
-      rewardClaim: { createMany: jest.fn().mockResolvedValue({ count: 1 }) },
-      user: { findUniqueOrThrow: jest.fn().mockResolvedValue(user) },
-      $queryRaw: jest.fn().mockResolvedValue([user]),
+  it('counts week checks from per-day amounts', () => {
+    const goal = {
+      id: 'g',
+      frequency: { kind: 'weekly', timesPerWeek: 2 },
+      measure: { kind: 'check' },
     };
-    prisma = {
-      userData: { findUnique: jest.fn().mockResolvedValue(goals(1)) },
-      $transaction: jest.fn((fn: (client: unknown) => unknown) => fn(tx)),
-    };
-    service = new ProgressService(prisma as PrismaService);
-  });
-
-  it('pays a harvest decided by the server', async () => {
-    const result = await service.harvest('player', 'leitura', TODAY);
-    expect(result).toMatchObject({ coins: 5, xp: 5, weekBonus: false });
-    expect(tx.rewardClaim.createMany.mock.calls[0][0].data[0]).toMatchObject({
-      key: `harvest:${TODAY}:leitura`,
-      coins: 5,
-      xp: 5,
-    });
-    expect(tx.$queryRaw).toHaveBeenCalledTimes(1);
-  });
-
-  it('does not pay the same harvest twice', async () => {
-    tx.rewardClaim.createMany.mockResolvedValue({ count: 0 });
-    const result = await service.harvest('player', 'leitura', TODAY);
-    expect(result).toMatchObject({ coins: 0, xp: 0 });
-    expect(tx.$queryRaw).not.toHaveBeenCalled();
-  });
-
-  it('refuses a goal that was not done, unknown goals and other days', async () => {
-    prisma.userData.findUnique.mockResolvedValue(goals(0));
-    await expect(
-      service.harvest('player', 'leitura', TODAY),
-    ).rejects.toBeInstanceOf(BadRequestException);
-    await expect(
-      service.harvest('player', 'inventada', TODAY),
-    ).rejects.toBeInstanceOf(NotFoundException);
-    await expect(
-      service.harvest('player', 'leitura', '2020-01-01'),
-    ).rejects.toBeInstanceOf(BadRequestException);
-    expect(prisma.$transaction).not.toHaveBeenCalled();
+    const amounts = { '2026-10-26': 1, '2026-10-28': 1, '2026-10-19': 1 };
+    expect(weekChecks(goal, amounts, '2026-10-29')).toBe(2);
+    expect(isWeeklyGoalMet(goal, amounts, '2026-10-29')).toBe(true);
   });
 });

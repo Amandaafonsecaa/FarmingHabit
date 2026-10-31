@@ -26,3 +26,9 @@ export function isPlayerToday(day: string, now = new Date()): boolean {
   const latest = utcKey(new Date(now.getTime() + 14 * 3600_000));
   return day >= earliest && day <= latest;
 }
+
+/** O dia é válido e não está no futuro de ninguém (até o "hoje" mais adiantado, UTC+14)? */
+export function isUpToPlayerToday(day: string, now = new Date()): boolean {
+  if (!DAY_PATTERN.test(day)) return false;
+  return day <= utcKey(new Date(now.getTime() + 14 * 3600_000));
+}

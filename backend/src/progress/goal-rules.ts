@@ -9,21 +9,16 @@ export interface StoredGoal {
   frequency?: { kind?: string; timesPerWeek?: number };
   measure?: { kind?: string; target?: number };
 }
-export interface GoalBook {
-  goals: StoredGoal[];
-  log: Record<string, Record<string, number>>;
-}
 
-export function parseGoalBook(
+/** Lê só a definição das metas; o histórico de check-ins mora na tabela goal_checkins */
+export function parseGoals(
   value: string | null | undefined,
-): GoalBook | null {
+): StoredGoal[] | null {
   try {
     const parsed: unknown = JSON.parse(value ?? 'null');
     if (!parsed || typeof parsed !== 'object') return null;
-    const { goals, log } = parsed as Partial<GoalBook>;
-    return Array.isArray(goals) && log && typeof log === 'object'
-      ? { goals, log }
-      : null;
+    const { goals } = parsed as { goals?: unknown };
+    return Array.isArray(goals) ? (goals as StoredGoal[]) : null;
   } catch {
     return null;
   }
@@ -39,9 +34,6 @@ export function dailyTarget(goal: StoredGoal): number {
     : 1;
 }
 
-export const amountOn = (goal: StoredGoal, book: GoalBook, day: string) =>
-  Number(book.log[day]?.[goal.id] ?? 0) || 0;
-
 const fromDay = (day: string) => new Date(`${day}T00:00:00Z`);
 const toDay = (date: Date) => date.toISOString().slice(0, 10);
 
@@ -52,25 +44,30 @@ export function mondayOf(day: string): string {
   return toDay(date);
 }
 
-/** Quantos dias da semana (seg–dom) que contém o dia foram cumpridos */
-export function weekChecks(
-  goal: StoredGoal,
-  book: GoalBook,
-  day: string,
-): number {
+/** Os sete dias (seg–dom) da semana que contém o dia */
+export function weekDays(day: string): string[] {
   const monday = fromDay(mondayOf(day));
-  let done = 0;
-  for (let index = 0; index < 7; index++) {
+  return Array.from({ length: 7 }, (_, index) => {
     const date = new Date(monday);
     date.setUTCDate(monday.getUTCDate() + index);
-    if (amountOn(goal, book, toDay(date)) >= dailyTarget(goal)) done++;
-  }
-  return done;
+    return toDay(date);
+  });
+}
+
+/** Quantos dias da semana que contém o dia bateram o alvo; amounts é dia → quantidade da meta */
+export function weekChecks(
+  goal: StoredGoal,
+  amounts: Record<string, number>,
+  day: string,
+): number {
+  const target = dailyTarget(goal);
+  return weekDays(day).filter((date) => (Number(amounts[date]) || 0) >= target)
+    .length;
 }
 
 export function isWeeklyGoalMet(
   goal: StoredGoal,
-  book: GoalBook,
+  amounts: Record<string, number>,
   day: string,
 ): boolean {
   const times = Number(goal.frequency?.timesPerWeek);
@@ -78,6 +75,6 @@ export function isWeeklyGoalMet(
     goal.frequency?.kind === 'weekly' &&
     Number.isFinite(times) &&
     times > 0 &&
-    weekChecks(goal, book, day) >= times
+    weekChecks(goal, amounts, day) >= times
   );
 }
