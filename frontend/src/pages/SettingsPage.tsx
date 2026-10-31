@@ -11,7 +11,6 @@ import { CharacterCreator } from '../components/profile/CharacterCreator';
 import { CollectibleCard } from '../components/profile/CollectibleCard';
 import { exportBackup, importBackup } from '../lib/settings';
 import { WIPE_FLASH_KEY, WipeDialog } from '../components/settings/WipeDialog';
-import { JOURNEY_LENGTH } from '../lib/journey';
 import { HARVEST_REWARD, WEEK_BONUS } from '../lib/harvestRewards';
 import { loadPlayer, updatePlayerName, type Player } from '../services/api';
 import { SignOutButton } from '../components/SignOutButton';
@@ -231,7 +230,6 @@ export function SettingsPage({ onNavigate }: { onNavigate: (page: AppPage) => vo
               <SettingsRow label="Metas" description={`Cada meta cumprida no dia (uma vez por dia). Meta semanal batida: +${WEEK_BONUS.coins} moedas e +${WEEK_BONUS.xp} XP de bônus.`}><span className="settings-value">+{HARVEST_REWARD.coins} moedas · +{HARVEST_REWARD.xp} XP</span></SettingsRow>
               <SettingsRow label="Missões" description="Pagam bem mais que metas. Você escolhe o tamanho ao criar."><span className="settings-value">15 a 80+ moedas</span></SettingsRow>
               <SettingsRow label="Semana das metas" description="Metas semanais zeram a contagem."><span className="settings-value">Começa na segunda</span></SettingsRow>
-              <SettingsRow label="Jornada das missões" description="4 capítulos até salvar a princesa; depois recomeça."><span className="settings-value">{JOURNEY_LENGTH} missões por volta</span></SettingsRow>
             </SettingsGroup>
             <SettingsGroup title="Atalhos">
               <SettingsRow label="Fechar menu e formulários"><kbd className="settings-kbd">Esc</kbd></SettingsRow>

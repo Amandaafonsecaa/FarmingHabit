@@ -1,22 +1,11 @@
-/* ===== Aba Missões: mapa do tesouro, quadro de pergaminhos e diário de descobertas ===== */
+/* ===== Aba Missões: navio do Capitão no topo e quadro de pergaminhos ===== */
 
-/* --- Mapa no topo --- */
+/* --- Topo: navio no mar --- */
 .missions-hero {
  position: relative; isolation: isolate; overflow: hidden; min-height: 380px; padding: 18px;
  border: 6px solid #52301f; border-bottom-width: 10px; background: #f0d49a;
  box-shadow: inset 0 0 0 3px #efb96b, inset 0 0 0 12px #c9944f66, inset 0 0 0 22px #b07a3e2e;
 }
-.adventure-map { position: absolute; inset: 0; z-index: -1; width: 100%; height: 100%; }
-.adventure-map text { font-family: 'Courier New', monospace; }
-.map-caption { font-size: 11px; font-weight: bold; fill: #7a4a26; }
-.map-caption.is-mystery { font-style: italic; fill: #8a5838; }
-.map-trail { animation: trail-walk 1.4s linear infinite; }
-.compass-needle { transform-box: view-box; transform-origin: 0 0; animation: needle-wobble 4s ease-in-out infinite; }
-.map-caption.is-mystery { font-style: italic; }
-
-.map-explorer { transition: transform 1.6s cubic-bezier(.45, .05, .35, 1); }
-.explorer-bob { animation: farmer-bob 1.1s steps(1) infinite; }
-.explorer-alert { animation: bubble-bob 1.2s ease-in-out infinite; transform-box: fill-box; }
 
 .missions-hero-top { position: relative; display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 12px; padding-left: 56px; pointer-events: none; }
 .missions-hero-top > * { pointer-events: auto; }
@@ -25,61 +14,15 @@
 .missions-sign h1 { margin: 6px 0 4px; font-size: clamp(22px, 2.6vw, 32px); font-weight: 900; letter-spacing: -1.5px; line-height: 1.1; color: #3b2418; text-shadow: 2px 2px #ffd98d; }
 .missions-motto { margin-bottom: 12px; font-size: 12px; font-style: italic; color: #765337; }
 
-/* --- Jornada: paradas, marcos e cenário de cada capítulo --- */
-.adventure-map .stop-caption { font-size: 10px; font-weight: bold; fill: #57311f; paint-order: stroke; stroke: #fff1c7; stroke-width: 3px; }
-.journey-stop:not(.is-revealed) .stop-caption { fill: #8a5838; font-style: italic; }
-.landmark { transform-box: fill-box; transform-origin: 50% 100%; animation: landmark-pop .6s cubic-bezier(.34, 1.56, .64, 1) backwards; }
-.landmark.is-fresh { animation: landmark-pop .8s cubic-bezier(.34, 1.56, .64, 1) backwards, landmark-glow 1s steps(2) 3 .8s; }
-.landmark-fog { animation: fog-breathe 3s ease-in-out infinite alternate; }
-.fog-mark { font-size: 16px; font-weight: 900; fill: #bf5837; }
-.lm-spin { transform-box: fill-box; transform-origin: center; animation: lm-spin 4s linear infinite; }
-.lm-bob { animation: lm-bob 2s ease-in-out infinite alternate; }
-.lm-hop { animation: lm-hop 2.4s steps(1) infinite; }
-.lm-firefly, .map-fireflies rect { animation: sparkle-blink 1.6s steps(1) infinite; }
-.lm-firefly.is-late { animation-delay: -.8s; }
-.lm-blink { animation: lm-blink 4s steps(1) infinite; }
-.lm-glow { animation: lm-glow 2.2s steps(2) infinite alternate; }
-.lm-smoke { transform-box: fill-box; transform-origin: center; animation: smoke-rise 3.4s linear infinite; }
-.lm-flame { transform-box: fill-box; transform-origin: 50% 100%; animation: lm-flame .5s steps(2) infinite alternate; }
-.lm-sparkle { animation: sparkle-blink 1.2s steps(1) infinite; }
-.lm-wave { transform-box: fill-box; transform-origin: 0 100%; animation: lm-wave .8s ease-in-out infinite alternate; }
-.lm-flag, .map-flag { transform-box: fill-box; transform-origin: left center; animation: lm-flag .9s steps(3) infinite alternate; }
-.lm-zzz text { font-family: 'Courier New', monospace; font-size: 9px; font-weight: 900; fill: #3f7a2e; }
-.lm-zzz { animation: lm-zzz 2.6s ease-out infinite; }
-.lm-hearts { animation: lm-hearts 2.4s ease-out infinite; }
-.map-scenery { animation: scenery-in .7s ease-out backwards; }
-.map-snow rect { animation: snow-fall 6s linear infinite; }
-.map-bats { animation: bats-fly 14s ease-in-out infinite; }
-.exit-arrow { animation: lm-bob 1s ease-in-out infinite alternate; }
-.map-trail { animation: trail-walk 1.4s linear infinite; }
-/* A cada volta par, o mapa ganha tons de outono */
-.adventure-map.is-autumn .map-scenery { filter: sepia(.35) hue-rotate(-18deg) saturate(1.2); }
-
-.journey-chapter { font-size: 12px; font-weight: 900; color: #3f6b35; }
-.journey-heading { display: flex; align-items: center; gap: 8px; margin: 10px 0 12px; padding: 0; border: 0; background: none; font: inherit; font-size: 12px; color: #3b2418; text-align: left; cursor: pointer; }
-.journey-heading strong { text-decoration: underline dashed #bf5837; text-underline-offset: 3px; }
-.journey-heading:hover strong { color: #bf5837; }
-
-.chapter-tabs { position: absolute; left: 50%; bottom: 12px; z-index: 3; display: flex; gap: 6px; transform: translateX(-50%); max-width: calc(100% - 120px); }
-.chapter-tab { display: flex; align-items: center; gap: 6px; min-height: 34px; padding: 4px 10px 4px 4px; border: 2px solid #57311f; background: #f6e2b0; color: #3b2418; font: inherit; font-size: 11px; font-weight: 900; cursor: pointer; box-shadow: inset 1px 1px #fff1c7, 2px 2px 0 #42291666; white-space: nowrap; }
-.chapter-tab:disabled { cursor: default; opacity: .7; }
-.chapter-number { display: flex; width: 22px; height: 22px; align-items: center; justify-content: center; border: 2px solid #57311f; background: #e8ac59; font-size: 11px; }
-.chapter-tab.is-done .chapter-number { background: #72ad32; color: #fff1c7; }
-.chapter-tab.is-current .chapter-number { background: #f2c453; animation: chapter-pulse 1.6s steps(2) infinite; }
-.chapter-tab.is-viewing { background: #fff1c7; transform: translateY(-3px); box-shadow: inset 1px 1px #fff, 2px 5px 0 #42291666; }
-.chapter-tab:not(:disabled):hover { background: #ffe8b4; }
-
-.journey-banner { position: absolute; left: 50%; top: 50%; z-index: 5; min-width: 280px; max-width: calc(100% - 40px); padding: 16px 22px; text-align: center; transform: translate(-50%, -50%); animation: banner-in .6s cubic-bezier(.34, 1.56, .64, 1) backwards, banner-out .4s ease-in 3s forwards; }
-.journey-banner-title { margin-bottom: 4px; font-size: 18px; font-weight: 900; color: #bf5837; text-shadow: 1px 1px #fff1c7; }
-.journey-banner p:last-child { font-size: 12px; }
+.lm-flag{ transform-box: fill-box; transform-origin: left center; animation: lm-flag .9s steps(3) infinite alternate; }
 
 /* --- Layout --- */
 .missions-layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; max-width: 1600px; margin: auto; padding: 18px 16px 12px; }
 @media (min-width: 1100px) {
  .missions-layout { grid-template-columns: minmax(0, 1.55fr) minmax(320px, 1fr); align-items: start; }
  /* Quadro de aventuras e Coleção de achados com a mesma altura fixa; o conteúdo rola por dentro */
- .quest-board-panel, .collection-panel { height: 640px; }
- .quest-board, .collection-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #a47545 #f6dfa6; }
+ .quest-board-panel{ height: 640px; }
+ .quest-board{ flex: 1 1 auto; min-height: 0; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #a47545 #f6dfa6; }
 }
 
 /* --- Quadro de cortiça/madeira com pergaminhos --- */
@@ -98,7 +41,6 @@
 .quest-scroll { position: relative; transform: rotate(var(--tilt, 0deg)); transform-origin: 50% 0; transition: transform .2s cubic-bezier(.34, 1.56, .64, 1); animation: scroll-unroll .5s cubic-bezier(.34, 1.4, .64, 1) backwards; }
 .quest-scroll:hover, .quest-scroll:focus-within { transform: rotate(0) translateY(-4px); z-index: 2; }
 .quest-scroll:hover .quest-paper { box-shadow: inset 0 0 0 2px #f5c477, 5px 7px 0 #42291666; }
-.quest-scroll.is-highlighted { animation: scroll-swing .7s ease-in-out 2; }
 .quest-pin { position: absolute; top: -10px; left: 50%; z-index: 3; width: 16px; height: 16px; margin-left: -8px; background: #d9574a; border: 2px solid #7a2e17; box-shadow: inset 3px 3px #f2998a, 2px 3px 0 #3b241866; }
 .quest-scroll.is-active .quest-pin { background: #53922d; border-color: #23401f; box-shadow: inset 3px 3px #8cc65e, 2px 3px 0 #3b241866; }
 .quest-paper {
@@ -114,7 +56,7 @@
 .quest-rank { display: flex; align-items: center; gap: 6px; font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; color: #a86d1c; }
 .quest-rank > span { color: #e7b84b; letter-spacing: 0; text-shadow: 1px 1px #7a4a26; font-size: 13px; }
 .quest-title { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; flex-shrink: 0; height: 2.5em; margin-top: 6px; font-size: 15px; font-weight: 900; line-height: 1.25; overflow-wrap: anywhere; }
-.quest-description { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; line-clamp: 3; overflow: hidden; min-height: 0; max-height: 4.35em; flex-shrink: 1; margin-top: 6px; font-size: 12px; font-style: italic; line-height: 1.45; color: #5b3826; overflow-wrap: anywhere; }
+
 .quest-rewards { display: flex; flex-shrink: 0; gap: 12px; margin-top: auto; padding-top: 8px; border-top: 1px dashed #c49a62; font-size: 12px; font-weight: 900; }
 .quest-xp { color: #3f6b35; }
 .quest-coins { display: inline-flex; align-items: center; gap: 4px; color: #a86d1c; }
@@ -141,35 +83,13 @@
 .quest-scroll .harvest-burst { left: 50%; top: 40%; }
 
 /* --- Animações --- */
-@keyframes trail-walk { to { stroke-dashoffset: -28; } }
-@keyframes needle-wobble { 0%, 100% { transform: rotate(-14deg); } 30% { transform: rotate(10deg); } 60% { transform: rotate(-6deg); } 80% { transform: rotate(4deg); } }
 @keyframes scroll-unroll { from { transform: rotate(var(--tilt, 0deg)) scaleY(.1); opacity: 0; } }
-@keyframes scroll-swing { 0%, 100% { transform: rotate(var(--tilt, 0deg)); } 25% { transform: rotate(-5deg); } 60% { transform: rotate(4deg); } }
 @keyframes footstep { 0%, 100% { opacity: 1; } 50% { opacity: .2; } }
 @keyframes compass-spin { 25% { transform: rotate(90deg); } 50% { transform: rotate(180deg); } 75% { transform: rotate(270deg); } 100% { transform: rotate(360deg); } }
 @keyframes stamp-down { from { transform: translate(-50%, -50%) rotate(-12deg) scale(2.6); opacity: 0; } }
 @keyframes scroll-thud { 40% { transform: rotate(var(--tilt, 0deg)) translateY(3px) scale(.98); } }
 
-@keyframes bubble-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
-@keyframes landmark-pop { from { transform: scale(0, .2); opacity: 0; } }
-@keyframes landmark-glow { 50% { filter: brightness(1.35) drop-shadow(0 0 0 #fff6c2); } }
-@keyframes fog-breathe { from { opacity: .75; transform: translateX(-2px); } to { opacity: 1; transform: translateX(2px); } }
-@keyframes lm-spin { to { transform: rotate(360deg); } }
-@keyframes lm-bob { from { transform: translateY(0); } to { transform: translateY(3px); } }
-@keyframes lm-hop { 0%, 60%, 100% { transform: none; } 70% { transform: translateY(-4px); } 80% { transform: none; } 88% { transform: translateY(-3px); } }
-@keyframes lm-blink { 0%, 92%, 100% { opacity: 1; } 94%, 98% { opacity: 0; } }
-@keyframes lm-glow { from { opacity: .75; } to { opacity: 1; } }
-@keyframes lm-flame { from { transform: scaleY(1); } to { transform: scaleY(.75) translateX(1px); } }
-@keyframes lm-wave { from { transform: rotate(-12deg); } to { transform: rotate(12deg); } }
 @keyframes lm-flag { from { transform: skewY(0); } to { transform: skewY(-10deg) scaleX(.88); } }
-@keyframes lm-zzz { 0% { transform: translate(0, 4px); opacity: 0; } 30% { opacity: 1; } 100% { transform: translate(6px, -10px); opacity: 0; } }
-@keyframes lm-hearts { 0% { transform: translateY(4px); opacity: 0; } 30% { opacity: 1; } 100% { transform: translateY(-12px); opacity: 0; } }
-@keyframes scenery-in { from { opacity: 0; transform: translateY(6px); } }
-@keyframes snow-fall { to { transform: translate(-30px, 340px); } }
-@keyframes bats-fly { 0%, 100% { transform: translate(0, 0); } 25% { transform: translate(80px, -20px); } 50% { transform: translate(160px, 10px); } 75% { transform: translate(60px, 24px); } }
-@keyframes chapter-pulse { 50% { background: #ffe38b; } }
-@keyframes banner-in { from { transform: translate(-50%, -50%) scale(.4) rotate(-4deg); opacity: 0; } }
-@keyframes banner-out { to { transform: translate(-50%, -60%) scale(.9); opacity: 0; } }
 
 /* --- Responsivo --- */
 @media (max-width: 767px) {
@@ -179,202 +99,27 @@
  .goals-stats { width: 100%; }
  .missions-layout { padding: 14px 10px; gap: 14px; }
  .quest-list { grid-template-columns: minmax(0, 1fr); }
- .chapter-tabs { left: 10px; right: 10px; max-width: none; transform: none; overflow-x: auto; }
- .chapter-name { display: none; }
- .chapter-tab.is-viewing .chapter-name { display: inline; }
+
 }
-
-/* ===== Baús da jornada e coleção de achados ===== */
-.missions-side { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
-
-/* Baú no mapa */
-.map-chest.is-hidden { opacity: .55; }
-.map-chest.is-ready { cursor: pointer; outline: none; }
-.map-chest.is-ready .map-chest-body { transform-box: fill-box; transform-origin: 50% 100%; animation: chest-bounce 1.2s ease-in-out infinite; }
-.map-chest-halo { opacity: .5; animation: halo-pulse 1.2s steps(3) infinite alternate; }
-.map-chest-spark { animation: sparkle-blink 1s steps(1) infinite; }
-.map-chest.is-ready:focus-visible .map-chest-halo { fill: #c0e36b; opacity: .9; }
-.map-chest.is-opened { opacity: .7; }
-.guide-body { transform-box: fill-box; transform-origin: 50% 100%; animation: guide-breathe 2.6s ease-in-out infinite; }
-.missions-hero:has(.talk-sr-button:focus) .map-guide .talk-prompt { opacity: 1; transform: none; }
-@keyframes guide-breathe { 50% { transform: scaleY(1.03); } }
-.map-chest.is-new .map-chest-drop { transform-box: fill-box; transform-origin: 50% 100%; animation: chest-drop .9s cubic-bezier(.3, 1.5, .5, 1) backwards; }
-.map-chest-burst rect { transform-box: fill-box; transform-origin: 50% 50%; opacity: 0; animation: map-spark .8s ease-out .55s forwards; }
-.map-chest-prompt { opacity: 0; transform-box: fill-box; pointer-events: none; transition: opacity .15s; }
-.map-chest-prompt text { font-size: 7px; font-weight: 900; fill: #3b2418; }
-.map-chest.is-ready:hover .map-chest-prompt, .map-chest.is-ready:focus-visible .map-chest-prompt, .map-chest.is-new .map-chest-prompt { opacity: 1; }
-.map-chest.is-ready:hover .map-chest-body { filter: brightness(1.15) drop-shadow(1px 0 0 #fff6c2) drop-shadow(-1px 0 0 #fff6c2) drop-shadow(0 -1px 0 #fff6c2); }
-.chest-alert { position: absolute; right: 18px; bottom: 56px; z-index: 4; display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; font: inherit; font-size: 12px; font-weight: 900; color: #3b2418; cursor: pointer; animation: chest-alert-in .5s cubic-bezier(.34, 1.56, .64, 1) backwards, chest-nudge 2.4s ease-in-out 1s infinite; }
-.chest-alert span { font-size: 16px; }
-.chest-alert:hover { background-color: #fff3c4; }
-
-/* Abertura do baú: bater 3x → clarão → cartas viram uma a uma */
-.chest-dialog { width: min(600px, calc(100vw - 32px)); }
-.chest-stage { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 290px; overflow: hidden; background: radial-gradient(circle at 50% 62%, #fff1c7 0, #f6dfa6 42%, #e2b77a 100%); transition: background .6s; }
-.chest-dialog.has-legendary .chest-stage { background: radial-gradient(circle at 50% 50%, #fffbe0 0, #ffe38b 40%, #e8a93a 100%); animation: stage-quake .45s steps(6); }
-.stage-sparkles span { position: absolute; left: calc(6% + var(--i) * 8%); bottom: -8px; width: 4px; height: 4px; background: #fff6c2; box-shadow: 0 0 0 1px #f2c45388; opacity: 0; animation: mote-rise calc(3.2s + var(--i) * .23s) linear infinite; animation-delay: calc(var(--i) * -.41s); }
-.stage-sparkles span:nth-child(3n) { width: 6px; height: 6px; background: #ffe38b; }
-.chest-button { position: relative; z-index: 2; padding: 0; border: 0; background: none; cursor: pointer; }
-.chest-button:disabled { cursor: default; }
-.chest-button:focus-visible { outline: 3px solid #3f6b35; outline-offset: 6px; }
-.chest-button:not(:disabled):hover .treasure-chest { filter: drop-shadow(0 0 0 #fff) drop-shadow(2px 0 0 #fff6c2) drop-shadow(-2px 0 0 #fff6c2) drop-shadow(0 -2px 0 #fff6c2); }
-.chest-platform { position: relative; z-index: 1; width: 170px; height: 14px; margin-top: -10px; background: #7a4a2655; border-radius: 50%; }
-.treasure-chest { display: block; width: 150px; height: 125px; transform-origin: 50% 100%; }
-.treasure-chest.is-big { width: 184px; height: 153px; }
-.phase-tap.taps-0 .treasure-chest { animation: chest-wiggle 1.4s ease-in-out infinite; }
-.phase-tap.taps-1 .treasure-chest { animation: chest-hit .38s cubic-bezier(.3, 1.6, .5, 1), chest-tremble .5s steps(4) .38s infinite; }
-.phase-tap.taps-2 .treasure-chest { animation: chest-hit .38s cubic-bezier(.3, 1.6, .5, 1), chest-tremble .28s steps(4) .38s infinite; }
-.phase-charging .treasure-chest { animation: chest-tremble .14s steps(3) infinite; }
-.treasure-cracks { opacity: 0; }
-.taps-1 .treasure-cracks { opacity: .55; animation: crack-flicker .6s steps(2) infinite; }
-.taps-2 .treasure-cracks, .phase-charging .treasure-cracks { opacity: 1; animation: crack-flicker .3s steps(2) infinite; }
-.phase-burst .treasure-cracks { opacity: 1; }
-.treasure-lid { transform-box: fill-box; transform-origin: 0 100%; }
-.phase-burst .treasure-lid { animation: lid-fly .6s cubic-bezier(.3, 1.4, .5, 1) forwards; }
-.treasure-glow { opacity: 0; }
-.phase-burst .treasure-glow { animation: glow-burst .5s steps(3) forwards; }
-.phase-burst .treasure-chest { animation: chest-pop .5s cubic-bezier(.3, 1.6, .5, 1); }
-.chest-rays { position: absolute; left: 50%; top: 55%; width: 640px; height: 640px; margin: -320px 0 0 -320px; opacity: 0; background: repeating-conic-gradient(#fff6c2 0 10deg, transparent 10deg 30deg); transition: opacity .4s; animation: rays-spin 14s linear infinite; }
-.taps-1 .chest-rays { opacity: .12; }
-.taps-2 .chest-rays, .phase-charging .chest-rays { opacity: .28; }
-.phase-burst .chest-rays, .phase-reveal .chest-rays, .phase-done .chest-rays { opacity: .55; }
-.has-legendary .chest-rays { opacity: .8; background: repeating-conic-gradient(#fffbe0 0 12deg, transparent 12deg 24deg); }
-.tap-meter { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; gap: 6px; margin-top: 10px; }
-.tap-meter p, .tap-meter-text { position: relative; z-index: 2; margin: 10px 0 0; font-size: 13px; font-weight: 900; color: #7a4a26; }
-.tap-dots { display: flex; gap: 8px; }
-.tap-dots span { width: 12px; height: 12px; background: #e8c48a; border: 2px solid #8a5838; }
-.tap-dots span.is-on { background: #f2c453; border-color: #a86d1c; box-shadow: 0 0 0 2px #fff6c2; animation: dot-on .3s cubic-bezier(.3, 1.8, .5, 1); }
-.chest-flash { position: absolute; inset: 0; z-index: 3; background: #fffdf2; pointer-events: none; animation: flash-out .55s ease-out forwards; }
-.coin-fountain { position: absolute; left: 50%; top: 52%; z-index: 4; pointer-events: none; }
-.coin-fountain span { position: absolute; left: -5px; top: -5px; width: 10px; height: 10px; animation: fountain .95s cubic-bezier(.2, .7, .4, 1) forwards; animation-delay: calc(var(--i) * 18ms); }
-.coin-fountain .is-coin { background: #f2c453; border: 2px solid #a86d1c; border-radius: 50%; }
-.coin-fountain .is-confetti { width: 6px; height: 8px; background: hsl(calc(var(--i) * 47), 70%, 62%); }
-
-/* Cartas de prêmio */
-.loot-list { position: relative; z-index: 2; display: flex; flex-wrap: wrap; justify-content: center; gap: 14px; padding: 18px 16px 10px; margin: 0; list-style: none; }
-.loot-card-slot { position: relative; width: 140px; height: 176px; perspective: 700px; animation: card-deal .5s cubic-bezier(.3, 1.4, .5, 1) backwards; animation-delay: calc(var(--card) * 110ms); }
-.loot-card-inner { position: relative; display: block; width: 100%; height: 100%; padding: 0; border: 0; background: none; font: inherit; cursor: pointer; transform-style: preserve-3d; transition: transform .6s cubic-bezier(.3, 1.4, .5, 1); }
-.loot-card-slot:not(.is-flipped) .loot-card-inner:hover { transform: translateY(-6px) rotate(-2deg); }
-.loot-card-slot.is-flipped .loot-card-inner { cursor: default; transform: rotateY(180deg); }
-.loot-card-inner:focus-visible { outline: 3px solid #3f6b35; outline-offset: 4px; }
-.loot-face { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding: 12px 8px; overflow: hidden; backface-visibility: hidden; -webkit-backface-visibility: hidden; border: 3px solid #5b3826; box-shadow: 3px 4px 0 #42291655; }
-.loot-back { background: repeating-linear-gradient(0deg, #a86b35 0 10px, #9a5f2e 10px 12px); }
-.loot-back::before { content: ''; position: absolute; inset: 7px; border: 2px solid #f2c453; box-shadow: inset 0 0 0 2px #7a4a26; }
-.loot-back-mark { position: relative; display: grid; place-items: center; width: 46px; height: 46px; font-size: 28px; font-weight: 900; color: #3b2418; background: #f2c453; border: 3px solid #7a4a26; animation: back-bob 1.2s ease-in-out infinite; animation-delay: calc(var(--card) * -.3s); }
-.loot-front { transform: rotateY(180deg); text-align: center; background: #fff8e1; border-color: #8a5838; }
-.loot-icon { position: relative; z-index: 1; width: 60px; height: 60px; filter: drop-shadow(2px 0 0 #fff8e1) drop-shadow(-2px 0 0 #fff8e1) drop-shadow(0 2px 0 #fff8e1) drop-shadow(0 -2px 0 #fff8e1) drop-shadow(2px 2px 0 #42291655); }
-.is-flipped .loot-icon { animation: icon-pop .6s cubic-bezier(.3, 1.8, .5, 1) .25s backwards; }
-.loot-name { position: relative; z-index: 1; font-size: 13px; line-height: 1.25; color: #3b2418; }
-.loot-rarity { position: relative; z-index: 1; padding: 1px 6px; font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; color: #fff8e1; background: #8a6136; }
-.loot-rays { position: absolute; left: 50%; top: 40%; width: 240px; height: 240px; margin: -120px 0 0 -120px; opacity: .5; background: repeating-conic-gradient(#9fd8f0 0 12deg, transparent 12deg 30deg); animation: rays-spin 6s linear infinite; }
-.loot-sparkles span { position: absolute; left: 50%; top: 40%; z-index: 2; width: 6px; height: 6px; background: #fff; box-shadow: 0 0 0 2px #9fd8f0; opacity: 0; transform: rotate(calc(var(--s) * 36deg)) translateY(0); animation: spark-out .9s ease-out .3s forwards; }
-.loot-card-slot.is-raro .loot-front { border-color: #3d7fa8; background: #eef9ff; box-shadow: inset 0 0 0 2px #9fd8f0, 0 0 0 3px #9fd8f088, 3px 4px 0 #1f4a6655; }
-.loot-card-slot.is-raro .loot-rarity { background: #3d7fa8; }
-.loot-card-slot.is-raro.is-flipped { animation: card-deal .5s cubic-bezier(.3, 1.4, .5, 1) backwards, rare-glow 1.6s ease-in-out infinite .8s; animation-delay: calc(var(--card) * 110ms), .8s; }
-.loot-card-slot.is-lendário .loot-front { border-color: #a86d1c; background: #fff3c4; box-shadow: inset 0 0 0 2px #f2c453, 0 0 0 4px #ffe38b, 3px 4px 0 #42291655; }
-.loot-card-slot.is-lendário .loot-rays { opacity: .45; background: repeating-conic-gradient(#ffe38b 0 10deg, transparent 10deg 20deg); }
-.loot-card-slot.is-lendário .loot-sparkles span { background: #fffbe0; box-shadow: 0 0 0 2px #f2c453; }
-.loot-card-slot.is-lendário .loot-rarity { background: #bf5837; }
-.loot-card-slot.is-lendário .loot-front::after { content: ''; position: absolute; top: -20px; bottom: -20px; left: -30px; z-index: 2; width: 14px; background: #fffbe0cc; transform: rotate(20deg); animation: tile-shine 2.4s steps(10) infinite 1s; }
-.loot-card-slot.is-lendário.is-flipped .loot-card-inner { animation: legend-jump .7s cubic-bezier(.3, 1.6, .5, 1) .5s; }
-.legendary-banner { position: absolute; left: 50%; top: -14px; z-index: 5; padding: 3px 8px; font-size: 12px; font-weight: 900; letter-spacing: 1px; white-space: nowrap; color: #3b2418; background: #ffe38b; border: 2px solid #a86d1c; box-shadow: 2px 2px 0 #42291655; transform: translateX(-50%) rotate(-4deg); animation: banner-stamp .5s cubic-bezier(.3, 1.8, .5, 1) .55s backwards; }
-.loot-summary { margin: 0; padding: 10px 16px 0; text-align: center; font-size: 13px; color: #5b3826; animation: scenery-in .4s ease-out; }
-
-/* Álbum de cartas (as cartas em si ficam em cards.css) */
-.collection-body { display: flex; flex-direction: column; gap: 12px; padding: 14px; }
-
-@keyframes chest-drop { 0% { transform: translateY(-60px) scale(.6); opacity: 0; } 55% { transform: translateY(0) scale(1.25, .7); opacity: 1; } 75% { transform: translateY(-5px) scale(.9, 1.1); } 100% { transform: none; } }
-@keyframes map-spark { 0% { opacity: 1; transform: rotate(calc(var(--i) * 45deg)) translateY(0); } 100% { opacity: 0; transform: rotate(calc(var(--i) * 45deg)) translateY(-16px); } }
-@keyframes chest-bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
-@keyframes halo-pulse { from { opacity: .3; } to { opacity: .7; } }
-@keyframes chest-alert-in { from { transform: scale(.4); opacity: 0; } }
-@keyframes chest-nudge { 0%, 80%, 100% { transform: rotate(0); } 85% { transform: rotate(-4deg); } 90% { transform: rotate(4deg); } 95% { transform: rotate(-2deg); } }
-@keyframes chest-wiggle { 0%, 60%, 100% { transform: rotate(0); } 70% { transform: rotate(-4deg) translateY(-2px); } 80% { transform: rotate(4deg); } 90% { transform: rotate(-2deg); } }
-@keyframes lid-fly { to { transform: translate(-6px, -14px) rotate(-38deg); } }
-@keyframes glow-burst { from { opacity: 0; } to { opacity: 1; } }
-@keyframes rays-in { to { opacity: .55; } }
-@keyframes rays-spin { to { transform: rotate(360deg); } }
-@keyframes chest-hit { 0% { transform: scale(1.18, .8); } 50% { transform: scale(.92, 1.1) translateY(-8px); } 100% { transform: none; } }
-@keyframes chest-tremble { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-2px) rotate(-1deg); } 75% { transform: translateX(2px) rotate(1deg); } }
-@keyframes chest-pop { 30% { transform: scale(1.15, .85); } 60% { transform: scale(.95, 1.08) translateY(-6px); } }
-@keyframes crack-flicker { 50% { opacity: .6; } }
-@keyframes dot-on { from { transform: scale(1.8); } }
-@keyframes flash-out { from { opacity: 1; } to { opacity: 0; } }
-@keyframes fountain { 0% { transform: translate(0, 0) scale(.4); opacity: 1; } 45% { transform: translate(var(--dx), calc(-90px - var(--i) * 4px)) scale(1) rotate(180deg); opacity: 1; } 100% { transform: translate(calc(var(--dx) * 1.6), 120px) rotate(360deg); opacity: 0; } }
-@keyframes mote-rise { 0% { transform: translateY(0); opacity: 0; } 15% { opacity: .9; } 100% { transform: translateY(-300px); opacity: 0; } }
-@keyframes card-deal { from { transform: translateY(80px) scale(.5) rotate(-12deg); opacity: 0; } }
-@keyframes back-bob { 50% { transform: translateY(-3px); } }
-@keyframes icon-pop { from { transform: scale(0) rotate(-20deg); } }
-@keyframes spark-out { 0% { opacity: 1; transform: rotate(calc(var(--s) * 36deg)) translateY(0); } 100% { opacity: 0; transform: rotate(calc(var(--s) * 36deg)) translateY(-80px); } }
-@keyframes rare-glow { 50% { filter: drop-shadow(0 0 6px #9fd8f0); } }
-@keyframes legend-jump { 0% { transform: rotateY(180deg); } 40% { transform: rotateY(180deg) translateY(-14px) scale(1.08); } 100% { transform: rotateY(180deg); } }
-@keyframes banner-stamp { from { transform: translateX(-50%) rotate(-14deg) scale(2.4); opacity: 0; } }
-@keyframes stage-quake { 0%, 100% { transform: none; } 20% { transform: translate(-3px, 1px); } 40% { transform: translate(3px, -1px); } 60% { transform: translate(-2px, 0); } 80% { transform: translate(2px, 1px); } }
-
-@media (max-width: 767px) { .chest-alert { right: 10px; bottom: 54px; } .loot-card-slot { width: calc(50% - 8px); height: 160px; } .chest-stage { min-height: 260px; } }
 
 /* Placa minimalista do topo das Missões: título e botão na mesma linha */
 .missions-sign.is-minimal { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px; padding: 12px 16px; max-width: none; width: fit-content; }
 .missions-sign.is-minimal h1 { margin: 0; }
 
-/* ===== Mapa-múndi da jornada (topo das Missões) ===== */
-/* A altura acompanha a largura: o mapa inteiro sempre cabe abaixo das placas */
-.missions-hero.is-world { display: flex; flex-direction: column; height: auto; aspect-ratio: 1350 / 430; min-height: 400px; padding: 18px; }
-.world-map-scroll { position: absolute; inset: 0; z-index: -1; }
-.world-map { display: block; width: 100%; height: 100%; overflow: visible; }
-.world-map text { font-family: 'Courier New', monospace; }
-.missions-hero.is-world .missions-hero-top { align-items: center; padding-left: 56px; }
 .missions-hero .hero-coin-hud { position: static; }
-.missions-hero .chest-alert { bottom: 18px; right: 18px; }
-
-/* Mapa em pixel art: o mapa se monta peça por peça (--d = atraso de cada peça) */
-.px-pop { transform-box: fill-box; transform-origin: 50% 100%; animation: px-pop .45s steps(4) var(--d, 0s) backwards; }
-.px-water { animation: px-fade .4s steps(3) backwards; }
-.trail-wipe { transform-box: view-box; transform-origin: 0 0; animation: trail-wipe var(--t, 1.4s) steps(24) var(--d, 0s) backwards; }
-.map-node .node-base { fill: #c9c0b0; stroke: #57311f; stroke-width: 1.2; }
-.map-node.is-done .node-base { fill: #72ad32; stroke: #3f6b35; }
-.map-node.is-next .node-base { fill: #f2c453; stroke: #a86d1c; }
-.map-node .lm-flag { fill: #e8d2a8; }
-.map-node.is-done .lm-flag { fill: #d64d3c; }
-.map-node.is-next .lm-flag { fill: #f2c453; }
-/* Construções ainda não alcançadas ficam apagadinhas */
-.map-node.is-future .node-landmark { filter: saturate(.35) brightness(1.05); opacity: .75; }
-.node-pointer { animation: lm-bob .6s steps(2) infinite alternate; }
-.map-node .px-pop.is-fresh { animation: landmark-pop .8s cubic-bezier(.34, 1.56, .64, 1) backwards; }
-.map-node:hover .node-flag, .map-node:hover .node-base, .map-node:hover .node-landmark { filter: drop-shadow(1px 0 0 #ffe38b) drop-shadow(-1px 0 0 #ffe38b) drop-shadow(0 1px 0 #ffe38b) drop-shadow(0 -1px 0 #ffe38b); }
-
-/* Placa do nome do mundo, no topo junto da placa de missões */
-.world-title { display: flex; align-items: center; gap: 10px; padding: 6px 8px; background: #f2c453; color: #3b2418; }
-.world-title p { display: flex; flex-direction: column; align-items: center; min-width: 13ch; margin: 0; font-size: 15px; line-height: 1.15; text-align: center; }
-.world-title small { font-size: 11px; font-weight: bold; color: #6b4426; }
-.world-arrow { width: 30px; height: 30px; border: 2px solid #57311f; background: #fff1c7; color: #57311f; font-size: 12px; line-height: 1; cursor: pointer; }
-.world-arrow:hover:not(:disabled), .world-arrow:focus-visible { background: #ffe38b; }
-.world-arrow:disabled { opacity: .35; cursor: default; }
-
-@keyframes px-pop { from { transform: scale(0); opacity: 0; } 60% { transform: scale(1.15); opacity: 1; } }
-@keyframes px-fade { from { opacity: 0; } }
-@keyframes trail-wipe { from { transform: scaleX(0); } }
 
 /* Celular: placa em cima e o mapa embaixo, rolando de lado */
-@media (max-width: 767px) {
- .missions-hero.is-world { height: auto; aspect-ratio: auto; padding: 70px 12px 0; }
- .missions-hero.is-world .missions-hero-top { order: 1; padding-left: 0; justify-content: space-between; }
- .world-map-scroll { order: 2; position: relative; inset: auto; z-index: 0; height: 208px; margin: 12px -12px 0; overflow-x: auto; overflow-y: hidden; scrollbar-width: thin; }
- .world-map-scroll .world-map { width: 900px; height: 200px; }
- .world-title { order: 3; width: 100%; justify-content: space-between; }
- .missions-hero .chest-alert { bottom: 12px; right: 12px; }
-}
 
 /* Tamanho do pergaminho: ações sempre dentro dos 200px (título e descrição em até 2 linhas cada). */
 .quest-paper .quest-rank { flex-shrink: 0; font-size: 11px; line-height: 16px; }
 .quest-paper .quest-rank > span { font-size: 15px; }
 .quest-paper .quest-title { margin-top: 5px; font-size: 16px; line-height: 1.25; height: 2.5em; }
-.quest-paper .quest-description { margin-top: 4px; -webkit-line-clamp: 2; line-clamp: 2; max-height: 2.8em; font-size: 13px; line-height: 1.4; }
+
 .quest-paper .quest-rewards { gap: 14px; padding-top: 6px; font-size: 13px; line-height: 18px; }
 .quest-paper .quest-progress { margin-top: 4px; font-size: 11px; line-height: 14px; }
 .quest-paper .quest-actions { flex-wrap: nowrap; gap: 6px; margin-top: 8px; }
 .quest-paper .quest-actions .pixel-button { min-height: 32px; min-width: 0; padding: 5px 8px; font-size: 12px; line-height: 1.15; }
-.quest-paper .quest-actions .primary-button { flex: 1; }
+.quest-paper .quest-actions .primary-button { flex: 1 0 auto; white-space: nowrap; }
 .quest-paper .quest-actions .plot-remove { flex-shrink: 0; width: 30px; height: 32px; }
 
 .quest-paper { cursor: pointer; }
@@ -386,44 +131,50 @@
 /* Desfazer missão cumprida (no modal de detalhes) */
 .mission-undo { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; padding-top: 10px; border-top: 1px dashed #c49a62; }
 
-/* ===== Mapa: profundidade e vida (vento nas árvores, nuvens passando, água brilhando, borboletas) ===== */
-.px-sway { transform-box: fill-box; transform-origin: 50% 100%; animation: px-sway 3.8s ease-in-out var(--sd, 0s) infinite alternate; }
-.map-water-glint { animation: sparkle-blink 1.6s steps(1) infinite; }
-.map-cloud-shadow { transform-box: view-box; animation: cloud-shadow-drift 48s linear infinite; }
-.map-cloud-shadow.is-slow { animation-duration: 70s; animation-delay: -32s; }
-.map-butterfly { transform-box: fill-box; animation: map-butterfly-drift 9s ease-in-out infinite alternate; }
-.map-butterfly-wings { transform-box: fill-box; transform-origin: center; animation: map-butterfly-flap .28s steps(2) infinite; }
-@keyframes px-sway { from { transform: skewX(-1.4deg); } to { transform: skewX(1.4deg); } }
-@keyframes cloud-shadow-drift { from { transform: translateX(-240px); } to { transform: translateX(860px); } }
-@keyframes map-butterfly-drift { 0% { transform: translate(0, 0); } 25% { transform: translate(22px, -12px); } 50% { transform: translate(40px, 4px); } 75% { transform: translate(18px, 14px); } 100% { transform: translate(-6px, -6px); } }
-@keyframes map-butterfly-flap { 50% { transform: scaleX(.4); } }
-
 /* ===== Micro-interações do quadro e da coleção ===== */
 /* A tachinha balança quando o mouse passa no pergaminho */
 .quest-scroll:hover .quest-pin { animation: quest-pin-wiggle .45s ease-in-out; }
 @keyframes quest-pin-wiggle { 25% { rotate: -14deg; } 60% { rotate: 10deg; } }
 
-/* ===== Mapa: névoa nas bordas e corvos passando (MapAtmosphere) ===== */
-/* Fica por cima do mapa e embaixo das placas; nunca recebe cliques */
-.map-atmosphere { position: absolute; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; --fog: 255 241 199; --fog-top: 84px; --fog-side: 56px; }
-/* Névoa em faixas (degraus, sem degradê liso): mais forte na borda, some antes da trilha */
-.map-fog { position: absolute; inset: 0; background:
-  linear-gradient(to bottom, rgb(var(--fog) / .55) 0 calc(var(--fog-top) * .18), rgb(var(--fog) / .36) 0 calc(var(--fog-top) * .4), rgb(var(--fog) / .2) 0 calc(var(--fog-top) * .66), rgb(var(--fog) / .09) 0 var(--fog-top), transparent 0),
-  linear-gradient(to right, rgb(var(--fog) / .45) 0 calc(var(--fog-side) * .22), rgb(var(--fog) / .26) 0 calc(var(--fog-side) * .5), rgb(var(--fog) / .1) 0 var(--fog-side), transparent 0),
-  linear-gradient(to left, rgb(var(--fog) / .45) 0 calc(var(--fog-side) * .22), rgb(var(--fog) / .26) 0 calc(var(--fog-side) * .5), rgb(var(--fog) / .1) 0 var(--fog-side), transparent 0); }
-/* Cada corvo atravessa o mapa em ~40% do ciclo e espera fora da tela no resto */
-.map-crow { position: absolute; left: 0; width: 100%; animation: crow-fly var(--fly, 30s) linear var(--fly-delay, 0s) infinite backwards; }
-.map-crow-bob { width: fit-content; transform: scale(var(--crow-scale, 1)); transform-origin: left center; animation: crow-bob 1.4s steps(2) infinite alternate; }
-.map-crow-art { display: block; opacity: .85; }
-.crow-wing-up { animation: crow-flap-up .5s steps(1) infinite; }
-.crow-wing-down { opacity: 0; animation: crow-flap-down .5s steps(1) infinite; }
-@keyframes crow-fly { 0% { transform: translateX(-48px); } 40%, 100% { transform: translateX(calc(100% + 48px)); } }
-@keyframes crow-bob { to { translate: 0 -4px; } }
-@keyframes crow-flap-up { 0% { opacity: 1; } 50% { opacity: 0; } }
-@keyframes crow-flap-down { 0% { opacity: 0; } 50% { opacity: 1; } }
-@media (prefers-reduced-motion: reduce) { .map-crow { display: none; } }
-html.calm-mode .map-crow { display: none; }
 /* Celular: só sobre a faixa do mapa que rola, para não apagar as placas */
-@media (max-width: 767px) {
- .map-atmosphere { top: auto; bottom: 0; height: 208px; z-index: 1; --fog-top: 48px; --fog-side: 28px; }
+
+/* --- Navio do Capitão: vista de lado, ondas batendo e a proa arfando (2,4s por batida) --- */
+.missions-hero.is-sea { display: flex; flex-direction: column; aspect-ratio: 1350 / 430; min-height: 400px; padding: 18px; }
+.missions-hero.is-sea .missions-hero-top { align-items: center; }
+.missions-hero .hero-coin-hud { position: static; }
+.sailing-scene { position: absolute; inset: 0; z-index: -1; overflow: hidden; }
+.sea-back { position: absolute; inset: 0; width: 100%; height: 100%; }
+.sea-clouds { animation: sea-clouds 60s linear infinite; }
+.sea-front { position: absolute; left: 0; right: 0; bottom: 0; width: 100%; height: 20%; }
+.sea-front-roll { animation: sea-roll 2.4s steps(6) infinite; }
+.ship-rig { position: absolute; left: 50%; bottom: 9%; width: clamp(300px, 34%, 460px); aspect-ratio: 360 / 300; margin-left: calc(clamp(300px, 34%, 460px) / -2); transform-origin: 58% 82%; animation: ship-pitch 2.4s steps(12) infinite; }
+.ship-art { position: absolute; inset: 0; width: 100%; height: 100%; }
+.bow-splash { position: absolute; right: -6%; bottom: 8%; width: 22%; opacity: 0; transform-origin: 50% 100%; animation: bow-splash 2.4s steps(4) infinite; }
+/* Capitão no convés: o clique abre a conversa; no hover/foco o contorno e o brilho seguem o corpo dele */
+.ship-captain { position: absolute; padding: 0; border: 0; background: transparent; cursor: pointer; }
+.ship-captain:focus-visible { outline: none; }
+.ship-rig:has(.ship-captain:hover) .captain-figure, .ship-rig:has(.ship-captain:focus-visible) .captain-figure {
+ filter: drop-shadow(1px 0 0 #fff1c7) drop-shadow(-1px 0 0 #fff1c7) drop-shadow(0 1px 0 #fff1c7) drop-shadow(0 -1px 0 #fff1c7) drop-shadow(0 0 4px #f3d27d);
 }
+.ship-rig:has(.ship-captain:focus-visible) .captain-figure { filter: drop-shadow(1px 0 0 #e7b84b) drop-shadow(-1px 0 0 #e7b84b) drop-shadow(0 1px 0 #e7b84b) drop-shadow(0 -1px 0 #e7b84b) drop-shadow(0 0 4px #f3d27d); }
+@keyframes ship-pitch {
+ 0%, 100% { transform: rotate(-2deg) translateY(0); }
+ 25% { transform: rotate(0deg) translateY(3px); }
+ 50% { transform: rotate(2.5deg) translateY(1px); }
+ 75% { transform: rotate(0deg) translateY(-2px); }
+}
+@keyframes bow-splash { 0%, 38% { opacity: 0; transform: translateY(8px) scale(.6); } 50% { opacity: 1; transform: translateY(0) scale(1); } 66%, 100% { opacity: 0; transform: translateY(-10px) scale(1.1); } }
+@keyframes sea-roll { from { transform: translateX(0); } to { transform: translateX(-60px); } }
+@keyframes sea-clouds { from { transform: translateX(0); } to { transform: translateX(-120px); } }
+
+/* Sem o álbum ao lado, o quadro ocupa a página inteira (pedido da autora) */
+.missions-layout.is-single { max-width: none; }
+@media (min-width: 1100px) { .missions-layout.is-single { grid-template-columns: minmax(0, 1fr); } }
+
+@media (max-width: 767px) {
+ .missions-hero.is-sea { aspect-ratio: auto; min-height: 380px; padding: 70px 12px 12px; }
+ .missions-hero.is-sea .missions-hero-top { justify-content: space-between; }
+ .sea-front { height: 16%; }
+ .ship-rig { width: 280px; margin-left: -140px; bottom: 9%; }
+}
+

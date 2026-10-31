@@ -13,7 +13,6 @@ import './styles/goals.css';
 import './styles/home.css';
 import './styles/scene.css';
 import './styles/missions.css';
-import './styles/cards.css';
 import './styles/diary.css';
 import './styles/evolution.css';
 import './styles/settings.css';

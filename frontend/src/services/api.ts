@@ -1,6 +1,5 @@
 import type { Mission, Reward } from '../types/world';
 import type { Purchase } from '../lib/shop';
-import type { Loot } from '../lib/treasure';
 import { toKey } from '../lib/goalLogic';
 import { currentAccessToken } from '../lib/auth';
 import type { GoalLog } from '../types/goals';
@@ -85,7 +84,7 @@ export async function saveMotivation(motivation: { text: string; photo?: string 
 }
 
 /** Partes que o servidor sabe apagar separadamente (a conta fica) */
-export type ResetScope = 'goals' | 'diary' | 'missions' | 'shop' | 'treasure' | 'motivation' | 'progress';
+export type ResetScope = 'goals' | 'diary' | 'missions' | 'shop' | 'motivation' | 'progress';
 
 /** Apaga as partes escolhidas e zera o progresso quando "progress" está entre elas; a conta continua */
 export async function resetPlayerData(scopes: ResetScope[]): Promise<Player> {
@@ -94,15 +93,9 @@ export async function resetPlayerData(scopes: ResetScope[]): Promise<Player> {
 
 // --- Ganhos (o servidor confere a ação, decide o valor e paga uma vez só) ---
 
-export interface ChestResult { loot: Loot[]; coins: number; xp: number; alreadyOpened: boolean; user: Player }
+/** "chest" só aparece em registros antigos (os baús saíram do jogo) */
 export interface RewardClaim { key: string; kind: 'harvest' | 'week' | 'chest'; day: string; coins: number; xp: number }
 
-
-/** Abre um baú alcançado na jornada: o conteúdo é sorteado no servidor */
-export async function openTreasureChest(chestId: string, date: string): Promise<ChestResult> {
-  const result = await request<ChestResult>(`/progress/chests/${encodeURIComponent(chestId)}/open`, { method: 'POST', body: JSON.stringify({ date }) });
-  return { ...result, user: toPlayer(result.user) };
-}
 
 /** Recompensas pagas entre dois dias (AAAA-MM-DD, inclusive) */
 export async function listClaims(from: string, to: string): Promise<RewardClaim[]> {

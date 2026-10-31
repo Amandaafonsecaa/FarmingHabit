@@ -9,15 +9,6 @@ import { PixelIcon } from '../components/PixelIcon';
 import { useAcceptedMissions, useMissionBoard } from '../hooks/useMissionBoard';
 import type { Mission, NewItem } from '../types/world';
 import { recordAdventure } from '../lib/diary';
-import { foundChests, type FoundChest } from '../lib/treasure';
-import { CARDS_KEY, LEGACY_TREASURE_KEY, readCards, saveOpenedChest } from '../lib/cards';
-import { journeyState } from '../lib/journey';
-import { useStorageChange } from '../hooks/useStorageChange';
-import { toKey } from '../lib/goalLogic';
-import { PLAYER_EVENT } from '../lib/harvestRewards';
-import { openTreasureChest } from '../services/api';
-import { ChestOpening } from '../components/missions/ChestOpening';
-import { CardAlbum } from '../components/missions/CardAlbum';
 import { flyCoins } from '../lib/coinFlight';
 import type { AppPage } from '../types/navigation';
 
@@ -29,16 +20,10 @@ export function MissionsPage({ onNavigate }: { onNavigate: (page: AppPage) => vo
   const { accepted, accept, abandon } = useAcceptedMissions();
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [celebratingId, setCelebratingId] = useState<string | null>(null);
-  const [highlightId, setHighlightId] = useState<string | null>(null);
   const [editing, setEditing] = useState<Mission | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   // Avisos de ação aparecem como toast
   const setAnnouncement = toast;
-  const [album, setAlbum] = useState(readCards);
-  useStorageChange(CARDS_KEY, () => setAlbum(readCards()));
-  // Sem álbum ainda, ele vem da coleção antiga: acompanha também essa chave
-  useStorageChange(LEGACY_TREASURE_KEY, () => setAlbum(readCards()));
-  const [openingChest, setOpeningChest] = useState<FoundChest | null>(null);
 
   // Cumpridas continuam no quadro com o carimbo, abaixo das em aberto (as em jornada vêm primeiro).
   // A que está sendo comemorada fica no lugar até o carimbo terminar
@@ -47,23 +32,6 @@ export function MissionsPage({ onNavigate }: { onNavigate: (page: AppPage) => vo
   const done = board.missions.filter(mission => mission.completed && mission.id !== celebratingId);
   const stillOpen = open.filter(mission => !mission.completed);
   const completedCount = board.missions.filter(mission => mission.completed).length;
-  const chests = foundChests(completedCount);
-  const unopened = chests.filter(chest => !album.opened.includes(chest.id));
-
-  // Abre o baú no servidor (ele confere se a jornada chegou lá, sorteia e paga) e só então guarda as cartas no álbum
-  async function openChest(chest: FoundChest) {
-    const result = await openTreasureChest(chest.id, toKey(new Date()));
-    board.applyPlayer(result.user);
-    window.dispatchEvent(new CustomEvent(PLAYER_EVENT, { detail: result.user }));
-    setAlbum(current => current.opened.includes(chest.id) ? current : saveOpenedChest(current, chest.id, result.loot));
-    setAnnouncement(result.alreadyOpened ? 'Este baú já tinha sido aberto.' : `Baú aberto! +${result.coins} moedas${result.xp ? ` e +${result.xp} XP` : ''}.`);
-    return result.loot;
-  }
-
-  function showChest(id?: string) {
-    const chest = id ? unopened.find(item => item.id === id) : unopened[0];
-    if (chest) setOpeningChest(chest);
-  }
 
   async function run(id: string, label: string, action: () => Promise<void>) {
     if (pendingId) return;
@@ -101,19 +69,10 @@ export function MissionsPage({ onNavigate }: { onNavigate: (page: AppPage) => vo
     }
   }
 
-  // Clicar em "Em jornada" no mapa rola até o pergaminho e o faz balançar
-  function focusQuest(id: string) {
-    const smooth = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    document.getElementById(`quest-${id}`)?.scrollIntoView({ behavior: smooth ? 'smooth' : 'auto', block: 'center' });
-    setHighlightId(id);
-    window.setTimeout(() => setHighlightId(current => current === id ? null : current), 1400);
-  }
-
   return <MainLayout page="missions" onNavigate={onNavigate}
-    world={<MissionsHero completed={completedCount} loading={board.loading} openCount={stillOpen.length} opened={album.opened} unopened={unopened.length} onOpenChest={showChest} coins={board.player?.coins ?? null}
-      traveling={stillOpen.filter(mission => accepted.includes(mission.id)).length} activeMission={stillOpen.find(mission => accepted.includes(mission.id)) ?? null}
-      onFocusMission={focusQuest}/>}>
-    <div className="missions-layout">
+    world={<MissionsHero completed={completedCount} openCount={stillOpen.length} coins={board.player?.coins ?? null}
+      traveling={stillOpen.filter(mission => accepted.includes(mission.id)).length}/>}>
+    <div className="missions-layout is-single">
       <section className="world-panel pixel-frame quest-board-panel" aria-labelledby="board-heading">
         <header className="panel-heading"><h2 id="board-heading"><PixelIcon name="mission" className="size-5"/>Quadro de aventuras</h2><button type="button" className="pixel-button primary-button" onClick={()=>setDialogOpen(true)}><PixelIcon name="plus" className="size-2.5"/>Nova missão</button></header>
         <div className="quest-board">
@@ -124,7 +83,7 @@ export function MissionsPage({ onNavigate }: { onNavigate: (page: AppPage) => vo
             <button type="button" className="pixel-button primary-button mt-3" onClick={()=>setDialogOpen(true)}><PixelIcon name="plus" className="size-2.5"/>Transformar em missão</button>
           </div>}
           {open.length > 0 && <ul className="quest-list">{open.map((mission, index) => <QuestScroll key={mission.id} mission={mission} index={index}
-            completed={mission.completed && mission.id !== celebratingId} active={accepted.includes(mission.id)} pending={pendingId === mission.id} celebrating={celebratingId === mission.id} highlighted={highlightId === mission.id}
+            completed={mission.completed && mission.id !== celebratingId} active={accepted.includes(mission.id)} pending={pendingId === mission.id} celebrating={celebratingId === mission.id}
             onOpen={()=>{ if (!pendingId && !celebratingId) setEditing(mission); }}
             onAccept={()=>{ accept(mission.id); setAnnouncement(`${mission.title}: pé na estrada! Boa aventura.`); }}
             onAbandon={()=>{ abandon(mission.id); setAnnouncement(`${mission.title}: fica para outro dia.`); }}
@@ -134,7 +93,7 @@ export function MissionsPage({ onNavigate }: { onNavigate: (page: AppPage) => vo
           {done.length > 0 && <>
             <p className="quest-divider"><span>Cumpridas · {done.length}</span></p>
             <ul className="quest-list">{done.map((mission, index) => <QuestScroll key={mission.id} mission={mission} index={index + open.length}
-            completed={mission.completed && mission.id !== celebratingId} active={accepted.includes(mission.id)} pending={pendingId === mission.id} celebrating={celebratingId === mission.id} highlighted={highlightId === mission.id}
+            completed={mission.completed && mission.id !== celebratingId} active={accepted.includes(mission.id)} pending={pendingId === mission.id} celebrating={celebratingId === mission.id}
             onOpen={()=>{ if (!pendingId && !celebratingId) setEditing(mission); }}
             onAccept={()=>{ accept(mission.id); setAnnouncement(`${mission.title}: pé na estrada! Boa aventura.`); }}
             onAbandon={()=>{ abandon(mission.id); setAnnouncement(`${mission.title}: fica para outro dia.`); }}
@@ -143,13 +102,11 @@ export function MissionsPage({ onNavigate }: { onNavigate: (page: AppPage) => vo
           </>}
         </div>
       </section>
-      <div className="missions-side"><CardAlbum cards={album.cards} initialSet={journeyState(completedCount).chapter}/></div>
     </div>
     <p role="status" className="world-status">{'Toda grande descoberta começa com uma pequena curiosidade.'}</p>
     {editing && <EditMissionDialog key={editing.id} mission={editing} active={accepted.includes(editing.id)} onClose={()=>setEditing(null)}
       onSave={async changes=>{ await board.edit(editing.id, changes); setAnnouncement(`${changes.title}: missão atualizada!`); }}
       onUncomplete={async ()=>{ await board.uncomplete(editing.id); setAnnouncement(`${editing.title}: missão desfeita. -${editing.xp} XP e -${editing.coins} moedas.`); }}/>}
     {dialogOpen && <MissionDialog onSave={create} onClose={()=>setDialogOpen(false)}/>}
-    {openingChest && <ChestOpening key={openingChest.id} chest={openingChest} owned={album.cards} remaining={unopened.filter(chest => chest.id !== openingChest.id).length} onOpen={openChest} onClose={()=>setOpeningChest(null)}/>}
   </MainLayout>;
 }
