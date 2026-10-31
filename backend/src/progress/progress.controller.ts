@@ -4,19 +4,17 @@ import {
   Get,
   HttpCode,
   HttpStatus,
-  Param,
   Post,
   Query,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOperation,
-  ApiParam,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
 import { ProgressService } from './progress.service';
-import { ClaimsQueryDto, HarvestDto, OpenChestDto } from './dto/progress.dto';
+import { ClaimsQueryDto, HarvestDto } from './dto/progress.dto';
 import { CurrentUser } from '../auth/current-user.decorator';
 import type { AuthUser } from '../auth/auth-user';
 
@@ -46,35 +44,10 @@ export class ProgressController {
     return this.progressService.harvest(user.id, dto.goalId, dto.date);
   }
 
-  @Post('chests/:chestId/open')
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({
-    summary: 'Abrir um baú da jornada',
-    description:
-      'O baú precisa ter sido alcançado pelas missões cumpridas. O conteúdo é sorteado no servidor e pago uma vez; abrir de novo devolve o mesmo conteúdo sem pagar.',
-  })
-  @ApiParam({
-    name: 'chestId',
-    example: '1:0:2',
-    description: 'volta:capítulo:parada',
-  })
-  @ApiResponse({
-    status: HttpStatus.OK,
-    description: 'Conteúdo do baú, moedas e XP pagos e o jogador atualizado.',
-  })
-  async openChest(
-    @CurrentUser() user: AuthUser,
-    @Param('chestId') chestId: string,
-    @Body() dto: OpenChestDto,
-  ) {
-    return this.progressService.openChest(user.id, chestId, dto.date);
-  }
-
   @Get('claims')
   @ApiOperation({
     summary: 'Recompensas pagas num período',
-    description:
-      'Colheitas, bônus da semana e baús entre dois dias (inclusive).',
+    description: 'Colheitas e bônus da semana entre dois dias (inclusive).',
   })
   async listClaims(
     @CurrentUser() user: AuthUser,

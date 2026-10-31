@@ -110,7 +110,7 @@ model Motivation {
   @@map("motivations")
 }
 
-/// Dados que o jogador coloca no site (metas e registro diário, diário, baús, perfil, preferências...).
+/// Dados que o jogador coloca no site (metas, diário, perfil, preferências...).
 /// Um registro por chave do navegador ("farminghabit.goals.v1" etc.), com o conteúdo como texto JSON.
 /// O front sincroniza: baixa ao abrir e envia cada mudança; o mais recente (updatedAt) vence.
 model UserData {
@@ -123,19 +123,20 @@ model UserData {
   @@map("user_data")
 }
 
-/// Livro-caixa das recompensas que o servidor pagou: colheita de meta, bônus da semana e baú.
+/// Livro-caixa das recompensas que o servidor pagou: colheita de meta e bônus da semana
+/// (registros "chest" antigos são de baús, que saíram do jogo; ficam como histórico).
 /// A chave é única por jogador, então a mesma recompensa nunca é paga duas vezes.
 model RewardClaim {
   userId    String
-  /// "harvest:<dia>:<meta>", "week:<segunda>:<meta>" ou "chest:<baú>"
+  /// "harvest:<dia>:<meta>" ou "week:<segunda>:<meta>" ("chest:<baú>" só em registros antigos)
   key       String
-  /// harvest | week | chest
+  /// harvest | week (chest só em registros antigos)
   kind      String
   /// Dia do jogador (AAAA-MM-DD) em que a recompensa foi ganha
   day       String
   coins     Int
   xp        Int
-  /// Conteúdo sorteado do baú
+  /// Conteúdo sorteado do baú (só em registros antigos)
   detail    Json?
   createdAt DateTime @default(now())
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)

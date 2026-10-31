@@ -8,8 +8,6 @@ import {
   weekChecks,
   type GoalBook,
 } from './goal-rules';
-import { chestFromId, lootTotals, rollLoot } from './chest-rules';
-import { CARDS, rollBooster } from './card-rules';
 import { ProgressService } from './progress.service';
 import { PrismaService } from '../prisma/prisma.service';
 
@@ -73,67 +71,6 @@ describe('goal rules', () => {
   });
 });
 
-describe('chest rules', () => {
-  it('maps ids to journey stops that hold chests', () => {
-    expect(chestFromId('1:0:2')).toMatchObject({ size: 'mid', requires: 3 });
-    expect(chestFromId('1:0:4')).toMatchObject({ size: 'big', requires: 5 });
-    expect(chestFromId('2:1:4')).toMatchObject({ size: 'big', requires: 30 });
-    expect(chestFromId('1:0:1')).toBeNull();
-    expect(chestFromId('1:9:2')).toBeNull();
-    expect(chestFromId('abc')).toBeNull();
-  });
-  it('always pays coins within the size range', () => {
-    const big = chestFromId('1:0:4')!;
-    for (let i = 0; i < 50; i++) {
-      const loot = rollLoot(big);
-      expect(loot[0]).toMatchObject({ kind: 'coins' });
-      expect(lootTotals(loot).coins).toBeGreaterThanOrEqual(30);
-      expect(lootTotals(loot).coins).toBeLessThanOrEqual(70);
-      expect(loot.at(-1)).toMatchObject({ kind: 'booster', set: 0 });
-    }
-  });
-  it('puts a booster of the chest world in every chest', () => {
-    const mid = chestFromId('1:2:2')!;
-    for (let i = 0; i < 50; i++) {
-      const booster = rollLoot(mid).find((item) => item.kind === 'booster');
-      expect(booster?.kind === 'booster' && booster.cards).toHaveLength(3);
-      if (booster?.kind !== 'booster') continue;
-      for (const pull of booster.cards)
-        expect(CARDS.find((card) => card.id === pull.id)?.set).toBe(2);
-    }
-  });
-});
-
-describe('card rules', () => {
-  const rarityOf = (id: string) => CARDS.find((card) => card.id === id)?.rarity;
-  it('has 3 common, 2 rare and 1 legendary card per world', () => {
-    for (let set = 0; set < 4; set++) {
-      const cards = CARDS.filter((card) => card.set === set);
-      expect(cards.map((card) => card.rarity).sort()).toEqual(
-        ['comum', 'comum', 'comum', 'lendário', 'raro', 'raro'].sort(),
-      );
-    }
-    expect(new Set(CARDS.map((card) => card.id)).size).toBe(CARDS.length);
-  });
-  it('guarantees a rare or better as the last card of a big booster', () => {
-    for (let i = 0; i < 100; i++) {
-      const pack = rollBooster(1, 'big');
-      expect(pack).toHaveLength(5);
-      expect(rarityOf(pack[4].id)).not.toBe('comum');
-    }
-  });
-  it('does not repeat a card inside a pack while the rarity has others', () => {
-    // Sorteio sempre igual: toda carta cai em "comum" e no primeiro da lista restante
-    const pack = rollBooster(0, 'mid', () => 0);
-    expect(pack.map((pull) => pull.id)).toEqual([
-      'hasty-hen',
-      'watering-time',
-      'curious-cow',
-    ]);
-    expect(pack.every((pull) => pull.shiny)).toBe(true);
-  });
-});
-
 describe('ProgressService', () => {
   let prisma: any;
   let tx: any;
@@ -160,8 +97,6 @@ describe('ProgressService', () => {
     };
     prisma = {
       userData: { findUnique: jest.fn().mockResolvedValue(goals(1)) },
-      mission: { count: jest.fn().mockResolvedValue(0) },
-      rewardClaim: { findUnique: jest.fn().mockResolvedValue(null) },
       $transaction: jest.fn((fn: (client: unknown) => unknown) => fn(tx)),
     };
     service = new ProgressService(prisma as PrismaService);
@@ -197,28 +132,5 @@ describe('ProgressService', () => {
       service.harvest('player', 'leitura', '2020-01-01'),
     ).rejects.toBeInstanceOf(BadRequestException);
     expect(prisma.$transaction).not.toHaveBeenCalled();
-  });
-
-  it('refuses chests the journey has not reached', async () => {
-    prisma.mission.count.mockResolvedValue(2);
-    await expect(
-      service.openChest('player', '1:0:2', TODAY),
-    ).rejects.toBeInstanceOf(BadRequestException);
-  });
-
-  it('rolls and pays a reached chest once, and replays the stored loot afterwards', async () => {
-    prisma.mission.count.mockResolvedValue(3);
-    const first = await service.openChest('player', '1:0:2', TODAY);
-    expect(first.alreadyOpened).toBe(false);
-    expect(first.coins).toBeGreaterThanOrEqual(10);
-    prisma.rewardClaim.findUnique.mockResolvedValue({ detail: first.loot });
-    prisma.user = { findUniqueOrThrow: jest.fn().mockResolvedValue(user) };
-    const again = await service.openChest('player', '1:0:2', TODAY);
-    expect(again).toMatchObject({
-      alreadyOpened: true,
-      coins: 0,
-      xp: 0,
-      loot: first.loot,
-    });
   });
 });

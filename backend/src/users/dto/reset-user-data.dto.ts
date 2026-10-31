@@ -3,7 +3,7 @@ import { Transform } from 'class-transformer';
 import { ArrayMinSize, IsArray, IsIn } from 'class-validator';
 
 /** Partes do jogo que podem ser apagadas separadamente (a conta nunca entra aqui) */
-export const RESET_SCOPES = ['goals', 'diary', 'missions', 'shop', 'treasure', 'motivation', 'progress'] as const;
+export const RESET_SCOPES = ['goals', 'diary', 'missions', 'shop', 'motivation', 'progress'] as const;
 export type ResetScope = (typeof RESET_SCOPES)[number];
 
 export class ResetUserDataDto {

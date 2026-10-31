@@ -69,7 +69,7 @@ export class UsersController {
   }
 
   @Get('storage')
-  @ApiOperation({ summary: 'Buscar os dados sincronizados do jogador', description: 'Metas, diário, baús, perfil, preferências... (uma entrada por chave, com updatedAt).' })
+  @ApiOperation({ summary: 'Buscar os dados sincronizados do jogador', description: 'Metas, diário, perfil, preferências... (uma entrada por chave, com updatedAt).' })
   async listData(@CurrentUser() user: AuthUser) {
     return this.usersService.listData(user.id);
   }
@@ -92,7 +92,7 @@ export class UsersController {
   @ApiOperation({
     summary: 'Apagar partes escolhidas dos dados do jogador, mantendo a conta',
     description:
-      'Cada parte em "scopes" é apagada numa única transação: goals (metas e histórico), diary (diário e aventuras), missions, shop (compras, recompensas próprias e favoritos), treasure (baús e coleção), motivation (frase e foto) e progress (volta para Level 1, 0 XP, 0 Moedas). Nome, e-mail, perfil e preferências continuam.',
+      'Cada parte em "scopes" é apagada numa única transação: goals (metas e histórico), diary (diário e aventuras), missions, shop (compras, recompensas próprias e favoritos), motivation (frase e foto) e progress (volta para Level 1, 0 XP, 0 Moedas). Nome, e-mail, perfil e preferências continuam.',
   })
   @ApiResponse({ status: HttpStatus.OK, description: 'Partes apagadas; retorna o jogador atualizado.', type: User })
   @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Nenhuma parte escolhida ou parte desconhecida.' })

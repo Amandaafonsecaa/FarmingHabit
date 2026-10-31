@@ -1,6 +1,7 @@
 import { UsersService } from './users.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { SupabaseStorageService } from '../../storage/supabase-storage.service';
+import { RESET_SCOPES } from '../dto/reset-user-data.dto';
 
 describe('UsersService', () => {
   let prisma: any;
@@ -29,5 +30,9 @@ describe('UsersService', () => {
     expect(prisma.user.findUnique).toHaveBeenCalledWith({
       where: { id: 'player' },
     });
+  });
+
+  it('rejects the removed treasure scope', () => {
+    expect(RESET_SCOPES).not.toContain('treasure');
   });
 });

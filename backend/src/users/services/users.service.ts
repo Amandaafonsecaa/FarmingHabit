@@ -12,18 +12,16 @@ import { Motivation, Prisma, User } from '@prisma/client';
 import type { ResetScope } from '../dto/reset-user-data.dto';
 import { randomUUID } from 'node:crypto';
 import { SupabaseStorageService } from '../../storage/supabase-storage.service';
-import { adjustWallet } from '../../progress/wallet';
 
 const MOTIVATION_BUCKET = 'motivation-photos';
 /** Só chaves do próprio jogo ("farminghabit.algo.v1") */
 const DATA_KEY = /^farminghabit\.[a-z0-9.-]{1,60}$/;
 /** Chaves sincronizadas do navegador que pertencem a cada parte apagável (perfil e preferências ficam de fora) */
 const RESET_DATA_KEYS: Record<ResetScope, string[]> = {
-  goals: ['farminghabit.goals.v1', 'farminghabit.harvest-rewards.v1', 'farminghabit.perfect-day'],
+  goals: ['farminghabit.goals.v1', 'farminghabit.perfect-day'],
   diary: ['farminghabit.diary.v1', 'farminghabit.adventures.v1'],
   missions: ['farminghabit.missions.accepted.v1'],
   shop: ['farminghabit.wish.v1'],
-  treasure: ['farminghabit.treasure.v1', 'farminghabit.cards.v1'],
   motivation: [],
   progress: [],
 };
@@ -137,7 +135,7 @@ export class UsersService {
   }
 
   /**
-   * Apaga só as partes escolhidas (metas, diário, missões, loja, baús, motivação, progresso), tudo numa transação.
+   * Apaga só as partes escolhidas (metas, diário, missões, loja, motivação, progresso), tudo numa transação.
    * A conta (nome, e-mail, perfil e preferências) nunca é apagada aqui.
    */
   async resetData(id: string, scopes: ResetScope[]): Promise<User> {
@@ -154,14 +152,6 @@ export class UsersService {
     if (chosen.has('motivation')) operations.push(this.prisma.motivation.deleteMany({ where }));
     const keys = scopes.flatMap(scope => RESET_DATA_KEYS[scope]);
     if (keys.length) operations.push(this.prisma.userData.deleteMany({ where: { userId: id, key: { in: keys } } }));
-    if (chosen.has('treasure')) {
-      // Baús voltam a ficar fechados e o que eles pagaram sai do saldo (senão reabrir daria moedas de novo)
-      const chests = await this.prisma.rewardClaim.findMany({ where: { userId: id, kind: 'chest' }, select: { coins: true, xp: true } });
-      operations.push(this.prisma.rewardClaim.deleteMany({ where: { userId: id, kind: 'chest' } }));
-      const coins = chests.reduce((total, chest) => total + chest.coins, 0);
-      const xp = chests.reduce((total, chest) => total + chest.xp, 0);
-      if (!chosen.has('progress') && (coins || xp)) operations.push(adjustWallet(this.prisma, id, -coins, -xp));
-    }
     if (chosen.has('progress')) operations.push(this.prisma.user.update({ where: { id }, data: { level: 1, xp: 0, coins: 0 } }));
 
     // A foto da motivação mora no Storage: guarda o caminho antes de apagar a linha

@@ -22,15 +22,6 @@ export class HarvestDto {
   date: string;
 }
 
-export class OpenChestDto {
-  @ApiProperty({
-    example: '2026-10-27',
-    description: 'Dia do jogador (precisa ser hoje)',
-  })
-  @Matches(DAY_PATTERN, { message: DAY_MESSAGE })
-  date: string;
-}
-
 export class ClaimsQueryDto {
   @ApiProperty({
     example: '2026-10-20',
