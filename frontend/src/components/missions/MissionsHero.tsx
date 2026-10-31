@@ -8,7 +8,7 @@ import { MAP_W, PIXEL_WORLDS } from './pixelWorlds';
 import { CoinHud } from '../home/CoinHud';
 import { GuideDialog } from './GuideDialog';
 import { loadPlayer } from '../../services/api';
-import { readTreasure } from '../../lib/treasure';
+import { foundCount, readCards } from '../../lib/cards';
 
 /** Topo das Missões: placa minimalista, contador de moedas e o mapa-múndi da jornada */
 export function MissionsHero({ completed, loading = false, openCount = 0, traveling = 0, activeMission, opened, unopened, onOpenChest, coins }: {
@@ -78,7 +78,7 @@ export function MissionsHero({ completed, loading = false, openCount = 0, travel
     <button type="button" className="talk-sr-button sr-only focus:not-sr-only" onClick={()=>setTalking(true)}>Conversar com o Capitão Bússola</button>
     {talking && <GuideDialog onClose={()=>setTalking(false)} context={{
       name: playerName, completed, openMissions: openCount, traveling, unopened,
-      found: Object.keys(readTreasure().collection).length,
+      found: foundCount(readCards()),
     }}/>}
   </section>;
 }

@@ -20,41 +20,41 @@ export const MAP_W = 1350;
 export const MAP_H = 300;
 
 // --- Natureza ---
-const TREE: Sprite = { pal: { o: '#1f4d2e', l: '#7fcf6a', g: '#4fa851', d: '#2f7a3f', t: '#7a4a26' }, rows: [
+export const TREE: Sprite = { pal: { o: '#1f4d2e', l: '#7fcf6a', g: '#4fa851', d: '#2f7a3f', t: '#7a4a26' }, rows: [
   '...ooooo...', '..ollllgo..', '.ollllgggo.', 'ollllggggdo', 'olllgggggdo', 'ogggggggddo', 'oggggggdddo', '.odgggdddo.', '..oddddoo..', '....oto....', '....oto....', '....ooo....',
 ] };
-const PINE: Sprite = { pal: { o: '#163a2c', l: '#4f9a72', g: '#2f6f55', d: '#204f3d', t: '#6b4426' }, rows: [
+export const PINE: Sprite = { pal: { o: '#163a2c', l: '#4f9a72', g: '#2f6f55', d: '#204f3d', t: '#6b4426' }, rows: [
   '....o....', '...olo...', '...olo...', '..olggo..', '..olggo..', '.olgggdo.', '.olgggdo.', 'olggggddo', 'olgggggdo', '.ooggdoo.', '...oto...', '...ooo...',
 ] };
-const BUSH: Sprite = { pal: { o: '#1f4d2e', g: '#4fa851', l: '#7fcf6a', d: '#2f7a3f' }, rows: ['..oooo..', '.ollggo.', 'olggggdo', 'oggggddo', 'oooooooo'] };
+export const BUSH: Sprite = { pal: { o: '#1f4d2e', g: '#4fa851', l: '#7fcf6a', d: '#2f7a3f' }, rows: ['..oooo..', '.ollggo.', 'olggggdo', 'oggggddo', 'oooooooo'] };
 const MOUNTAIN_ROWS = [
   '.........oo.........', '........olbo........', '.......ollbbo.......', '......ollbbbdo......', '.....ollbbbbddo.....', '....ollbbbbbbddo....',
   '...ollbbbbbbbbddo...', '..ollbbbbbbbbbbddo..', '.ollbbbbbbbbbbbbddo.', 'ollbbbbbbbbbbbbbbddo', 'oooooooooooooooooooo',
 ];
 const MOUNTAIN: Sprite = { pal: { o: '#4a3426', l: '#c4a283', b: '#9a7a62', d: '#76584a' }, rows: MOUNTAIN_ROWS };
 // Montanha nevada: o topo vira neve
-const SNOWY: Sprite = { pal: { ...MOUNTAIN.pal, s: '#ffffff', S: '#d6e2ee', b: '#8d8fa0', l: '#b3b6c6', d: '#6b6d80' }, rows: MOUNTAIN_ROWS.map((row, index) => index < 4 ? row.replace(/[lb]/g, 's').replace(/d/g, 'S') : row) };
-const HILL: Sprite = { pal: { o: '#2f6b35', l: '#a6e07a', g: '#78c05a' }, rows: ['....oooooo....', '..oollllllgo..', '.olllllllgggo.', 'ollllllggggggo'] };
-const ROCK: Sprite = { pal: { o: '#3b3640', l: '#b9b0a4', b: '#8f857a', d: '#6b625a' }, rows: ['..ooo...', '.olbbo..', 'olbbbdo.', 'oooooooo'] };
-const FLOWER: Sprite = { pal: { p: '#f28fb0', y: '#ffe38b' }, rows: ['.p.', 'pyp', '.p.'] };
-const BLUE_FLOWER: Sprite = { pal: { p: '#8fb8f2', y: '#fff6c2' }, rows: ['.p.', 'pyp', '.p.'] };
-const MUSHROOM: Sprite = { pal: { o: '#3b2418', r: '#d6453a', w: '#fff1d6', s: '#f2e2c0' }, rows: ['..ooo..', '.orwro.', 'orrrwro', 'ooooooo', '..oso..', '..ooo..'] };
+export const SNOWY: Sprite = { pal: { ...MOUNTAIN.pal, s: '#ffffff', S: '#d6e2ee', b: '#8d8fa0', l: '#b3b6c6', d: '#6b6d80' }, rows: MOUNTAIN_ROWS.map((row, index) => index < 4 ? row.replace(/[lb]/g, 's').replace(/d/g, 'S') : row) };
+export const HILL: Sprite = { pal: { o: '#2f6b35', l: '#a6e07a', g: '#78c05a' }, rows: ['....oooooo....', '..oollllllgo..', '.olllllllgggo.', 'ollllllggggggo'] };
+export const ROCK: Sprite = { pal: { o: '#3b3640', l: '#b9b0a4', b: '#8f857a', d: '#6b625a' }, rows: ['..ooo...', '.olbbo..', 'olbbbdo.', 'oooooooo'] };
+export const FLOWER: Sprite = { pal: { p: '#f28fb0', y: '#ffe38b' }, rows: ['.p.', 'pyp', '.p.'] };
+export const BLUE_FLOWER: Sprite = { pal: { p: '#8fb8f2', y: '#fff6c2' }, rows: ['.p.', 'pyp', '.p.'] };
+export const MUSHROOM: Sprite = { pal: { o: '#3b2418', r: '#d6453a', w: '#fff1d6', s: '#f2e2c0' }, rows: ['..ooo..', '.orwro.', 'orrrwro', 'ooooooo', '..oso..', '..ooo..'] };
 const LOG: Sprite = { pal: { o: '#3b2418', b: '#8a5838', r: '#e3b268' }, rows: ['.oooooooo.', 'obbbbbbbro', 'obbbbbbbro', '.oooooooo.'] };
-const STUMP: Sprite = { pal: { o: '#3b2418', l: '#e3b268', r: '#c9995a', b: '#8a5838' }, rows: ['oooooo', 'olrrlo', 'obbbbo', 'oooooo'] };
+export const STUMP: Sprite = { pal: { o: '#3b2418', l: '#e3b268', r: '#c9995a', b: '#8a5838' }, rows: ['oooooo', 'olrrlo', 'obbbbo', 'oooooo'] };
 const TUFT: Sprite = { pal: { x: '#4f9a42' }, rows: ['x.x', 'x.x'] };
 const SNOW_TUFT: Sprite = { pal: { x: '#b9c7d6' }, rows: ['x.x', 'x.x'] };
 // Detalhes de solo para encher as margens: tufo alto, canteirinho de flores e pedrinhas
-const GRASS: Sprite = { pal: { d: '#3f8a3a', l: '#6fb85a' }, rows: ['l.d.l', 'ldldl', '.ddd.'] };
-const FLOWER_BED: Sprite = { pal: { p: '#f28fb0', y: '#ffe38b', w: '#fff6e8', g: '#4f9a42' }, rows: ['p.y.w', 'g.g.g', '.w.p.', '.g.g.'] };
+export const GRASS: Sprite = { pal: { d: '#3f8a3a', l: '#6fb85a' }, rows: ['l.d.l', 'ldldl', '.ddd.'] };
+export const FLOWER_BED: Sprite = { pal: { p: '#f28fb0', y: '#ffe38b', w: '#fff6e8', g: '#4f9a42' }, rows: ['p.y.w', 'g.g.g', '.w.p.', '.g.g.'] };
 const PEBBLES: Sprite = { pal: { l: '#c9c2b6', d: '#8f857a' }, rows: ['.l..l', 'dd.ld', '...dd'] };
-const ICE: Sprite = { pal: { o: '#8fb8f2', i: '#d6eefc', I: '#ffffff' }, rows: ['...oooooooooo...', '.ooiiiIiiiiiioo.', 'oiiIiiiiiiIiiiio', 'oiiiiiiIiiiiiiio', '.ooiiiiiiiiiioo.', '...oooooooooo...'] };
+export const ICE: Sprite = { pal: { o: '#8fb8f2', i: '#d6eefc', I: '#ffffff' }, rows: ['...oooooooooo...', '.ooiiiIiiiiiioo.', 'oiiIiiiiiiIiiiio', 'oiiiiiiIiiiiiiio', '.ooiiiiiiiiiioo.', '...oooooooooo...'] };
 
 // --- Bichos ---
-const SHEEP: Sprite = { pal: { o: '#3b3f5a', w: '#ffffff', W: '#e3e6ea', k: '#3b2418' }, rows: ['..oooo..', '.owwwwok', 'owwWwwok', '.owwwwo.', '..k..k..'] };
-const COW: Sprite = { pal: { o: '#2c2a33', w: '#ffffff', b: '#3b2418', p: '#f2a6a6', k: '#2c2a33' }, rows: ['.ooooooo...', 'owwbbwwwooo', 'owbbwwwbbwo', 'owwwwwwwwpo', '.oooooooo..', '.k.k..k.k..'] };
-const CHICKEN: Sprite = { pal: { w: '#ffffff', r: '#d64d3c', y: '#f2a33a' }, rows: ['.r...', 'wwy..', 'wwww.', '.www.', '.y.y.'] };
+export const SHEEP: Sprite = { pal: { o: '#3b3f5a', w: '#ffffff', W: '#e3e6ea', k: '#3b2418' }, rows: ['..oooo..', '.owwwwok', 'owwWwwok', '.owwwwo.', '..k..k..'] };
+export const COW: Sprite = { pal: { o: '#2c2a33', w: '#ffffff', b: '#3b2418', p: '#f2a6a6', k: '#2c2a33' }, rows: ['.ooooooo...', 'owwbbwwwooo', 'owbbwwwbbwo', 'owwwwwwwwpo', '.oooooooo..', '.k.k..k.k..'] };
+export const CHICKEN: Sprite = { pal: { w: '#ffffff', r: '#d64d3c', y: '#f2a33a' }, rows: ['.r...', 'wwy..', 'wwww.', '.www.', '.y.y.'] };
 const DUCK: Sprite = { pal: { w: '#ffffff', k: '#2c2a33', y: '#f2a33a' }, rows: ['...ww.', '...wky', 'wwwww.', '.www..'] };
-const DRAGON: Sprite = { pal: { o: '#233a2e', w: '#3f7a5f', g: '#5aa080', b: '#e8c48a', k: '#233a2e' }, rows: [
+export const DRAGON: Sprite = { pal: { o: '#233a2e', w: '#3f7a5f', g: '#5aa080', b: '#e8c48a', k: '#233a2e' }, rows: [
   '........oooo........', '.......owwwwo.......', '.oooo.owwwwwwo......', 'oggggoowwwwwwooo....', 'ogkggggggggggggggo..', 'oggggbbbbbbbbbbggggo', '.oooooooooooooooooggo', '..................oo',
 ] };
 
@@ -64,23 +64,23 @@ const HOUSE_ROWS = [
   '.ownnwwwwwwnnwo.', '.ownnwwddwwnnwo.', '.owwwwwddwwwwwo.', '.oWWWWWddWWWWWo.', '.oooooooooooooo.',
 ];
 const HOUSE: Sprite = { pal: { o: '#2c2a33', R: '#8a90b0', r: '#5d6382', w: '#f0dcb2', W: '#cfb184', d: '#7a4a26', n: '#3b3f5a' }, rows: HOUSE_ROWS };
-const BARN: Sprite = { pal: { ...HOUSE.pal, R: '#e07a5a', r: '#bf5837' }, rows: HOUSE_ROWS };
-const CASTLE: Sprite = { pal: { o: '#3a3f45', G: '#d3d8de', g: '#a7adb5', d: '#7d838c', n: '#2c2f36', p: '#57311f', f: '#d64d3c' }, rows: [
+export const BARN: Sprite = { pal: { ...HOUSE.pal, R: '#e07a5a', r: '#bf5837' }, rows: HOUSE_ROWS };
+export const CASTLE: Sprite = { pal: { o: '#3a3f45', G: '#d3d8de', g: '#a7adb5', d: '#7d838c', n: '#2c2f36', p: '#57311f', f: '#d64d3c' }, rows: [
   '..pff.....pff.....pff', '..p.......p.......p..', 'ogogo...ogogo...ogogo', 'ogggo...ogggo...ogggo', 'oGggo...oGngo...oGggo', 'oGngo...oGngo...oGngo',
   'oGggoo.ooGggoo.ooGggo', 'oGggoooooGggoooooGggo', 'oGgggggdgggggdgggggdo', 'oGggggggggggggggggggo', 'oGggggggonnnoggggggdo', 'oGggggggonnnoggggggdo',
   'oGggggggonnnoggggggdo', 'ooooooooooooooooooooo',
 ] };
-const HAY: Sprite = { pal: { o: '#4a3020', l: '#e3b268', b: '#c0843e', d: '#8a5828' }, rows: ['...oo...', '..olbo..', '..olbbo.', '.ollbbo.', '.olbbbdo', 'ollbbbdo', 'oooooooo'] };
-const FENCE: Sprite = { pal: { w: '#a86b35' }, rows: ['w...w...w...w', 'wwwwwwwwwwwww', 'w...w...w...w', 'wwwwwwwwwwwww', 'w...w...w...w'] };
-const CROPS: Sprite = { pal: { g: '#4fa851', p: '#f2a33a', P: '#c9752a', s: '#8a5838' }, rows: [
+export const HAY: Sprite = { pal: { o: '#4a3020', l: '#e3b268', b: '#c0843e', d: '#8a5828' }, rows: ['...oo...', '..olbo..', '..olbbo.', '.ollbbo.', '.olbbbdo', 'ollbbbdo', 'oooooooo'] };
+export const FENCE: Sprite = { pal: { w: '#a86b35' }, rows: ['w...w...w...w', 'wwwwwwwwwwwww', 'w...w...w...w', 'wwwwwwwwwwwww', 'w...w...w...w'] };
+export const CROPS: Sprite = { pal: { g: '#4fa851', p: '#f2a33a', P: '#c9752a', s: '#8a5838' }, rows: [
   '..g...g...g...', '.pPp.pPp.pPp..', '.PpP.PpP.PpP..', 'ssssssssssssss', '..g...g...g...', '.pPp.pPp.pPp..', '.PpP.PpP.PpP..', 'ssssssssssssss',
 ] };
 const SIGN: Sprite = { pal: { o: '#3b2418', w: '#c9995a', W: '#e3b268', p: '#6b4426' }, rows: ['ooooooo', 'oWWWWWo', 'owwwwwo', 'ooooooo', '...p...', '...p...', '...p...', '..ooo..'] };
-const SNOWMAN: Sprite = { pal: { w: '#ffffff', W: '#d6e2ee', o: '#3b3f5a', n: '#f2a33a', h: '#2c2a33', s: '#d64d3c' }, rows: [
+export const SNOWMAN: Sprite = { pal: { w: '#ffffff', W: '#d6e2ee', o: '#3b3f5a', n: '#f2a33a', h: '#2c2a33', s: '#d64d3c' }, rows: [
   '..hhh..', '.hhhhh.', '..www..', '.wowow.', '.wwwnw.', '.sssss.', 'wwwowww', 'wwWwwWw', 'wwwowww', '.wwwww.', '..WWW..',
 ] };
-const BARREL: Sprite = { pal: { o: '#3b2418', b: '#a86b35', B: '#c9995a', m: '#6b6d80' }, rows: ['.oooo.', 'obBbbo', 'ommmmo', 'obBbbo', 'ommmmo', 'obBbbo', '.oooo.'] };
-const BANNER: Sprite = { pal: { p: '#57311f', r: '#7b5ba8', R: '#a98bd4', y: '#f2c453' }, rows: ['p....', 'prrr.', 'pRyr.', 'prrr.', 'pr.r.', 'p....', 'p....', 'p....', 'p....', 'p....'] };
+export const BARREL: Sprite = { pal: { o: '#3b2418', b: '#a86b35', B: '#c9995a', m: '#6b6d80' }, rows: ['.oooo.', 'obBbbo', 'ommmmo', 'obBbbo', 'ommmmo', 'obBbbo', '.oooo.'] };
+export const BANNER: Sprite = { pal: { p: '#57311f', r: '#7b5ba8', R: '#a98bd4', y: '#f2c453' }, rows: ['p....', 'prrr.', 'pRyr.', 'prrr.', 'pr.r.', 'p....', 'p....', 'p....', 'p....', 'p....'] };
 const DOCK: Sprite = { pal: { o: '#57311f', w: '#a86b35' }, rows: ['oooooooooooooooo', 'wwwwwwwwwwwwwwww', 'oooooooooooooooo', '.o....o....o...o', '.o....o....o...o'] };
 const BOAT: Sprite = { pal: { o: '#3b2418', s: '#fff1d6', h: '#8a5838', H: '#a86b35' }, rows: [
   '......o.....', '......os....', '......oss...', '......osss..', '......ossss.', '......o.....', 'ohhhhhhhhhho', '.oHHHHHHHHo.', '..oooooooo..',

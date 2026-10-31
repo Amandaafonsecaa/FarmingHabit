@@ -1,0 +1,25 @@
+services:
+  backend:
+    build: ./backend
+    # O mesmo backend/.env do desenvolvimento (use o pooler do Supabase: o endereço direto do banco é só IPv6)
+    env_file: ./backend/.env
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+  # Migrações sob demanda, nunca automáticas: docker compose run --rm migrate
+  migrate:
+    build:
+      context: ./backend
+      target: builder
+    env_file: ./backend/.env
+    command: npx prisma migrate deploy
+    profiles: ["tools"]

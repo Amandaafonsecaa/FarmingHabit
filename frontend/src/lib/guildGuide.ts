@@ -1,5 +1,6 @@
 import { CHAPTERS, STOPS_PER_CHAPTER, journeyState } from './journey';
-import { CHEST_STOPS, COLLECTIBLES } from './treasure';
+import { CHEST_STOPS } from './treasure';
+import { CARDS } from './cards';
 
 /** O que o Capitão Bússola (guia da guilda, no mapa das Missões) sabe na hora da conversa */
 export interface GuideContext { name: string; completed: number; openMissions: number; traveling: number; unopened: number; found: number }
@@ -41,8 +42,8 @@ export function guideRespond(choice: GuideChoice, context: GuideContext): string
   ];
   if (choice === 'chests') return [
     'Na 3ª e na 5ª parada de cada região tem um baú. O da 5ª é um baú grande, com mais prêmios!',
-    'Para abrir, bata três vezes nele. Lá dentro tem moedas, XP e achados raros de cada região.',
-    `Os achados vão para a sua coleção: são ${COLLECTIBLES.length} ao todo, e você já tem ${context.found}. Os lendários são raríssimos!`,
+    'Para abrir, bata três vezes nele. Lá dentro tem moedas, às vezes XP e um pacote de cartas da região. Rasgue o pacote e vire as cartas!',
+    `As cartas vão para o seu álbum: são ${CARDS.length} ao todo, e você já tem ${context.found}. As lendárias são raríssimas, e qualquer uma pode sair brilhante ★`,
   ];
   return [pick(['Bons ventos! ⛵', 'Até a próxima parada!', 'Que a bússola te guie!'])];
 }

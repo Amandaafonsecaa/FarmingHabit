@@ -23,7 +23,7 @@ const RESET_DATA_KEYS: Record<ResetScope, string[]> = {
   diary: ['farminghabit.diary.v1', 'farminghabit.adventures.v1'],
   missions: ['farminghabit.missions.accepted.v1'],
   shop: ['farminghabit.wish.v1'],
-  treasure: ['farminghabit.treasure.v1'],
+  treasure: ['farminghabit.treasure.v1', 'farminghabit.cards.v1'],
   motivation: [],
   progress: [],
 };

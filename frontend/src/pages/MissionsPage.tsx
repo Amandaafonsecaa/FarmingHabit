@@ -9,13 +9,15 @@ import { PixelIcon } from '../components/PixelIcon';
 import { useAcceptedMissions, useMissionBoard } from '../hooks/useMissionBoard';
 import type { Mission, NewItem } from '../types/world';
 import { recordAdventure } from '../lib/diary';
-import { TREASURE_KEY, foundChests, readTreasure, saveOpenedChest, type FoundChest } from '../lib/treasure';
+import { foundChests, type FoundChest } from '../lib/treasure';
+import { CARDS_KEY, LEGACY_TREASURE_KEY, readCards, saveOpenedChest } from '../lib/cards';
+import { journeyState } from '../lib/journey';
 import { useStorageChange } from '../hooks/useStorageChange';
 import { toKey } from '../lib/goalLogic';
 import { PLAYER_EVENT } from '../lib/harvestRewards';
 import { openTreasureChest } from '../services/api';
 import { ChestOpening } from '../components/missions/ChestOpening';
-import { CollectionPanel } from '../components/missions/CollectionPanel';
+import { CardAlbum } from '../components/missions/CardAlbum';
 import { flyCoins } from '../lib/coinFlight';
 import type { AppPage } from '../types/navigation';
 
@@ -32,8 +34,10 @@ export function MissionsPage({ onNavigate }: { onNavigate: (page: AppPage) => vo
   const [dialogOpen, setDialogOpen] = useState(false);
   // Avisos de ação aparecem como toast
   const setAnnouncement = toast;
-  const [treasure, setTreasure] = useState(readTreasure);
-  useStorageChange(TREASURE_KEY, () => setTreasure(readTreasure()));
+  const [album, setAlbum] = useState(readCards);
+  useStorageChange(CARDS_KEY, () => setAlbum(readCards()));
+  // Sem álbum ainda, ele vem da coleção antiga: acompanha também essa chave
+  useStorageChange(LEGACY_TREASURE_KEY, () => setAlbum(readCards()));
   const [openingChest, setOpeningChest] = useState<FoundChest | null>(null);
 
   // Cumpridas continuam no quadro com o carimbo, abaixo das em aberto (as em jornada vêm primeiro).
@@ -44,14 +48,14 @@ export function MissionsPage({ onNavigate }: { onNavigate: (page: AppPage) => vo
   const stillOpen = open.filter(mission => !mission.completed);
   const completedCount = board.missions.filter(mission => mission.completed).length;
   const chests = foundChests(completedCount);
-  const unopened = chests.filter(chest => !treasure.opened.includes(chest.id));
+  const unopened = chests.filter(chest => !album.opened.includes(chest.id));
 
-  // Abre o baú no servidor (ele confere se a jornada chegou lá, sorteia e paga) e só então guarda na coleção
+  // Abre o baú no servidor (ele confere se a jornada chegou lá, sorteia e paga) e só então guarda as cartas no álbum
   async function openChest(chest: FoundChest) {
     const result = await openTreasureChest(chest.id, toKey(new Date()));
     board.applyPlayer(result.user);
     window.dispatchEvent(new CustomEvent(PLAYER_EVENT, { detail: result.user }));
-    setTreasure(current => current.opened.includes(chest.id) ? current : saveOpenedChest(current, chest.id, result.loot));
+    setAlbum(current => current.opened.includes(chest.id) ? current : saveOpenedChest(current, chest.id, result.loot));
     setAnnouncement(result.alreadyOpened ? 'Este baú já tinha sido aberto.' : `Baú aberto! +${result.coins} moedas${result.xp ? ` e +${result.xp} XP` : ''}.`);
     return result.loot;
   }
@@ -106,7 +110,7 @@ export function MissionsPage({ onNavigate }: { onNavigate: (page: AppPage) => vo
   }
 
   return <MainLayout page="missions" onNavigate={onNavigate}
-    world={<MissionsHero completed={completedCount} loading={board.loading} openCount={stillOpen.length} opened={treasure.opened} unopened={unopened.length} onOpenChest={showChest} coins={board.player?.coins ?? null}
+    world={<MissionsHero completed={completedCount} loading={board.loading} openCount={stillOpen.length} opened={album.opened} unopened={unopened.length} onOpenChest={showChest} coins={board.player?.coins ?? null}
       traveling={stillOpen.filter(mission => accepted.includes(mission.id)).length} activeMission={stillOpen.find(mission => accepted.includes(mission.id)) ?? null}
       onFocusMission={focusQuest}/>}>
     <div className="missions-layout">
@@ -139,13 +143,13 @@ export function MissionsPage({ onNavigate }: { onNavigate: (page: AppPage) => vo
           </>}
         </div>
       </section>
-      <div className="missions-side"><CollectionPanel collection={treasure.collection}/></div>
+      <div className="missions-side"><CardAlbum cards={album.cards} initialSet={journeyState(completedCount).chapter}/></div>
     </div>
     <p role="status" className="world-status">{'Toda grande descoberta começa com uma pequena curiosidade.'}</p>
     {editing && <EditMissionDialog key={editing.id} mission={editing} active={accepted.includes(editing.id)} onClose={()=>setEditing(null)}
       onSave={async changes=>{ await board.edit(editing.id, changes); setAnnouncement(`${changes.title}: missão atualizada!`); }}
       onUncomplete={async ()=>{ await board.uncomplete(editing.id); setAnnouncement(`${editing.title}: missão desfeita. -${editing.xp} XP e -${editing.coins} moedas.`); }}/>}
     {dialogOpen && <MissionDialog onSave={create} onClose={()=>setDialogOpen(false)}/>}
-    {openingChest && <ChestOpening key={openingChest.id} chest={openingChest} remaining={unopened.filter(chest => chest.id !== openingChest.id).length} onOpen={openChest} onClose={()=>setOpeningChest(null)}/>}
+    {openingChest && <ChestOpening key={openingChest.id} chest={openingChest} owned={album.cards} remaining={unopened.filter(chest => chest.id !== openingChest.id).length} onOpen={openChest} onClose={()=>setOpeningChest(null)}/>}
   </MainLayout>;
 }

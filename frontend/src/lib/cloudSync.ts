@@ -12,7 +12,7 @@ import { cachedAuthHeader } from './auth';
  *  de compras (que já mora no servidor) e a foto da motivação (por enquanto só no navegador). */
 export const SYNC_KEYS = new Set([
   'farminghabit.goals.v1', 'farminghabit.diary.v1', 'farminghabit.adventures.v1', 'farminghabit.missions.accepted.v1',
-  'farminghabit.profile.v1', 'farminghabit.wish.v1', 'farminghabit.treasure.v1', 'farminghabit.harvest-rewards.v1',
+  'farminghabit.profile.v1', 'farminghabit.wish.v1', 'farminghabit.treasure.v1', 'farminghabit.cards.v1', 'farminghabit.harvest-rewards.v1',
   'farminghabit.perfect-day', 'farminghabit.settings.v1',
 ]);
 

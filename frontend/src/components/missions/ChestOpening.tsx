@@ -1,21 +1,22 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { CHAPTERS } from '../../lib/journey';
 import type { FoundChest, Loot } from '../../lib/treasure';
+import { boostersOf, type OwnedCard } from '../../lib/cards';
 import { LootIcon, lootLabel, lootRarity } from './TreasureIcons';
+import { BoosterPack, BoosterSummary, CardReveal } from './BoosterOpening';
 import { flyCoins } from '../../lib/coinFlight';
 import { prefersCalm, useRollingNumber } from '../../hooks/useRollingNumber';
 
-type Phase = 'tap' | 'charging' | 'burst' | 'reveal' | 'done';
+type Phase = 'tap' | 'charging' | 'burst' | 'reveal' | 'booster' | 'cards' | 'done';
 const TAPS_TO_OPEN = 3;
 const FLIP_EVERY_MS = 650;
-const RARITY_LABEL = { comum: 'Comum', raro: 'Raro', 'lendário': 'Lendário' } as const;
 
 /** Número que sobe do zero até o valor quando a carta vira */
 function CountUp({ value, active }: { value: number; active: boolean }) {
   return <>{useRollingNumber(active ? value : 0, 900)}</>;
 }
 
-/** Carta de prêmio: chega virada para baixo e vira com o efeito da raridade */
+/** Carta de prêmio (moedas ou poção): chega virada para baixo e vira com o efeito da raridade */
 function LootCard({ loot, index, flipped, onFlip }: { loot: Loot; index: number; flipped: boolean; onFlip: () => void }) {
   const rarity = lootRarity(loot);
   return <li className={`loot-card-slot is-${rarity} ${flipped ? 'is-flipped' : ''}`} style={{ '--card': index } as CSSProperties}>
@@ -25,30 +26,34 @@ function LootCard({ loot, index, flipped, onFlip }: { loot: Loot; index: number;
         {rarity !== 'comum' && <span className="loot-rays" aria-hidden="true"/>}
         <span className="loot-icon"><LootIcon loot={loot} className="size-full"/></span>
         <strong className="loot-name">{loot.kind === 'coins' ? <><CountUp value={loot.amount} active={flipped}/> moedas</> : lootLabel(loot)}</strong>
-        <span className="loot-rarity">{loot.kind === 'collectible' ? RARITY_LABEL[rarity] : loot.kind === 'coins' ? 'Moedas' : 'Poção'}</span>
-        {rarity !== 'comum' && flipped && <span className="loot-sparkles" aria-hidden="true">{Array.from({ length: rarity === 'lendário' ? 10 : 6 }, (_, spark) => <span key={spark} style={{ '--s': spark } as CSSProperties}/>)}</span>}
+        <span className="loot-rarity">{loot.kind === 'coins' ? 'Moedas' : 'Poção'}</span>
+        {rarity !== 'comum' && flipped && <span className="loot-sparkles" aria-hidden="true">{Array.from({ length: 6 }, (_, spark) => <span key={spark} style={{ '--s': spark } as CSSProperties}/>)}</span>}
       </span>
     </button>
-    {rarity === 'lendário' && flipped && <span className="legendary-banner" aria-hidden="true">LENDÁRIO!</span>}
   </li>;
 }
 
 /**
  * Abertura do baú como mini-jogo: toque 3 vezes (ele treme e vaza luz), clarão com fonte de moedas,
- * e as cartas de prêmio viram uma a uma com o efeito de cada raridade.
+ * as cartas de moedas/XP viram, e então vem o pacote de cartas: arrastar para rasgar e revelar uma a uma.
  */
-export function ChestOpening({ chest, remaining, onOpen, onClose }: {
-  chest: FoundChest; remaining: number; onOpen: (chest: FoundChest) => Promise<Loot[]>; onClose: () => void;
+export function ChestOpening({ chest, remaining, owned, onOpen, onClose }: {
+  chest: FoundChest; remaining: number; owned: Record<string, OwnedCard>; onOpen: (chest: FoundChest) => Promise<Loot[]>; onClose: () => void;
 }) {
   const dialogRef = useRef<HTMLDialogElement>(null);
-  const lootRef = useRef<HTMLUListElement>(null);
+  const lootRef = useRef<HTMLDivElement>(null);
   const [phase, setPhase] = useState<Phase>('tap');
   const [taps, setTaps] = useState(0);
   const [loot, setLoot] = useState<Loot[]>([]);
   const [flipped, setFlipped] = useState(0);
+  const [legendary, setLegendary] = useState(false);
   const [error, setError] = useState('');
+  // O álbum antes deste baú: decide o que é carta "Nova!"
+  const [ownedBefore] = useState(owned);
   const big = chest.size === 'big';
-  const legendaryShown = loot.slice(0, flipped).some(item => lootRarity(item) === 'lendário');
+  const prizes = loot.filter(item => item.kind === 'coins' || item.kind === 'xp');
+  const boosters = boostersOf(loot);
+  const pulls = boosters.flatMap(booster => booster.cards);
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -56,13 +61,16 @@ export function ChestOpening({ chest, remaining, onOpen, onClose }: {
     return () => dialog?.close();
   }, []);
 
-  // Revelação: vira uma carta por vez (todas de uma vez no modo calmo)
+  // Revelação: vira uma carta por vez (todas de uma vez no modo calmo) e depois chega o pacote
   useEffect(() => {
     if (phase !== 'reveal') return;
-    if (flipped >= loot.length) { setPhase('done'); return; }
+    if (flipped >= prizes.length) {
+      const timer = window.setTimeout(() => setPhase(pulls.length ? 'booster' : 'done'), prefersCalm() ? 0 : 900);
+      return () => window.clearTimeout(timer);
+    }
     const timer = window.setTimeout(() => setFlipped(count => count + 1), prefersCalm() ? 0 : FLIP_EVERY_MS);
     return () => window.clearTimeout(timer);
-  }, [phase, flipped, loot.length]);
+  }, [phase, flipped, prizes.length, pulls.length]);
 
   async function tap() {
     if (phase !== 'tap') return;
@@ -83,26 +91,25 @@ export function ChestOpening({ chest, remaining, onOpen, onClose }: {
     }
   }
 
-  // Ao guardar, as moedas voam até o contador do mapa (o diálogo fica por cima de tudo, então voam ao fechar)
-  function store() {
-    const coins = loot.reduce((sum, item) => sum + (item.kind === 'coins' ? item.amount : 0), 0);
-    flyCoins(lootRef.current, coins);
-    onClose();
-  }
-
   const totals = {
     coins: loot.reduce((sum, item) => sum + (item.kind === 'coins' ? item.amount : 0), 0),
     xp: loot.reduce((sum, item) => sum + (item.kind === 'xp' ? item.amount : 0), 0),
-    finds: loot.filter(item => item.kind === 'collectible').length,
   };
-  const opened = phase === 'burst' || phase === 'reveal' || phase === 'done';
+
+  // Ao guardar, as moedas voam até o contador do mapa (o diálogo fica por cima de tudo, então voam ao fechar)
+  function store() {
+    flyCoins(lootRef.current, totals.coins);
+    onClose();
+  }
+  const opened = phase !== 'tap' && phase !== 'charging';
   const trim = big ? '#f2c453' : '#c6ccd6';
+  const closable = phase === 'tap' || phase === 'done';
 
-  return <dialog ref={dialogRef} className={`pixel-dialog pixel-frame game-dialog chest-dialog phase-${phase} taps-${taps} ${legendaryShown ? 'has-legendary' : ''}`} aria-labelledby="chest-title"
-    onCancel={event=>{ event.preventDefault(); if (phase === 'tap' || phase === 'done') onClose(); }}>
-    <header className="panel-heading"><h2 id="chest-title">{big ? 'Baú grande!' : 'Um baú!'}</h2><span className="panel-tag">{CHAPTERS[chest.chapter].name}{chest.loop > 1 ? ` · jornada ${chest.loop}` : ''}</span></header>
+  return <dialog ref={dialogRef} className={`pixel-dialog pixel-frame game-dialog chest-dialog phase-${phase} taps-${taps} ${legendary ? 'has-legendary' : ''}`} aria-labelledby="chest-title"
+    onCancel={event=>{ event.preventDefault(); if (closable) onClose(); }}>
+    <header className="panel-heading"><h2 id="chest-title">{phase === 'booster' || phase === 'cards' ? 'Pacote de cartas!' : big ? 'Baú grande!' : 'Um baú!'}</h2><span className="panel-tag">{CHAPTERS[chest.chapter].name}{chest.loop > 1 ? ` · jornada ${chest.loop}` : ''}</span></header>
 
-    <div className="chest-stage">
+    <div ref={lootRef} className="chest-stage">
       <span className="stage-sparkles" aria-hidden="true">{Array.from({ length: 12 }, (_, index) => <span key={index} style={{ '--i': index } as CSSProperties}/>)}</span>
       <span className="chest-rays" aria-hidden="true"/>
       {!opened || phase === 'burst' ? <>
@@ -128,18 +135,23 @@ export function ChestOpening({ chest, remaining, onOpen, onClose }: {
         <span className="chest-flash" aria-hidden="true"/>
         <span className="coin-fountain" aria-hidden="true">{Array.from({ length: big ? 18 : 12 }, (_, index) => <span key={index} className={index % 3 ? 'is-confetti' : 'is-coin'} style={{ '--i': index, '--dx': `${((index * 37) % 120) - 60}px` } as CSSProperties}/>)}</span>
       </>}
-      {(phase === 'reveal' || phase === 'done') && <ul ref={lootRef} className="loot-list">
-        {loot.map((item, index) => <LootCard key={index} loot={item} index={index} flipped={index < flipped} onFlip={()=>setFlipped(count => Math.max(count, index + 1))}/>)}
+      {phase === 'reveal' && <ul className="loot-list">
+        {prizes.map((item, index) => <LootCard key={index} loot={item} index={index} flipped={index < flipped} onFlip={()=>setFlipped(count => Math.max(count, index + 1))}/>)}
       </ul>}
+      {phase === 'booster' && <BoosterPack set={boosters[0].set} count={pulls.length} onTorn={()=>setPhase('cards')}/>}
+      {phase === 'cards' && <CardReveal pulls={pulls} owned={ownedBefore} onLegendary={()=>setLegendary(true)} onDone={()=>setPhase('done')}/>}
+      {phase === 'done' && pulls.length > 0 && <BoosterSummary pulls={pulls} owned={ownedBefore}/>}
     </div>
 
-    {phase === 'done' && <p className="loot-summary"><strong>Você ganhou:</strong> {totals.coins} moedas{totals.xp ? ` · ${totals.xp} XP` : ''}{totals.finds ? ` · ${totals.finds} ${totals.finds === 1 ? 'achado' : 'achados'}` : ''}</p>}
+    {phase === 'done' && <p className="loot-summary"><strong>Você ganhou:</strong> {totals.coins} moedas{totals.xp ? ` · ${totals.xp} XP` : ''}{pulls.length ? ` · ${pulls.length} cartas` : ''}</p>}
     {error && <p role="alert" className="px-5 text-sm font-bold text-[#8c3027]">{error}</p>}
 
     <footer className="welcome-actions">
       {phase === 'done'
-        ? <button type="button" className="pixel-button primary-button" onClick={store}>{remaining > 0 ? `Guardar tudo (mais ${remaining} ${remaining === 1 ? 'baú' : 'baús'})` : 'Guardar tudo'}</button>
-        : <button type="button" className="pixel-button" disabled={phase !== 'tap'} onClick={onClose}>Depois</button>}
+        ? <button type="button" className="pixel-button primary-button" onClick={store}>{remaining > 0 ? `Guardar no álbum (mais ${remaining} ${remaining === 1 ? 'baú' : 'baús'})` : 'Guardar no álbum'}</button>
+        : phase === 'cards'
+          ? <button type="button" className="pixel-button" onClick={()=>setPhase('done')}>Ver todas</button>
+          : <button type="button" className="pixel-button" disabled={phase !== 'tap'} onClick={onClose}>Depois</button>}
     </footer>
   </dialog>;
 }

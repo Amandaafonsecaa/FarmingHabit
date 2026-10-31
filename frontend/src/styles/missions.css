@@ -280,16 +280,8 @@
 .legendary-banner { position: absolute; left: 50%; top: -14px; z-index: 5; padding: 3px 8px; font-size: 12px; font-weight: 900; letter-spacing: 1px; white-space: nowrap; color: #3b2418; background: #ffe38b; border: 2px solid #a86d1c; box-shadow: 2px 2px 0 #42291655; transform: translateX(-50%) rotate(-4deg); animation: banner-stamp .5s cubic-bezier(.3, 1.8, .5, 1) .55s backwards; }
 .loot-summary { margin: 0; padding: 10px 16px 0; text-align: center; font-size: 13px; color: #5b3826; animation: scenery-in .4s ease-out; }
 
-/* Coleção de achados */
+/* Álbum de cartas (as cartas em si ficam em cards.css) */
 .collection-body { display: flex; flex-direction: column; gap: 12px; padding: 14px; }
-.collection-chapter { margin-bottom: 6px; font-size: 10px; font-weight: 900; letter-spacing: 1.5px; text-transform: uppercase; color: #7a4a26; }
-.collection-row { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
-.collection-slot { position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 4px 6px; text-align: center; background: #f3e2bb; border: 2px dashed #c49a62; }
-.collection-slot.is-found { background: #fffaf0; border-style: solid; border-color: #8a5838; animation: medal-bob 3s ease-in-out infinite; }
-.collection-slot.is-found.is-raro { border-color: #3d7fa8; box-shadow: inset 0 0 0 2px #bfe6f3; }
-.collection-slot.is-found.is-lendário { border-color: #a86d1c; background: #fff3c4; box-shadow: inset 0 0 0 2px #f2c453; }
-.collection-name { font-size: 9px; font-weight: bold; line-height: 1.2; color: #5b3826; overflow-wrap: anywhere; }
-.collection-count { position: absolute; top: 2px; right: 3px; padding: 0 3px; font-size: 9px; font-weight: 900; color: #fff1c7; background: #bf5837; }
 
 @keyframes chest-drop { 0% { transform: translateY(-60px) scale(.6); opacity: 0; } 55% { transform: translateY(0) scale(1.25, .7); opacity: 1; } 75% { transform: translateY(-5px) scale(.9, 1.1); } 100% { transform: none; } }
 @keyframes map-spark { 0% { opacity: 1; transform: rotate(calc(var(--i) * 45deg)) translateY(0); } 100% { opacity: 0; transform: rotate(calc(var(--i) * 45deg)) translateY(-16px); } }
@@ -410,14 +402,6 @@
 /* A tachinha balança quando o mouse passa no pergaminho */
 .quest-scroll:hover .quest-pin { animation: quest-pin-wiggle .45s ease-in-out; }
 @keyframes quest-pin-wiggle { 25% { rotate: -14deg; } 60% { rotate: 10deg; } }
-/* Achados sobem e ganham um brilho atravessando; os que faltam dão uma tremidinha de curiosidade */
-.collection-slot { position: relative; overflow: hidden; transition: translate .18s cubic-bezier(.34, 1.56, .64, 1), box-shadow .18s; }
-.collection-slot.is-found:hover { translate: 0 -3px; box-shadow: 0 4px 0 #8a583855; }
-.collection-slot.is-found::after { content: ''; position: absolute; top: -10%; bottom: -10%; left: -40%; width: 18%; background: #fffdf2; opacity: 0; transform: skewX(-18deg); pointer-events: none; }
-.collection-slot.is-found:hover::after { animation: slot-shine .6s steps(6) forwards; }
-.collection-slot:not(.is-found):hover svg { animation: slot-curious .4s steps(3); }
-@keyframes slot-shine { from { left: -40%; opacity: .7; } to { left: 130%; opacity: .7; } }
-@keyframes slot-curious { 33% { rotate: -6deg; } 66% { rotate: 6deg; } }
 
 /* ===== Mapa: névoa nas bordas e corvos passando (MapAtmosphere) ===== */
 /* Fica por cima do mapa e embaixo das placas; nunca recebe cliques */
@@ -438,6 +422,7 @@
 @keyframes crow-flap-up { 0% { opacity: 1; } 50% { opacity: 0; } }
 @keyframes crow-flap-down { 0% { opacity: 0; } 50% { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .map-crow { display: none; } }
+html.calm-mode .map-crow { display: none; }
 /* Celular: só sobre a faixa do mapa que rola, para não apagar as placas */
 @media (max-width: 767px) {
  .map-atmosphere { top: auto; bottom: 0; height: 208px; z-index: 1; --fog-top: 48px; --fog-side: 28px; }

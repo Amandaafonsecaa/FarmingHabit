@@ -18,7 +18,7 @@ const LOCAL_KEYS_BY_PART: Record<WipePart, string[]> = {
   diary: ['farminghabit.diary.v1', 'farminghabit.adventures.v1'],
   missions: ['farminghabit.missions.accepted.v1'],
   shop: ['farminghabit.wish.v1', 'farminghabit.purchases.v1'],
-  treasure: ['farminghabit.treasure.v1'],
+  treasure: ['farminghabit.treasure.v1', 'farminghabit.cards.v1'],
   motivation: ['farminghabit.motivation-photo.v1'],
   progress: [],
 };
@@ -50,7 +50,7 @@ export function WipeDialog({ online, examples, onBackup, onClose }: Props) {
     { value: 'diary', label: 'Diário e aventuras', hint: 'Páginas do diário e o quadro de aventuras' },
     { value: 'missions', label: 'Missões', hint: 'Missões criadas e cumpridas' },
     { value: 'shop', label: 'Loja', hint: 'Compras, itens próprios e o cofrinho' },
-    { value: 'treasure', label: 'Baús e coleção', hint: 'Baús abertos e itens colecionados' },
+    { value: 'treasure', label: 'Baús e cartas', hint: 'Baús abertos e o álbum de cartas' },
     { value: 'motivation', label: 'Motivação', hint: 'Frase do quadro e foto do porta-retrato' },
     { value: 'progress', label: 'Nível, XP e moedas', hint: 'Volta para o nível 1 com 0 moedas' },
   ];
