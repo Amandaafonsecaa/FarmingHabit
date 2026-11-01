@@ -99,7 +99,7 @@
 @keyframes tile-shine { 0% { left: -20px; } 35%, 100% { left: 70px; } }
 @keyframes ribbon-in { from { transform: scaleX(0); transform-origin: left; } }
 
-/* --- Celular: barra inferior fixa, como em app (5 abas; Diário, Evolução e Configurações moram no "Mais") --- */
+/* --- Celular: barra inferior fixa, como em app (5 abas; o resto mora na Mochila) --- */
 :root { --tab-bar-height: 64px; }
 .nav-more { display: none; }
 @media (max-width: 767px) {
@@ -115,6 +115,10 @@
  }
  .nav-vine, .nav-grass, .nav-nails, .nav-firefly, .nav-desktop-only { display: none; }
  .nav-more { display: block; }
+ /* Ordem da barra: Casa · Metas · (Diário) · Missões · Loja · Mochila */
+ .game-nav-list > li { order: 2; }
+ .game-nav-list > .nav-lead { order: 0; }
+ .game-nav-list > .nav-diary { order: 1; }
  .game-nav-list { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 2px; height: 100%; overflow: visible; }
  .game-nav-list > li, .navigation-open .game-nav-list > li { animation: none; }
  .game-nav-item { width: 100%; height: 100%; min-height: 48px; justify-content: center; gap: 3px; padding: 2px 0; }
