@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useStorageChange } from './useStorageChange';
+import { classifyDefaultGoals } from '../lib/goalAreas';
 import { toKey } from '../lib/goalLogic';
 import { CHECKINS_EVENT, readLog, removeGoalCheckins, sendCheckin, setLocalAmount } from '../lib/checkins';
 import type { CheckinResult } from '../services/api';
@@ -11,7 +12,7 @@ const STORAGE_KEY = 'farminghabit.goals.v1';
 function load(): TrackedGoal[] | null {
   try {
     const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? 'null');
-    return parsed && Array.isArray(parsed.goals) ? parsed.goals : null;
+    return parsed && Array.isArray(parsed.goals) ? classifyDefaultGoals(parsed.goals) : null;
   } catch { return null; }
 }
 
@@ -19,10 +20,10 @@ function load(): TrackedGoal[] | null {
 function seed(today: Date): TrackedGoal[] {
   const createdOn = toKey(today);
   return [
-    { id: 'exemplo-leitura', title: 'Ler 20 páginas', icon: 'book', frequency: { kind: 'daily' }, measure: { kind: 'check' }, createdOn },
-    { id: 'exemplo-academia', title: 'Ir à academia', icon: 'flame', frequency: { kind: 'weekly', timesPerWeek: 5 }, measure: { kind: 'check' }, createdOn },
-    { id: 'exemplo-estudo', title: 'Estudar inglês', icon: 'target', frequency: { kind: 'weekdays', days: [1, 3, 5] }, measure: { kind: 'check' }, createdOn },
-    { id: 'exemplo-agua', title: 'Beber 2 litros de água', icon: 'water', frequency: { kind: 'daily' }, measure: { kind: 'quantity', target: 8, unit: 'copos', step: 1 }, createdOn },
+    { id: 'exemplo-leitura', title: 'Ler 20 páginas', area: 'estudos', icon: 'book', frequency: { kind: 'daily' }, measure: { kind: 'check' }, createdOn },
+    { id: 'exemplo-academia', title: 'Ir à academia', area: 'saude', icon: 'flame', frequency: { kind: 'weekly', timesPerWeek: 5 }, measure: { kind: 'check' }, createdOn },
+    { id: 'exemplo-estudo', title: 'Estudar inglês', area: 'estudos', icon: 'target', frequency: { kind: 'weekdays', days: [1, 3, 5] }, measure: { kind: 'check' }, createdOn },
+    { id: 'exemplo-agua', title: 'Beber 2 litros de água', area: 'saude', icon: 'water', frequency: { kind: 'daily' }, measure: { kind: 'quantity', target: 8, unit: 'copos', step: 1 }, createdOn },
   ];
 }
 

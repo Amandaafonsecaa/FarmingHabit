@@ -29,7 +29,6 @@ function GoalsVine({ progress }: { progress: number }) {
 export function GoalsPage({ onNavigate }: { onNavigate: (page: AppPage) => void }) {
   const { goals, log, setAmount, addGoal, updateGoal, relapse, removeGoal } = useGoalTracker();
   const today = useToday();
-  const [view, setView] = useState<'today' | 'all'>('today');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const editing = goals.find(goal => goal.id === editingId);
@@ -44,7 +43,7 @@ export function GoalsPage({ onNavigate }: { onNavigate: (page: AppPage) => void 
   const coins = usePlayerCoins();
   const { celebrating } = usePerfectDay(goals, log, today);
   // Pendentes em cima, colhidas descem para o fim da lista
-  const shown = sortByPending(view === 'today' ? goals.filter(goal => isScheduled(goal, today)) : goals, log, today);
+  const shown = sortByPending(goals, log, today);
   const plotsRef = useFlipList<HTMLUListElement>(shown.map(goal => goal.id).join());
 
   // Cumprir a meta no dia paga moedas e XP (uma vez por dia); o crédito vai para o servidor em segundo plano
@@ -66,7 +65,6 @@ export function GoalsPage({ onNavigate }: { onNavigate: (page: AppPage) => void 
   function plant(goal: NewTrackedGoal) {
     addGoal(goal);
     setDialogOpen(false);
-    setView('all');
     setAnnouncement(`${goal.title}: semente plantada!`);
   }
 
@@ -83,15 +81,12 @@ export function GoalsPage({ onNavigate }: { onNavigate: (page: AppPage) => void 
     setAnnouncement(`${title}: meta arrancada do canteiro.`);
   }
 
-  return <MainLayout page="goals" onNavigate={onNavigate} world={<GoalsHero goals={goals} log={log} today={today} coins={coins} celebrating={celebrating} onPlant={()=>setDialogOpen(true)} onHarvest={harvestFromStand}/>}>
+  return <MainLayout page="goals" onNavigate={onNavigate} world={<GoalsHero goals={goals} log={log} today={today} coins={coins} celebrating={celebrating} onHarvest={harvestFromStand}/>}>
     <div className="goals-layout">
       <section className="world-panel pixel-frame goals-board-panel" aria-labelledby="plots-heading">
         <header className="panel-heading">
           <h2 id="plots-heading"><PixelIcon name="target" className="size-5"/>Metas</h2>
-          <div className="view-tabs" role="group" aria-label="Filtrar metas">
-            <button type="button" className="view-tab" aria-pressed={view === 'today'} onClick={()=>setView('today')}>Hoje</button>
-            <button type="button" className="view-tab" aria-pressed={view === 'all'} onClick={()=>setView('all')}>Todas ({goals.length})</button>
-          </div>
+          <button type="button" className="pixel-button primary-button plant-button" onClick={()=>setDialogOpen(true)}><PixelIcon name="plus" className="size-2.5"/>Plantar meta</button>
         </header>
         <div className="panel-content goals-board" onScroll={onBoardScroll}>
           <GoalsVine progress={vineProgress}/>
