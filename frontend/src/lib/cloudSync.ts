@@ -89,8 +89,9 @@ export const hasLocalSnapshot = () => Object.keys(readMeta()).length > 0;
 /**
  * Começa a vigiar as gravações (na hora) e traz da conta o que for mais novo (em segundo plano).
  * Chaves que mudarem avisam as telas abertas com um evento "storage", e elas se atualizam sozinhas.
+ * Devolve se a conta respondeu (false: servidor fora do ar ou demorou demais).
  */
-export async function startCloudSync() {
+export async function startCloudSync(): Promise<boolean> {
   // Chaves que o navegador ainda não tinha ao abrir: se a tela gravar um valor padrão nelas antes de a
   // conta responder (ex.: metas de exemplo), vale o que está na conta
   const absentAtBoot = new Set([...SYNC_KEYS].filter(key => localStorage.getItem(key) === null));
@@ -122,5 +123,6 @@ export async function startCloudSync() {
     for (const key of SYNC_KEYS) if (!onServer.has(key) && localStorage.getItem(key) !== null) schedule(key);
     for (const key of waiting) schedule(key);
     waiting.clear();
-  } catch { /* servidor fora do ar: o app abre com os dados do navegador e envia quando der */ }
+    return true;
+  } catch { /* servidor fora do ar: o app abre com os dados do navegador e envia quando der */ return false; }
 }

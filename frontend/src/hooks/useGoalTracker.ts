@@ -3,21 +3,19 @@ import { useStorageChange } from './useStorageChange';
 import { classifyDefaultGoals } from '../lib/goalAreas';
 import { toKey } from '../lib/goalLogic';
 import { CHECKINS_EVENT, readLog, removeGoalCheckins, sendCheckin, setLocalAmount } from '../lib/checkins';
-import { DIARY_KEY, hasContent, readDiary } from '../lib/diary';
-import { GOALS_EVENT, adoptDiaryIfWritten, isDiaryOn, withDiary } from '../lib/diaryGoal';
+import { GOALS_EVENT, isDiaryOn, withDiary } from '../lib/diaryGoal';
 import type { CheckinResult } from '../services/api';
 import type { GoalLog, NewTrackedGoal, TrackedGoal } from '../types/goals';
 
 // Definição das metas: blob sincronizado pelo cloudSync. Histórico de cada dia: servidor (ver lib/checkins).
 const STORAGE_KEY = 'farminghabit.goals.v1';
 
-/** Todas as metas do blob, inclusive as pausadas; conta antiga com páginas escritas ganha o Diário ligado */
+/** Todas as metas do blob, inclusive as pausadas (a adoção do Diário em contas antigas é feita no boot, ver adoptWrittenDiary) */
 function load(): TrackedGoal[] | null {
   try {
     const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? 'null');
     if (!parsed || !Array.isArray(parsed.goals)) return null;
-    const hasPages = Object.values(readDiary()).some(hasContent);
-    return adoptDiaryIfWritten(classifyDefaultGoals(parsed.goals), hasPages, new Date());
+    return classifyDefaultGoals(parsed.goals);
   } catch { return null; }
 }
 
@@ -51,13 +49,14 @@ export function useGoalTracker() {
   const [allGoals, setGoals] = useState<TrackedGoal[]>(() => load() ?? seed(new Date()));
   const goals = useMemo(() => allGoals.filter(goal => !goal.paused), [allGoals]);
   const [log, setLog] = useState<GoalLog>(readLog);
-  // Outra instância desta aba, outra aba ou o pull da conta mudaram as metas (ou chegaram páginas do diário):
+  // Outra instância desta aba, outra aba ou o pull da conta mudaram as metas:
   // recarrega, mas só troca o estado se mudou de verdade (evita laço entre instâncias)
   const reload = () => { const next = load(); if (next) setGoals(current => sameGoals(current, next) ? current : next); };
   useStorageChange(STORAGE_KEY, reload);
-  useStorageChange(DIARY_KEY, reload);
   useEffect(() => {
     window.addEventListener(GOALS_EVENT, reload);
+    // Confere de novo ao se inscrever: um aviso disparado entre o desenho e este efeito não se perde
+    reload();
     return () => window.removeEventListener(GOALS_EVENT, reload);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {

@@ -19,6 +19,8 @@ export function useDiaryEnabled() {
   useEffect(() => {
     const refresh = () => setOn(read());
     window.addEventListener(GOALS_EVENT, refresh);
+    // Confere de novo ao se inscrever: um aviso disparado entre o desenho e este efeito não se perde
+    refresh();
     return () => window.removeEventListener(GOALS_EVENT, refresh);
   }, []);
   return on;
