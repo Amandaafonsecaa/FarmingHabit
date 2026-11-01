@@ -153,14 +153,14 @@
 /* Celular: só sobre a faixa do mapa que rola, para não apagar as placas */
 
 /* --- Navio do Capitão: vista de lado, ondas batendo e a proa arfando (2,4s por batida) --- */
-.missions-hero.is-sea { display: flex; flex-direction: column; aspect-ratio: 1350 / 430; min-height: 400px; padding: 18px; }
+.missions-hero.is-sea { display: flex; flex-direction: column; aspect-ratio: 1350 / 520; min-height: 460px; padding: 18px; }
 .missions-hero.is-sea .missions-hero-top { align-items: center; }
-.sailing-scene { position: absolute; inset: 0; z-index: -1; overflow: hidden; }
+.sailing-scene { position: absolute; inset: 0; z-index: -1; overflow: hidden; container-type: size; }
 .sea-back { position: absolute; inset: 0; width: 100%; height: 100%; }
 .sea-clouds { animation: sea-clouds 60s linear infinite; }
 .sea-front { position: absolute; left: 0; right: 0; bottom: 0; width: 100%; height: 20%; }
 .sea-front-roll { animation: sea-roll 2.4s steps(6) infinite; }
-.ship-rig { position: absolute; left: 50%; bottom: 9%; width: clamp(300px, 34%, 460px); aspect-ratio: 360 / 300; margin-left: calc(clamp(300px, 34%, 460px) / -2); transform-origin: 58% 82%; animation: ship-pitch 2.4s steps(12) infinite; }
+.ship-rig { position: absolute; left: 50%; bottom: 8%; --ship-width: min(clamp(400px, 46cqw, 640px), 104cqh); width: var(--ship-width); aspect-ratio: 360 / 300; margin-left: calc(var(--ship-width) / -2); transform-origin: 58% 82%; animation: ship-pitch 2.4s steps(12) infinite; }
 .ship-art { position: absolute; inset: 0; width: 100%; height: 100%; }
 .bow-splash { position: absolute; right: -6%; bottom: 8%; width: 22%; opacity: 0; transform-origin: 50% 100%; animation: bow-splash 2.4s steps(4) infinite; }
 /* Capitão no convés: o clique abre a conversa; no hover/foco o contorno e o brilho seguem o corpo dele */
@@ -249,34 +249,36 @@
 }
 
 @media (max-width: 767px) {
- .missions-hero.is-sea { aspect-ratio: auto; min-height: 270px; padding: 12px; }
+ .missions-hero.is-sea { aspect-ratio: auto; min-height: 320px; padding: 12px; }
  .missions-hero.is-sea .missions-hero-top { justify-content: space-between; }
  .sea-front { height: 16%; }
- .ship-rig { width: 210px; margin-left: -105px; bottom: 9%; }
+ .ship-rig { --ship-width: min(310px, 82cqw, 104cqh); }
  .quest-paper .quest-actions .pixel-button { min-height: 44px; }
 }
 
 /* Tablet (ex.: iPad): nem a faixa larguíssima do desktop nem o corte do celular — o navio continua enquadrado */
 @media (min-width: 768px) and (max-width: 1099px) {
- .missions-hero.is-sea { aspect-ratio: auto; min-height: 320px; padding: 16px; }
+ .missions-hero.is-sea { aspect-ratio: auto; min-height: 380px; padding: 16px; }
  .sea-front { height: 18%; }
- .ship-rig { width: clamp(240px, 32%, 320px); margin-left: calc(clamp(240px, 32%, 320px) / -2); }
+ .ship-rig { --ship-width: min(400px, 104cqh); }
 }
 
-/* Celular e tablet: caderno vira botão flutuante fixo (como o do WhatsApp); a página fica só com o quadro.
-   No celular fica acima da barra de abas; no tablet (sem barra de abas) fica só acima da borda da tela. */
+/* Celular e tablet: caderno vira botão flutuante fixo (como o do WhatsApp), acima da barra de abas inferior */
 @media (max-width: 1099px) {
- .notebook-slot { position: fixed; right: 14px; bottom: calc(env(safe-area-inset-bottom, 0px) + 14px); z-index: 45; order: 0; }
+ .notebook-slot { position: fixed; right: 14px; bottom: calc(var(--tab-bar-height) + env(safe-area-inset-bottom, 0px) + 14px); z-index: 45; order: 0; }
  .notebook-closed { width: 54px; filter: drop-shadow(3px 4px 0 #3b241888); }
  .notebook-closed:hover { transform: none; }
  .notebook-closed:active { transform: translateY(2px); filter: drop-shadow(1px 2px 0 #3b241888); }
  .notebook-closed .notebook-label { display: none; }
- .missions-layout { padding-bottom: 84px; }
-}
-@media (max-width: 767px) {
- .notebook-slot { bottom: calc(var(--tab-bar-height) + env(safe-area-inset-bottom, 0px) + 14px); }
  .missions-layout { padding-bottom: 96px; }
 }
 
 
 .missions-sign.is-minimal { justify-content: center; text-align: center; }
+
+/* O alvo cresce junto com o Capitão; o balão sinaliza a conversa também no toque. */
+.ship-captain { min-width: 44px; min-height: 44px; }
+.ship-captain-hint { position: absolute; top: -19px; right: -7px; width: 22px; height: 18px; pointer-events: none; animation: captain-hint-float 2.4s ease-in-out infinite; transition: transform .2s ease; }
+.ship-captain-hint svg { display: block; width: 100%; height: 100%; }
+.ship-captain:hover .ship-captain-hint, .ship-captain:focus-visible .ship-captain-hint { animation: none; transform: translateY(-3px) scale(1.1); }
+@keyframes captain-hint-float { 50% { transform: translateY(-3px); } }

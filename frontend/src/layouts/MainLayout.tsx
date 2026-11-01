@@ -13,8 +13,8 @@ export function MainLayout({ page, onNavigate, world, children }: { page: AppPag
   const toggleRef = useRef<HTMLButtonElement>(null);
   // Passar o mouse no botão abre a gaveta; sair do botão e da gaveta fecha
   const hover = useHoverOpen(navigationOpen, setNavigationOpen);
-  // No celular a navegação é a barra inferior, sempre visível (o hambúrguer some pelo CSS)
-  const phone = useMediaQuery(PHONE_QUERY);
+  // No celular e no tablet a navegação é a barra inferior, sempre visível (o hambúrguer some pelo CSS)
+  const mobileBar = useMediaQuery(PHONE_QUERY);
   const diaryEnabled = useDiaryEnabled();
 
   // Fecha com Esc ou clicando fora da gaveta
@@ -37,7 +37,7 @@ export function MainLayout({ page, onNavigate, world, children }: { page: AppPag
         <button ref={toggleRef} type="button" className="navigation-toggle pixel-button" aria-label={navigationOpen ? 'Fechar navegação' : 'Abrir navegação'} aria-expanded={navigationOpen} aria-controls="game-navigation" onClick={hover.toggleByClick} onPointerEnter={hover.onPointerEnter} onPointerLeave={hover.onPointerLeave}>
           <span className="toggle-bars" aria-hidden="true"><span/><span/><span/></span>
         </button>
-        <GameNavigation navRef={navigationRef} open={navigationOpen || phone} page={page} diaryEnabled={diaryEnabled} onNavigate={onNavigate} onPointerEnter={hover.onPointerEnter} onPointerLeave={hover.onPointerLeave}/>
+        <GameNavigation navRef={navigationRef} open={navigationOpen || mobileBar} page={page} diaryEnabled={diaryEnabled} onNavigate={onNavigate} onPointerEnter={hover.onPointerEnter} onPointerLeave={hover.onPointerLeave}/>
         {world}
       </div>
       {children}

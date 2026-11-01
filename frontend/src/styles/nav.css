@@ -99,10 +99,13 @@
 @keyframes tile-shine { 0% { left: -20px; } 35%, 100% { left: 70px; } }
 @keyframes ribbon-in { from { transform: scaleX(0); transform-origin: left; } }
 
-/* --- Celular: barra inferior fixa, como em app (5 abas; o resto mora na Mochila) --- */
+/* --- Celular e tablet: barra inferior fixa, como em app --- */
 :root { --tab-bar-height: 80px; }
 .nav-more { display: none; }
-@media (max-width: 767px) {
+/* Chrome da barra: igual para celular e tablet. grid-auto-flow (em vez de repeat(N) fixo) faz as colunas
+   se ajustarem sozinhas a quantos itens estão visíveis — 5 no celular (o resto mora na Mochila),
+   6 ou 7 no tablet (cabe tudo direto, sem precisar da Mochila: ver bloco de tablet mais abaixo) */
+@media (max-width: 1099px) {
  .navigation-toggle, .navigation-open .navigation-toggle { display: none; }
  .game-navigation, .navigation-open .game-navigation {
   top: auto; right: 0; width: 100%; height: calc(var(--tab-bar-height) + env(safe-area-inset-bottom, 0px));
@@ -113,15 +116,11 @@
   /* Tábuas deitadas: as ripas verticais da gaveta virariam listras soltas entre as abas */
   background: #8a5027 repeating-linear-gradient(0deg, transparent 0 18px, #6c3e2240 18px 20px);
  }
- .nav-vine, .nav-grass, .nav-nails, .nav-firefly, .nav-desktop-only { display: none; }
- .nav-more { display: block; }
+ .nav-vine, .nav-grass, .nav-nails, .nav-firefly { display: none; }
  /* Medidas de barra inferior comum (Material 3): 80px de altura, ícone 24px numa moldura 56×32, rótulo 12px */
- /* Ordem da barra: Casa · Metas · (Diário) · Missões · Loja · Mochila */
- .game-nav-list > li { order: 2; }
- .game-nav-list > .nav-lead { order: 0; }
- .game-nav-list > .nav-diary { order: 1; }
- .game-nav-list { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px; height: 100%; overflow: visible; }
+ .game-nav-list { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 4px; height: 100%; overflow: visible; }
  .game-nav-list > li, .navigation-open .game-nav-list > li { animation: none; }
+ .game-nav-list > .nav-item-bottom { margin-top: 0; padding-top: 0; }
  .game-nav-item { width: 100%; height: 100%; min-height: 56px; justify-content: center; gap: 4px; padding: 0; }
  .game-nav-icon { display: flex; align-items: center; justify-content: center; width: 56px; max-width: 100%; height: 32px; border-width: 2px; }
  .game-nav-icon svg { width: 24px; height: 24px; }
@@ -134,6 +133,15 @@
  .seed-fab, .navigation-open .seed-fab { bottom: calc(var(--tab-bar-height) + env(safe-area-inset-bottom, 0px) + 12px); }
  /* Sem o hambúrguer, os topos não precisam mais reservar o canto de cima */
  .world-header, .missions-hero, .missions-hero.is-sea, .shop-hero, .diary-hero, .evolution-hero, .settings-hero { padding-top: 12px; }
+}
+/* Só no celular: Loja/Evolução/Configurações não cabem direto, moram na Mochila; a ordem muda pro Diário entrar */
+@media (max-width: 767px) {
+ .nav-desktop-only { display: none; }
+ .nav-more { display: block; }
+ /* Ordem da barra: Casa · Metas · (Diário) · Missões · Loja · Mochila */
+ .game-nav-list > li { order: 2; }
+ .game-nav-list > .nav-lead { order: 0; }
+ .game-nav-list > .nav-diary { order: 1; }
 }
 
 /* Gaveta "Mais": sobe de baixo, linhas de 56px para o polegar */
@@ -160,7 +168,7 @@
 .nav-signout svg { flex-shrink: 0; width: 13px; }
 .nav-signout:hover, .nav-signout:focus-visible { background: #f7dfc5; }
 .nav-signout:disabled { cursor: wait; opacity: .65; }
-@media (max-width: 767px) {
+@media (max-width: 1099px) {
  .game-navigation, .navigation-open .game-navigation { overflow: visible; }
  .nav-account-popover { left: auto; right: 0; width: 155px; bottom: 100%; }
  .nav-signout { font-size: 12px; min-height: 44px; }

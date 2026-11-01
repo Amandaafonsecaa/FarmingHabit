@@ -13,5 +13,5 @@ export function useMediaQuery(query: string) {
   return matches;
 }
 
-/** Mesma quebra do CSS (max-width: 767px): no celular a navegação vira barra inferior fixa */
-export const PHONE_QUERY = '(max-width: 767px)';
+/** Mesma quebra do CSS (max-width: 1099px): no celular e no tablet a navegação vira barra inferior fixa */
+export const PHONE_QUERY = '(max-width: 1099px)';
