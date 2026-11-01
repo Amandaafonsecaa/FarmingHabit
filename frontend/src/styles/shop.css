@@ -263,3 +263,32 @@
 @keyframes shelf-slot-a { 0%, 3.9% { opacity: 1; } 4%, 93.9% { opacity: 0; } 94%, 100% { opacity: 1; } }
 @keyframes shelf-slot-b { 0%, 43.9% { opacity: 0; } 44%, 53.9% { opacity: 1; } 54%, 100% { opacity: 0; } }
 @keyframes shelf-carried { 0%, 3.9% { opacity: 0; } 4%, 43.9% { opacity: 1; } 44%, 53.9% { opacity: 0; } 54%, 93.9% { opacity: 1; } 94%, 100% { opacity: 0; } }
+
+/* Celular: a placa com título e texto sai (o título continua para leitores de tela); as moedas descem para o piso,
+   longe da placa ARMAZÉM pendurada no teto */
+@media (max-width: 767px) {
+ .shop-sign-board { padding: 0; border: 0; background: none; box-shadow: none; }
+ .shop-sign-board .eyebrow, .shop-sign-board .missions-motto { display: none; }
+ .shop-sign-board h1 { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+ .shop-hero-top { position: static; }
+ .shop-hero-top .shop-coin-hud { position: absolute; right: 12px; bottom: 12px; }
+}
+
+/* Celular: banner mais baixo com o balcão (x 380–680 da cena) inteiro e no centro; a escala segue a altura,
+   então 300px de altura (288 por dentro) dão 0,9 px por unidade e o centro do balcão (x 530) cai em 477px */
+@media (max-width: 767px) {
+ .shop-hero { min-height: 0; height: 300px; }
+ .shop-scene { inset: 0 auto 0 calc(50% - 477px); width: auto; height: 100%; aspect-ratio: 1000 / 320; }
+}
+
+/* Celular: as abas da Vitrine cabem na mesma linha do título (o texto delas quebra em duas linhas se precisar) */
+@media (min-width: 360px) and (max-width: 767px) {
+ .showcase-panel > .panel-heading { flex-wrap: nowrap; }
+ .showcase-panel > .panel-heading h2 { flex: none; }
+ .showcase-panel .view-tabs { flex: 1 1 auto; min-width: 0; justify-content: flex-end; }
+ .view-tab { flex: 0 1 auto; min-width: 0; min-height: 36px; padding: 3px 6px; font-size: 10px; line-height: 1.1; white-space: normal; }
+ .view-tab:first-child { flex-shrink: 0; }
+}
+
+/* Folga no fim para o "+" flutuante não cobrir a última fileira */
+.shop-layout { padding-bottom: 96px; }

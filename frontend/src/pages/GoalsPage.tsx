@@ -6,6 +6,8 @@ import { GoalCard } from '../components/goals/GoalCard';
 import { ConsistencyCalendar } from '../components/goals/ConsistencyCalendar';
 import { NewGoalDialog } from '../components/goals/NewGoalDialog';
 import { PixelIcon } from '../components/PixelIcon';
+import { PanelHeading, useCollapsible } from '../components/PanelHeading';
+import { AddFab } from '../components/AddFab';
 import { useGoalTracker, useToday } from '../hooks/useGoalTracker';
 import { useFlipList } from '../hooks/useFlipList';
 import { amountOn, dailyTarget, isScheduled, sortByPending, toKey } from '../lib/goalLogic';
@@ -81,13 +83,11 @@ export function GoalsPage({ onNavigate }: { onNavigate: (page: AppPage) => void 
     setAnnouncement(`${title}: meta arrancada do canteiro.`);
   }
 
+  const boardCard = useCollapsible();
   return <MainLayout page="goals" onNavigate={onNavigate} world={<GoalsHero goals={goals} log={log} today={today} coins={coins} celebrating={celebrating} onHarvest={harvestFromStand}/>}>
     <div className="goals-layout">
-      <section className="world-panel pixel-frame goals-board-panel" aria-labelledby="plots-heading">
-        <header className="panel-heading">
-          <h2 id="plots-heading"><PixelIcon name="target" className="size-5"/>Metas</h2>
-          <button type="button" className="pixel-button primary-button plant-button" onClick={()=>setDialogOpen(true)}><PixelIcon name="plus" className="size-2.5"/>Plantar meta</button>
-        </header>
+      <section className={`world-panel pixel-frame goals-board-panel ${boardCard.collapsedClass}`} aria-labelledby="plots-heading">
+        <PanelHeading id="plots-heading" icon="target" title="Metas" open={boardCard.open} onToggle={boardCard.toggle}/>
         <div className="panel-content goals-board" onScroll={onBoardScroll}>
           <GoalsVine progress={vineProgress}/>
           {shown.length === 0
@@ -99,7 +99,7 @@ export function GoalsPage({ onNavigate }: { onNavigate: (page: AppPage) => void 
       </section>
       <div className="goals-side"><ConsistencyCalendar goals={goals} log={log} today={today}/></div>
     </div>
-    <p role="status" className="world-status">{'Toda semente precisa de tempo. Volte amanhã para regar.'}</p>
+    <AddFab label="Plantar meta" onClick={()=>setDialogOpen(true)}/>
     {dialogOpen && <NewGoalDialog onSave={plant} onClose={()=>setDialogOpen(false)}/>}
     {editing && <NewGoalDialog key={editing.id} goal={editing} onClose={()=>setEditingId(null)}
       onSave={changes=>{ updateGoal(editing.id, changes); setEditingId(null); setAnnouncement(`${changes.title}: meta atualizada!`); }}/>}

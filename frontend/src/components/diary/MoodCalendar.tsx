@@ -1,6 +1,6 @@
 import type { DiaryEntry } from '../../lib/diary';
 import { WEEKDAY_NAMES, WEEK_ORDER, toKey } from '../../lib/goalLogic';
-import { PixelIcon } from '../PixelIcon';
+import { PanelHeading, useCollapsible } from '../PanelHeading';
 import { MoodIcon, StickerIcon } from './DiaryIcons';
 
 /** "Estações do humor": o mês inteiro com o clima de cada dia; clicar abre aquela página do diário */
@@ -10,8 +10,9 @@ export function MoodCalendar({ month, entries, selectedKey, todayKey, onSelect, 
   const days = new Date(month.getFullYear(), month.getMonth() + 1, 0).getDate();
   const offset = (month.getDay() + 6) % 7;
   const isCurrentMonth = toKey(month).slice(0, 7) === todayKey.slice(0, 7);
-  return <section className="world-panel pixel-frame mood-calendar" aria-labelledby="mood-heading">
-    <header className="panel-heading"><h2 id="mood-heading"><PixelIcon name="sun" className="size-5"/>Estações do humor</h2></header>
+  const card = useCollapsible();
+  return <section className={`world-panel pixel-frame mood-calendar ${card.collapsedClass}`} aria-labelledby="mood-heading">
+    <PanelHeading id="mood-heading" icon="sun" title="Estações do humor" open={card.open} onToggle={card.toggle}/>
     <div className="panel-content pb-3">
       <div className="calendar-toolbar">
         <button type="button" className="pixel-button" aria-label="Mês anterior" onClick={()=>onMonth(-1)}>◀</button>

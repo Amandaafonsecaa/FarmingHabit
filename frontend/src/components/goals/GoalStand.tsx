@@ -127,20 +127,5 @@ export function GoalStand({ goals, log, today, onHarvest, onTalk }: GoalStandPro
         <rect x="254" y="203" width="8" height="6" fill="#bf5837"/><rect x="256" y="209" width="2" height="2" fill="#bf5837"/><text x="289" y="211" textAnchor="middle" className="talk-prompt-text">Conversar</text></g>
     </g>
   </svg>
-  {/* Celular: a banca vira ilustração e as metas aparecem numa grade de cestas fáceis de tocar */}
-  {goals.length > 0 && <ul className="stand-grid" aria-label="Metas de hoje">{goals.map(goal => {
-    const progress = progressFor(goal, log, today);
-    const isDone = isDoneOn(goal, log, today);
-    const [color] = goalColor(goal);
-    return <li key={goal.id}><button type="button" className={`stand-basket ${isDone ? 'is-done' : ''}`} onClick={event=>onHarvest(goal, event.currentTarget)}
-      aria-label={`${goal.title}: ${isDone ? 'colhida hoje' : `${progress}%. Colher`}`}>
-      <svg viewBox="0 0 48 34" shapeRendering="crispEdges" aria-hidden="true"><g transform="translate(0 6)">
-        {HEAP.slice(0, fillCount(progress)).map(([px, py], item) => <path key={item} d={ITEM} transform={`translate(${px} ${py})`} fill={color} stroke="#3b2418" strokeWidth=".8"/>)}
-        <rect x="0" y="0" width="48" height="28" fill="#b07a4c" stroke="#57311f" strokeWidth="2"/><path d="M2 9h44M2 18h44" stroke="#8a5838" strokeWidth="2"/>
-      </g></svg>
-      <span className="stand-basket-name">{goal.title}</span>
-      <span className="stand-basket-progress">{isDone ? '✓ colhida' : `${progress}%`}</span>
-    </button></li>;
-  })}<li className="stand-grid-count" aria-hidden="true">{done}/{goals.length}</li></ul>}
   </>;
 }

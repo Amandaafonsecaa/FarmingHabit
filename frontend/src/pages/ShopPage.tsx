@@ -10,6 +10,8 @@ import { RewardDialog } from '../components/dialogs/RewardDialog';
 import { ShopkeeperDialog } from '../components/shop/ShopkeeperDialog';
 import { ShelfLoading } from '../components/shop/ShelfLoading';
 import { PixelIcon } from '../components/PixelIcon';
+import { PanelHeading, useCollapsible } from '../components/PanelHeading';
+import { AddFab } from '../components/AddFab';
 import { useShop } from '../hooks/useShop';
 import type { NewItem, Reward } from '../types/world';
 import type { AppPage } from '../types/navigation';
@@ -68,13 +70,13 @@ export function ShopPage({ onNavigate }: { onNavigate: (page: AppPage) => void }
     }
   }
 
-  return <MainLayout page="shop" onNavigate={onNavigate} world={<ShopHero coins={shop.player ? coins : null} onCreate={()=>setDialogOpen(true)} onTalk={()=>setTalking(true)}/>}>
+  const showcaseCard = useCollapsible();
+  return <MainLayout page="shop" onNavigate={onNavigate} world={<ShopHero coins={shop.player ? coins : null} onTalk={()=>setTalking(true)}/>}>
     <div className="shop-layout">
-      <section className="world-panel pixel-frame showcase-panel" aria-labelledby="showcase-heading">
-        <header className="panel-heading">
-          <h2 id="showcase-heading"><PixelIcon name="coin" className="size-5"/>Vitrine</h2>
+      <section className={`world-panel pixel-frame showcase-panel ${showcaseCard.collapsedClass}`} aria-labelledby="showcase-heading">
+        <PanelHeading id="showcase-heading" icon="coin" title="Vitrine" open={showcaseCard.open} onToggle={showcaseCard.toggle}>
           <div className="view-tabs" role="group" aria-label="Filtrar produtos">{FILTERS.map(item => <button key={item.id} type="button" className="view-tab" aria-pressed={filter === item.id} onClick={()=>setFilter(item.id)}>{item.label}</button>)}</div>
-        </header>
+        </PanelHeading>
         <div className="showcase" role="region" aria-label="Produtos da vitrine" tabIndex={0}>
           {shop.loading && <ShelfLoading/>}
           {shop.error && <p role="alert" className="quest-board-note is-error">Não foi possível carregar a vitrine: {shop.error}</p>}
@@ -92,7 +94,7 @@ export function ShopPage({ onNavigate }: { onNavigate: (page: AppPage) => void }
         <ChestPanel purchases={shop.purchases} freshId={freshId} pendingIds={shop.updatingIds} onToggle={id => { void shop.toggleUsed(id).catch(error => setAnnouncement(errorMessage(error))); }}/>
       </div>
     </div>
-    <p role="status" className="world-status">{'Cuidar de si também é uma recompensa.'}</p>
+    <AddFab label="Nova recompensa" onClick={()=>setDialogOpen(true)}/>
     {editing && <EditRewardDialog key={editing.id} reward={editing} onClose={()=>setEditing(null)}
       onSave={async changes => { await shop.edit(editing.id, changes); setAnnouncement(`${changes.title}: recompensa atualizada!`); }}
       onDelete={async () => { await shop.remove(editing.id); setAnnouncement(`${editing.name} saiu da sua vitrine.`); }}/>}
