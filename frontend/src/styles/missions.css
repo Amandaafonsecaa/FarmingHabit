@@ -33,6 +33,18 @@
 }
 .quest-board-note { padding: 24px 12px; text-align: center; font-weight: bold; color: #3b2418; background: #fff1c7cc; border: 2px dashed #8a5838; }
 .quest-board-note.is-error { color: #8c3027; }
+
+/* Carregando o quadro: o Capitão marcha pela trilha (anda, vira na volta e dá passinhos com balanço) */
+.march-loading { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.march-track { position: relative; width: min(320px, 100%); height: 78px; border-bottom: 4px solid #8a5838; box-shadow: 0 2px #d9a05a; }
+.march-walker { position: absolute; bottom: 0; left: 0; width: 60px; height: 66px; animation: march-walk 6s linear infinite; }
+.march-face, .march-step { display: block; width: 100%; height: 100%; }
+.march-face { animation: march-face 6s steps(1) infinite; }
+.march-step { transform-origin: 50% 100%; animation: march-step .5s steps(1) infinite; }
+.march-loading p { font-size: 13px; color: #765337; }
+@keyframes march-walk { 0%, 100% { left: 0; } 50% { left: calc(100% - 60px); } }
+@keyframes march-face { 0% { transform: none; } 50% { transform: scaleX(-1); } }
+@keyframes march-step { 0% { transform: translateY(0) rotate(-3deg); } 50% { transform: translateY(-3px) rotate(3deg); } }
 /* Divisor entre a fazer e cumpridas: só uma linha tracejada com um rótulo pequeno */
 .quest-divider { display: flex; align-items: center; gap: 10px; margin: 26px 2px 22px; font-size: 11px; font-weight: 900; letter-spacing: 1px; text-transform: uppercase; color: #fff1c7; text-shadow: 1px 1px #57311f; }
 .quest-divider::before, .quest-divider::after { content: ''; flex: 1; border-top: 2px dashed #fff1c799; }

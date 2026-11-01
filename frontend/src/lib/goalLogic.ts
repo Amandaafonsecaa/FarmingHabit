@@ -73,6 +73,10 @@ export function streakFor(goal: TrackedGoal, log: GoalLog, today: Date) {
   return count;
 }
 
+/** Sequência do jogador: a maior sequência de dias entre as metas diárias e de dias certos (semanais contam semanas, ficam de fora) */
+export const playerStreak = (goals: TrackedGoal[], log: GoalLog, today: Date) =>
+  goals.reduce((best, goal) => Math.max(best, goal.frequency.kind === 'weekly' ? 0 : streakFor(goal, log, today)), 0);
+
 /** Próximo dia agendado a partir de amanhã, para metas de dias específicos */
 export function nextScheduledName(goal: TrackedGoal, today: Date) {
   for (let offset = 1; offset <= 7; offset++) {

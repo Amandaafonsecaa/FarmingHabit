@@ -6,6 +6,7 @@ import { QuestScroll } from '../components/missions/QuestScroll';
 import { EditMissionDialog } from '../components/dialogs/EditMissionDialog';
 import { MissionDialog } from '../components/dialogs/MissionDialog';
 import { AdventureNotebook } from '../components/missions/AdventureNotebook';
+import { MarchLoading } from '../components/missions/MarchLoading';
 import { PixelIcon } from '../components/PixelIcon';
 import { PanelHeading, useCollapsible } from '../components/PanelHeading';
 import { useAcceptedMissions, useMissionBoard } from '../hooks/useMissionBoard';
@@ -79,7 +80,7 @@ export function MissionsPage({ onNavigate }: { onNavigate: (page: AppPage) => vo
       <section className={`world-panel pixel-frame quest-board-panel ${boardCard.collapsedClass}`} aria-labelledby="board-heading">
         <PanelHeading id="board-heading" icon="mission" title="Quadro de aventuras" open={boardCard.open} onToggle={boardCard.toggle}><button type="button" className="pixel-button primary-button" onClick={()=>setDialogOpen(true)}><PixelIcon name="plus" className="size-2.5"/>Nova missão</button></PanelHeading>
         <div className="quest-board">
-          {board.loading && <p className="quest-board-note">Desenrolando os pergaminhos…</p>}
+          {board.loading && <MarchLoading/>}
           {board.error && <p role="alert" className="quest-board-note is-error">Não foi possível carregar as missões: {board.error}</p>}
           {!board.loading && !board.error && open.length === 0 && <div className="quest-board-note">
             <p>Nenhuma missão no quadro. Viu algo curioso hoje?</p>

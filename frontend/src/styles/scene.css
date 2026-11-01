@@ -109,6 +109,8 @@
 .seed-plus { transform-box: fill-box; transform-origin: center; transition: transform .25s cubic-bezier(.34, 1.56, .64, 1); }
 .seed-fab.is-open .seed-plus { transform: rotate(45deg); }
 .seed-button:focus-visible { outline: 3px solid #3f6b35; outline-offset: 3px; }
+/* "+" flutuante das outras telas (Metas, Loja): mesma semente dourada, só com o sinal de mais */
+.add-fab svg { width: 28px; height: 28px; color: #714127; filter: drop-shadow(1px 1px 0 #ffe38b); }
 .seed-options { position: absolute; right: 0; bottom: 74px; display: flex; flex-direction: column-reverse; gap: 8px; pointer-events: none; }
 .seed-options li { transform: translateY(20px) scale(.4); opacity: 0; transition: transform .25s cubic-bezier(.34, 1.56, .64, 1), opacity .15s; transition-delay: calc(var(--i) * 45ms); }
 .seed-fab.is-open .seed-options { pointer-events: auto; }

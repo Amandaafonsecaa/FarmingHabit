@@ -161,4 +161,7 @@
  .diary-sign { display: none; }
  .diary-room { inset: 0 auto 0 max(calc(100% - 775px), -93px); width: auto; height: 100%; aspect-ratio: 1000 / 320; }
  .diary-main > .motivation-window { display: none; }
+ /* Livro de uma página só: a da direita (resumo do dia) sai, e a da esquerda perde a divisória de baixo */
+ .book-page.is-right { display: none; }
+ .book-page.is-left { border-bottom: 0; }
 }

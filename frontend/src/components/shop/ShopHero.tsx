@@ -1,12 +1,11 @@
 import { useDayPhase } from '../../hooks/useDayPhase';
 import { WindowSky } from '../scenery/WindowSky';
 import { CoinHud } from '../home/CoinHud';
-import { PixelIcon } from '../PixelIcon';
 
 const JARS: [number, number, string][] = [[70, 150, '#ee6996'], [96, 150, '#f2c453'], [122, 150, '#72ad32'], [148, 150, '#5fa8d3'], [70, 194, '#e8954a'], [96, 194, '#9b7fd4'], [122, 194, '#f2c453'], [148, 194, '#bf5837']];
 
 /** Interior do armazém: placa balançando, sininho, prateleiras, caixa registradora e o gato Bigode no balcão */
-export function ShopHero({ coins, onCreate, onTalk }: { coins: number | null; onCreate: () => void; onTalk: () => void }) {
+export function ShopHero({ coins, onTalk }: { coins: number | null; onTalk: () => void }) {
   const phase = useDayPhase();
   return <section className="shop-hero" aria-labelledby="shop-title">
     <svg className="shop-scene" viewBox="0 0 1000 320" preserveAspectRatio="xMidYMin slice" shapeRendering="crispEdges" aria-hidden="true">
@@ -63,7 +62,6 @@ export function ShopHero({ coins, onCreate, onTalk }: { coins: number | null; on
         <p className="eyebrow">Armazém do sítio</p>
         <h1 id="shop-title">Loja</h1>
         <p className="missions-motto">Quer algo específico? Crie o seu mimo!</p>
-        <button type="button" className="pixel-button primary-button" onClick={onCreate}><PixelIcon name="plus" className="size-2.5"/>Nova recompensa</button>
       </div>
       <CoinHud coins={coins} className="shop-coin-hud"/>
     </div>

@@ -11,6 +11,7 @@ import { ShopkeeperDialog } from '../components/shop/ShopkeeperDialog';
 import { ShelfLoading } from '../components/shop/ShelfLoading';
 import { PixelIcon } from '../components/PixelIcon';
 import { PanelHeading, useCollapsible } from '../components/PanelHeading';
+import { AddFab } from '../components/AddFab';
 import { useShop } from '../hooks/useShop';
 import type { NewItem, Reward } from '../types/world';
 import type { AppPage } from '../types/navigation';
@@ -70,7 +71,7 @@ export function ShopPage({ onNavigate }: { onNavigate: (page: AppPage) => void }
   }
 
   const showcaseCard = useCollapsible();
-  return <MainLayout page="shop" onNavigate={onNavigate} world={<ShopHero coins={shop.player ? coins : null} onCreate={()=>setDialogOpen(true)} onTalk={()=>setTalking(true)}/>}>
+  return <MainLayout page="shop" onNavigate={onNavigate} world={<ShopHero coins={shop.player ? coins : null} onTalk={()=>setTalking(true)}/>}>
     <div className="shop-layout">
       <section className={`world-panel pixel-frame showcase-panel ${showcaseCard.collapsedClass}`} aria-labelledby="showcase-heading">
         <PanelHeading id="showcase-heading" icon="coin" title="Vitrine" open={showcaseCard.open} onToggle={showcaseCard.toggle}>
@@ -93,6 +94,7 @@ export function ShopPage({ onNavigate }: { onNavigate: (page: AppPage) => void }
         <ChestPanel purchases={shop.purchases} freshId={freshId} pendingIds={shop.updatingIds} onToggle={id => { void shop.toggleUsed(id).catch(error => setAnnouncement(errorMessage(error))); }}/>
       </div>
     </div>
+    <AddFab label="Nova recompensa" onClick={()=>setDialogOpen(true)}/>
     {editing && <EditRewardDialog key={editing.id} reward={editing} onClose={()=>setEditing(null)}
       onSave={async changes => { await shop.edit(editing.id, changes); setAnnouncement(`${changes.title}: recompensa atualizada!`); }}
       onDelete={async () => { await shop.remove(editing.id); setAnnouncement(`${editing.name} saiu da sua vitrine.`); }}/>}

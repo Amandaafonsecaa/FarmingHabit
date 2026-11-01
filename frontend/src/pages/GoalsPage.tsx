@@ -7,6 +7,7 @@ import { ConsistencyCalendar } from '../components/goals/ConsistencyCalendar';
 import { NewGoalDialog } from '../components/goals/NewGoalDialog';
 import { PixelIcon } from '../components/PixelIcon';
 import { PanelHeading, useCollapsible } from '../components/PanelHeading';
+import { AddFab } from '../components/AddFab';
 import { useGoalTracker, useToday } from '../hooks/useGoalTracker';
 import { useFlipList } from '../hooks/useFlipList';
 import { amountOn, dailyTarget, isScheduled, sortByPending, toKey } from '../lib/goalLogic';
@@ -86,9 +87,7 @@ export function GoalsPage({ onNavigate }: { onNavigate: (page: AppPage) => void 
   return <MainLayout page="goals" onNavigate={onNavigate} world={<GoalsHero goals={goals} log={log} today={today} coins={coins} celebrating={celebrating} onHarvest={harvestFromStand}/>}>
     <div className="goals-layout">
       <section className={`world-panel pixel-frame goals-board-panel ${boardCard.collapsedClass}`} aria-labelledby="plots-heading">
-        <PanelHeading id="plots-heading" icon="target" title="Metas" open={boardCard.open} onToggle={boardCard.toggle}>
-          <button type="button" className="pixel-button primary-button plant-button" onClick={()=>setDialogOpen(true)}><PixelIcon name="plus" className="size-2.5"/>Plantar meta</button>
-        </PanelHeading>
+        <PanelHeading id="plots-heading" icon="target" title="Metas" open={boardCard.open} onToggle={boardCard.toggle}/>
         <div className="panel-content goals-board" onScroll={onBoardScroll}>
           <GoalsVine progress={vineProgress}/>
           {shown.length === 0
@@ -100,6 +99,7 @@ export function GoalsPage({ onNavigate }: { onNavigate: (page: AppPage) => void 
       </section>
       <div className="goals-side"><ConsistencyCalendar goals={goals} log={log} today={today}/></div>
     </div>
+    <AddFab label="Plantar meta" onClick={()=>setDialogOpen(true)}/>
     {dialogOpen && <NewGoalDialog onSave={plant} onClose={()=>setDialogOpen(false)}/>}
     {editing && <NewGoalDialog key={editing.id} goal={editing} onClose={()=>setEditingId(null)}
       onSave={changes=>{ updateGoal(editing.id, changes); setEditingId(null); setAnnouncement(`${changes.title}: meta atualizada!`); }}/>}
