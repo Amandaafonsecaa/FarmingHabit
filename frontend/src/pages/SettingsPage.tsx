@@ -238,6 +238,5 @@ export function SettingsPage({ onNavigate }: { onNavigate: (page: AppPage) => vo
         </div>
       </section>
     </div>
-    <p role="status" className="world-status">{'Toda boa colheita começa com as ferramentas no lugar.'}</p>
   </MainLayout>;
 }

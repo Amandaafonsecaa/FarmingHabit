@@ -93,7 +93,6 @@ export function ShopPage({ onNavigate }: { onNavigate: (page: AppPage) => void }
         <ChestPanel purchases={shop.purchases} freshId={freshId} pendingIds={shop.updatingIds} onToggle={id => { void shop.toggleUsed(id).catch(error => setAnnouncement(errorMessage(error))); }}/>
       </div>
     </div>
-    <p role="status" className="world-status">{'Cuidar de si também é uma recompensa.'}</p>
     {editing && <EditRewardDialog key={editing.id} reward={editing} onClose={()=>setEditing(null)}
       onSave={async changes => { await shop.edit(editing.id, changes); setAnnouncement(`${changes.title}: recompensa atualizada!`); }}
       onDelete={async () => { await shop.remove(editing.id); setAnnouncement(`${editing.name} saiu da sua vitrine.`); }}/>}

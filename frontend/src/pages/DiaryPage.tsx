@@ -64,6 +64,5 @@ export function DiaryPage({ onNavigate }: { onNavigate: (page: AppPage) => void 
         <MemoryNotes entries={diary.entries} onOpen={key=>{ const [y, m, d] = key.split('-').map(Number); open(new Date(y, m - 1, d)); }}/>
       </div>
     </div>
-    <p role="status" className="world-status">{entry.mood === 'stormy' ? 'Tempestades passam. Seja gentil com você hoje.' : 'Escrever também é cuidar da sua horta por dentro.'}</p>
   </MainLayout>;
 }

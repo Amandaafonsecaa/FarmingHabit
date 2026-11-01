@@ -100,7 +100,6 @@ export function GoalsPage({ onNavigate }: { onNavigate: (page: AppPage) => void 
       </section>
       <div className="goals-side"><ConsistencyCalendar goals={goals} log={log} today={today}/></div>
     </div>
-    <p role="status" className="world-status">{'Toda semente precisa de tempo. Volte amanhã para regar.'}</p>
     {dialogOpen && <NewGoalDialog onSave={plant} onClose={()=>setDialogOpen(false)}/>}
     {editing && <NewGoalDialog key={editing.id} goal={editing} onClose={()=>setEditingId(null)}
       onSave={changes=>{ updateGoal(editing.id, changes); setEditingId(null); setAnnouncement(`${changes.title}: meta atualizada!`); }}/>}

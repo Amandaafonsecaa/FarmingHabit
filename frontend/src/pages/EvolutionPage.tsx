@@ -47,6 +47,5 @@ export function EvolutionPage({ onNavigate }: { onNavigate: (page: AppPage) => v
       <SketchbookInsights goals={goals} log={log} today={today}/>
       <WeekBoard goals={goals} log={log} today={today}/>
     </div>
-    <p role="status" className="world-status">Cada pequeno passo também é crescimento.</p>
   </MainLayout>;
 }

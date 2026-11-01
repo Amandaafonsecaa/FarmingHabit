@@ -107,7 +107,6 @@ export function MissionsPage({ onNavigate }: { onNavigate: (page: AppPage) => vo
       </section>
       <AdventureNotebook/>
     </div>
-    <p role="status" className="world-status">{'Toda grande descoberta começa com uma pequena curiosidade.'}</p>
     {editing && <EditMissionDialog key={editing.id} mission={editing} active={accepted.includes(editing.id)} onClose={()=>setEditing(null)}
       onSave={async changes=>{ await board.edit(editing.id, changes); setAnnouncement(`${changes.title}: missão atualizada!`); }}
       onUncomplete={async ()=>{ await board.uncomplete(editing.id); setAnnouncement(`${editing.title}: missão desfeita. -${editing.xp} XP e -${editing.coins} moedas.`); }}/>}
