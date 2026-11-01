@@ -155,9 +155,11 @@
  /* No desktop a moldura tem a altura de "Sua semana" e o desenho se encaixa nela */
  .motivation-window .motivation-stage { position: absolute; inset: 8px; aspect-ratio: auto; }
 }
-.week-board-body { flex: 1; }
+.week-board-body { flex: 1; min-width: 0; }
 
 /* --- A semana de relance: uma bolinha da cor da meta em cada dia feito --- */
+/* min-width:0 é o que faz o overflow-x:auto valer: sem isso, um item flex não encolhe abaixo do conteúdo
+   (a tabela, com uma coluna fixa por dia), e a página toda ficava mais larga que a tela */
 .week-board-body { padding: 10px 14px 14px; background: #fff8e1; overflow-x: auto; }
 .week-table { width: 100%; border-collapse: collapse; }
 .week-table thead th { padding: 4px 2px 8px; font-size: 11px; font-weight: 900; color: #7a4a26; text-align: center; }
@@ -264,6 +266,12 @@
 @keyframes lamp-flicker { 0%, 46%, 50%, 100% { opacity: 1; } 47% { opacity: .82; } 49% { opacity: .92; } }
 
 /* --- Responsivo --- */
+/* Tablet: min-height (380px) força uma altura maior que a proporção 1000:336 permitiria na largura
+   disponível, e o navegador alarga a seção para manter a proporção — vazando pra fora da tela (documento
+   mais largo que o viewport). Sem razão fixa nessa faixa, a seção já fica do tamanho do contêiner. */
+@media (min-width: 768px) and (max-width: 1099px) {
+ .evolution-hero { aspect-ratio: auto; min-height: 340px; }
+}
 @media (max-width: 767px) {
  .evolution-hero { aspect-ratio: auto; min-height: 460px; padding: 70px 12px 12px; border-width: 4px; border-bottom-width: 8px; }
  .evolution-hero-top { padding-left: 0; }
