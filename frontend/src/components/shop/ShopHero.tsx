@@ -59,11 +59,10 @@ export function ShopHero({ coins, onTalk }: { coins: number | null; onTalk: () =
 
     <div className="shop-hero-top">
       <div className="shop-sign-board pixel-frame">
-        <p className="eyebrow">Armazém do sítio</p>
         <h1 id="shop-title">Loja</h1>
         <p className="missions-motto">Quer algo específico? Crie o seu mimo!</p>
       </div>
-      <CoinHud coins={coins} className="shop-coin-hud"/>
     </div>
+    <CoinHud coins={coins} mobilePosition="bottom-right"/>
   </section>;
 }

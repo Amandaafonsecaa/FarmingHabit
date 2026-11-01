@@ -16,12 +16,10 @@ export function MissionsHero({ completed, openCount = 0, traveling = 0, coins }:
   return <section className="missions-hero is-sea" aria-labelledby="missions-title">
     <SailingShip onTalk={()=>setTalking(true)}/>
     <div className="missions-hero-top">
-      {/* Placa minimalista com o título da página */}
-      <div className="missions-sign is-minimal pixel-frame">
-        <h1 id="missions-title">Quadro de Missões</h1>
-      </div>
-      <CoinHud coins={coins} className="hero-coin-hud"/>
+      {/* Título acessível, sem placa sobre o cenário */}
+<h1 id="missions-title" className="sr-only">Quadro de Missões</h1>
     </div>
+    <CoinHud coins={coins}/>
     {talking && <GuideDialog onClose={()=>setTalking(false)} context={{ name: playerName, completed, openMissions: openCount, traveling }}/>}
   </section>;
 }

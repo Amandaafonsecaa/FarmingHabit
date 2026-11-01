@@ -132,3 +132,10 @@ html.no-critters .butterfly, html.no-critters .sky-birds, html.no-critters .fish
  .settings-row-control .settings-input { width: 100%; }
  .settings-row-control:has(.pixel-switch) { width: auto; }
 }
+
+/* Placa reduzida ao título; no celular, o banner fica livre de sobreposições. */
+.settings-sign h1 { margin: 0; }
+@media (max-width: 767px) {
+ .settings-hero-top { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+ .settings-hero { padding: 0; }
+}

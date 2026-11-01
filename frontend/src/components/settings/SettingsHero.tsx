@@ -15,7 +15,7 @@ function gearPath(teeth: number, outer: number, inner: number) {
 const TOOL = { stroke: '#3b2418', strokeWidth: 2 } as const;
 
 /** Galpão de ferramentas: ferramentas balançando no painel, engrenagens girando, lampião e uma galinha curiosa */
-export function SettingsHero({ playerName, farmName }: { playerName: string; farmName: string }) {
+export function SettingsHero() {
   const phase = useDayPhase();
   return <section className="settings-hero" aria-labelledby="settings-title">
     <svg className="shed-scene" viewBox="0 0 1000 320" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
@@ -64,10 +64,7 @@ export function SettingsHero({ playerName, farmName }: { playerName: string; far
 
     <div className="settings-hero-top">
       <div className="settings-sign pixel-frame">
-        <p className="eyebrow">Galpão de ferramentas</p>
         <h1 id="settings-title">Configurações</h1>
-        <p className="missions-motto">Ajuste o sítio do seu jeitinho.</p>
-        <p className="settings-chips"><span>🧑‍🌾 {playerName}</span><span>🌻 {farmName}</span></p>
       </div>
     </div>
   </section>;

@@ -49,7 +49,7 @@ export function GameWorld({ player, coins, today, plots, onPlotTap, poppedId, pe
     onPointerMove={onPointerMove} onPointerLeave={resetParallax}>
     <SkyLayer phase={phase} rainbow={celebrating}/>
     <h1 id="world-heading" className="sr-only">{farmName} · {SEASON_NAMES[season]}, {PHASE_NAMES[phase].toLowerCase()}</h1>
-    <CoinHud coins={coins} className="world-coin-hud"/>
+    <CoinHud coins={coins} className="world-coin-hud" position="top-left"/>
     <header className="world-header"><WorldInfo level={player?.level ?? null} totalXp={player?.xp ?? null} xpPerLevel={XP_PER_LEVEL} farmName={farmName} today={today}/></header>
     <WorldScenery level={player?.level ?? 1} plots={plots} onPlotTap={onPlotTap} poppedId={poppedId} perfectDay={perfectDay}/>
     <div className="world-tint" aria-hidden="true"/>

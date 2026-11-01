@@ -8,6 +8,7 @@ import { NewGoalDialog } from '../components/goals/NewGoalDialog';
 import { PixelIcon } from '../components/PixelIcon';
 import { PanelHeading, useCollapsible } from '../components/PanelHeading';
 import { AddFab } from '../components/AddFab';
+import { DIARY_GOAL_ID, isDiaryGoal } from '../lib/diaryGoal';
 import { useGoalTracker, useToday } from '../hooks/useGoalTracker';
 import { useFlipList } from '../hooks/useFlipList';
 import { amountOn, dailyTarget, isScheduled, sortByPending, toKey } from '../lib/goalLogic';
@@ -29,7 +30,7 @@ function GoalsVine({ progress }: { progress: number }) {
 }
 
 export function GoalsPage({ onNavigate }: { onNavigate: (page: AppPage) => void }) {
-  const { goals, log, setAmount, addGoal, updateGoal, relapse, removeGoal } = useGoalTracker();
+  const { goals, log, setAmount, addGoal, updateGoal, relapse, removeGoal, setDiaryEnabled } = useGoalTracker();
   const today = useToday();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -51,6 +52,7 @@ export function GoalsPage({ onNavigate }: { onNavigate: (page: AppPage) => void 
   // Cumprir a meta no dia paga moedas e XP (uma vez por dia); o crédito vai para o servidor em segundo plano
   // Colher pelo caixote da vendinha: check único conclui o dia, quantidade soma um passo
   function harvestFromStand(goal: TrackedGoal, origin: Element) {
+    if (isDiaryGoal(goal)) { onNavigate('diary'); return; }
     const amount = amountOn(goal, log, toKey(today));
     if (!isScheduled(goal, today)) { setAnnouncement(`${goal.title}: hoje é dia de descanso.`); return; }
     if (amount >= dailyTarget(goal)) { setAnnouncement(`${goal.title}: já colhida hoje 🌻`); return; }
@@ -78,6 +80,8 @@ export function GoalsPage({ onNavigate }: { onNavigate: (page: AppPage) => void 
   }
 
   function uproot(goalId: string, title: string) {
+    // A meta do Diário nunca é apagada: arrancar pausa (histórico e páginas ficam guardados)
+    if (goalId === DIARY_GOAL_ID) { setDiaryEnabled(false); setAnnouncement(`${title}: diário pausado. Religue em Configurações.`); return; }
     if (!window.confirm(`Arrancar a meta "${title}"? O histórico dela também será apagado.`)) return;
     removeGoal(goalId).catch(error => setAnnouncement(`${title}: ${error instanceof Error ? error.message : 'não foi possível apagar o histórico.'}`));
     setAnnouncement(`${title}: meta arrancada do canteiro.`);
@@ -94,7 +98,7 @@ export function GoalsPage({ onNavigate }: { onNavigate: (page: AppPage) => void 
             ? <div className="goals-empty"><p className="item-title">{goals.length ? 'Nenhuma meta cobra hoje. Dia de descanso no sítio!' : 'Nenhuma meta ainda.'}</p>
                 {!goals.length && <button type="button" className="pixel-button primary-button mt-3" onClick={()=>setDialogOpen(true)}><PixelIcon name="plus" className="size-2.5"/>Criar a primeira meta</button>}</div>
             : <ul ref={plotsRef} className="goal-plots">{shown.map(goal => <GoalCard key={goal.id} goal={goal} log={log} today={today}
-                onSetAmount={(amount, origin)=>updateAmount(goal, amount, origin)} onRemove={()=>uproot(goal.id, goal.title)} onAnnounce={setAnnouncement} onEdit={()=>setEditingId(goal.id)} onRelapse={()=>registerRelapse(goal.id, goal.title)}/>)}</ul>}
+                onSetAmount={(amount, origin)=>updateAmount(goal, amount, origin)} onRemove={()=>uproot(goal.id, goal.title)} onAnnounce={setAnnouncement} onEdit={()=>setEditingId(goal.id)} onRelapse={()=>registerRelapse(goal.id, goal.title)} onWrite={()=>onNavigate('diary')}/>)}</ul>}
         </div>
       </section>
       <div className="goals-side"><ConsistencyCalendar goals={goals} log={log} today={today}/></div>

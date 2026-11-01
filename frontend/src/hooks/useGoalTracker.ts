@@ -1,20 +1,25 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useStorageChange } from './useStorageChange';
 import { classifyDefaultGoals } from '../lib/goalAreas';
 import { toKey } from '../lib/goalLogic';
 import { CHECKINS_EVENT, readLog, removeGoalCheckins, sendCheckin, setLocalAmount } from '../lib/checkins';
+import { GOALS_EVENT, isDiaryOn, withDiary } from '../lib/diaryGoal';
 import type { CheckinResult } from '../services/api';
 import type { GoalLog, NewTrackedGoal, TrackedGoal } from '../types/goals';
 
 // Definição das metas: blob sincronizado pelo cloudSync. Histórico de cada dia: servidor (ver lib/checkins).
 const STORAGE_KEY = 'farminghabit.goals.v1';
 
+/** Todas as metas do blob, inclusive as pausadas (a adoção do Diário em contas antigas é feita no boot, ver adoptWrittenDiary) */
 function load(): TrackedGoal[] | null {
   try {
     const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? 'null');
-    return parsed && Array.isArray(parsed.goals) ? classifyDefaultGoals(parsed.goals) : null;
+    if (!parsed || !Array.isArray(parsed.goals)) return null;
+    return classifyDefaultGoals(parsed.goals);
   } catch { return null; }
 }
+
+const sameGoals = (a: TrackedGoal[], b: TrackedGoal[]) => JSON.stringify(a) === JSON.stringify(b);
 
 /** Um exemplo de cada tipo de meta (sem histórico inventado: o histórico agora é dado real da conta) */
 function seed(today: Date): TrackedGoal[] {
@@ -40,16 +45,32 @@ export function useToday() {
 }
 
 export function useGoalTracker() {
-  const [goals, setGoals] = useState<TrackedGoal[]>(() => load() ?? seed(new Date()));
+  // Estado com todas as metas (pausadas inclusive); as telas só recebem as ativas, filtradas aqui num ponto só
+  const [allGoals, setGoals] = useState<TrackedGoal[]>(() => load() ?? seed(new Date()));
+  const goals = useMemo(() => allGoals.filter(goal => !goal.paused), [allGoals]);
   const [log, setLog] = useState<GoalLog>(readLog);
-  useStorageChange(STORAGE_KEY, () => { const next = load(); if (next) setGoals(next); });
+  // Outra instância desta aba, outra aba ou o pull da conta mudaram as metas:
+  // recarrega, mas só troca o estado se mudou de verdade (evita laço entre instâncias)
+  const reload = () => { const next = load(); if (next) setGoals(current => sameGoals(current, next) ? current : next); };
+  useStorageChange(STORAGE_KEY, reload);
+  useEffect(() => {
+    window.addEventListener(GOALS_EVENT, reload);
+    // Confere de novo ao se inscrever: um aviso disparado entre o desenho e este efeito não se perde
+    reload();
+    return () => window.removeEventListener(GOALS_EVENT, reload);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     try {
       // Histórico antigo dentro do blob fica até o syncCheckins subi-lo ao servidor (ele mesmo o tira daqui)
-      const legacyLog = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? 'null')?.log;
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(legacyLog ? { goals, log: legacyLog } : { goals }));
+      const stored = localStorage.getItem(STORAGE_KEY);
+      const legacyLog = JSON.parse(stored ?? 'null')?.log;
+      const next = JSON.stringify(legacyLog ? { goals: allGoals, log: legacyLog } : { goals: allGoals });
+      // Só grava (e avisa as outras instâncias) quando o blob muda
+      if (next === stored) return;
+      localStorage.setItem(STORAGE_KEY, next);
+      window.dispatchEvent(new Event(GOALS_EVENT));
     } catch { /* modo privado: segue só em memória */ }
-  }, [goals]);
+  }, [allGoals]);
   // Histórico atualizado por outra tela, pela sincronização ou pela volta da internet
   useEffect(() => {
     const refresh = () => setLog(readLog());
@@ -85,5 +106,10 @@ export function useGoalTracker() {
     return removeGoalCheckins(goalId);
   }
 
-  return { goals, log, setAmount, addGoal, updateGoal, relapse, removeGoal };
+  /** Liga o Diário (planta ou tira a pausa da meta "diario") ou desliga (pausa, guardando o histórico) */
+  function setDiaryEnabled(on: boolean) {
+    setGoals(current => withDiary(current, on, new Date()));
+  }
+
+  return { goals, log, setAmount, addGoal, updateGoal, relapse, removeGoal, diaryOn: isDiaryOn(allGoals), setDiaryEnabled };
 }

@@ -163,7 +163,7 @@ export function HomePage({ onNavigate }: { onNavigate: (page: AppPage) => void }
   return <MainLayout page="home" onNavigate={onNavigate} world={<GameWorld player={player} coins={player ? coins : null} today={today} plots={plots}
     onPlotTap={playWithPlot} poppedId={poppedId} perfectDay={perfectDay} celebrating={celebrating}/>}>
     <div className="functional-panel">
-      <GoalsPanel goals={goals} log={log} today={today} onCheck={(goal, origin)=>harvest(goal, origin)} onOpen={()=>onNavigate('goals')} onEdit={goal=>setEditingGoalId(goal.id)}/>
+      <GoalsPanel goals={goals} log={log} today={today} onCheck={(goal, origin)=>harvest(goal, origin)} onOpen={()=>onNavigate('goals')} onEdit={goal=>setEditingGoalId(goal.id)} onWrite={()=>onNavigate('diary')}/>
       <MissionsPanel missions={missions} accepted={accepted} loading={loading} error={loadError} pendingId={pendingId} onComplete={completeFromHome} onOpen={()=>onNavigate('missions')}/>
       <CoinsPanel coins={coins} rewards={catalog} loading={loading} wishIds={wishIds} buyingId={buyingRewardId} onBuy={buyReward} onOpen={()=>onNavigate('shop')}/>
     </div>

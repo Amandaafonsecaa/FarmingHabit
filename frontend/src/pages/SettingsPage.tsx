@@ -67,7 +67,7 @@ export function SettingsPage({ onNavigate }: { onNavigate: (page: AppPage) => vo
   }, []);
 
   // A carta mostra a constância: sequência de dias e a área mais cuidada na semana
-  const { goals, log } = useGoalTracker();
+  const { goals, log, diaryOn, setDiaryEnabled } = useGoalTracker();
   const today = useToday();
   const topArea = bestArea(areasThisWeek(goals, log, today));
 
@@ -103,7 +103,7 @@ export function SettingsPage({ onNavigate }: { onNavigate: (page: AppPage) => vo
 
   const current = SECTIONS.find(item => item.id === section)!;
 
-  return <MainLayout page="settings" onNavigate={onNavigate} world={<SettingsHero playerName={player?.name ?? '…'} farmName={settings.farmName}/>}>
+  return <MainLayout page="settings" onNavigate={onNavigate} world={<SettingsHero/>}>
     <div className="settings-shell">
       {/* Menu de seções (vira abas no celular) */}
       <nav className="settings-nav pixel-frame" aria-label="Seções das configurações">
@@ -126,6 +126,11 @@ export function SettingsPage({ onNavigate }: { onNavigate: (page: AppPage) => vo
               name: player?.name ?? 'Fazendeira', farm: settings.farmName, avatar: profile.avatar, level: player?.level ?? null, xp: player?.xp ?? 0,
               streak: playerStreak(goals, log, today), area: topArea && topArea.area !== 'nenhuma' ? areaLabel(topArea.area) : null, since: player?.createdAt ?? null,
             }}/>
+            <SettingsGroup title="Diário">
+              <SettingsRow label="Escrever no diário">
+                <PixelSwitch label="Escrever no diário" checked={diaryOn} onChange={setDiaryEnabled}/>
+              </SettingsRow>
+            </SettingsGroup>
             <SettingsGroup title="Conta">
               <SettingsRow label="E-mail"><span className="settings-value">{player?.email ?? '–'}</span></SettingsRow>
             </SettingsGroup>

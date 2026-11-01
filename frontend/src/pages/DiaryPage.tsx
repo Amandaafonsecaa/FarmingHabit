@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { MainLayout } from '../layouts/MainLayout';
 import { DiaryHero } from '../components/diary/DiaryHero';
 import { DiaryBook } from '../components/diary/DiaryBook';
@@ -11,12 +11,14 @@ import { toast } from '../lib/toast';
 import { useDiary } from '../hooks/useDiary';
 import { useGoalTracker, useToday } from '../hooks/useGoalTracker';
 import { addDays, amountOn, isDoneOn, toKey } from '../lib/goalLogic';
-import type { Mood } from '../lib/diary';
+import { hasContent, type Mood } from '../lib/diary';
+import { isDiaryGoal } from '../lib/diaryGoal';
+import { settleCheckin } from '../lib/harvestRewards';
 import type { AppPage } from '../types/navigation';
 
 export function DiaryPage({ onNavigate }: { onNavigate: (page: AppPage) => void }) {
   const diary = useDiary();
-  const { goals, log } = useGoalTracker();
+  const { goals, log, setAmount, diaryOn } = useGoalTracker();
   const today = useToday();
   const [selected, setSelected] = useState(today);
   const [month, setMonth] = useState(() => new Date(today.getFullYear(), today.getMonth(), 1));
@@ -28,6 +30,16 @@ export function DiaryPage({ onNavigate }: { onNavigate: (page: AppPage) => void 
   const [playerReady, setPlayerReady] = useState(false);
   useEffect(() => { let active = true; loadPlayer().then(() => { if (active) setPlayerReady(true); }).catch(() => {}); return () => { active = false; }; }, []);
   const motivation = useMotivation(playerReady);
+
+  // Escrever hoje cumpre a meta do Diário: um check-in por dia, só pela página de hoje (dias passados não pagam)
+  const wroteToday = hasContent(diary.entryFor(todayKey));
+  const sentFor = useRef<string | null>(null);
+  useEffect(() => {
+    const goal = goals.find(isDiaryGoal);
+    if (!diaryOn || !wroteToday || !goal || sentFor.current === todayKey || amountOn(goal, log, todayKey) > 0) return;
+    sentFor.current = todayKey;
+    settleCheckin(goal.title, setAmount(goal.id, todayKey, 1));
+  }, [diaryOn, wroteToday, todayKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function open(date: Date) {
     const key = toKey(date);
