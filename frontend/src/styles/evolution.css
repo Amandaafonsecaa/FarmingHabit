@@ -275,7 +275,7 @@
 @media (max-width: 767px) {
  .evolution-hero { aspect-ratio: auto; min-height: 460px; padding: 70px 12px 12px; border-width: 4px; border-bottom-width: 8px; }
  .evolution-hero-top { padding-left: 0; }
- .evolution-sign { width: 100%; transform: none; }
+ .evolution-sign { display: none; }
  .evolution-layout { padding: 14px 10px; gap: 14px; }
  /* Celular: o tracker vem primeiro e o caderninho depois */
  .notebook { order: 2; }
