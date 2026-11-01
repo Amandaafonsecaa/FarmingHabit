@@ -143,12 +143,15 @@
  .navigation-open .seed-fab { bottom: calc(var(--game-navigation-height) + 16px); }
 }
 
-/* Celular, Casa: a fazenda vira um cartão-postal (cenário inteiro, sem cortar) só com as moedas por cima,
+/* Celular, Casa: a fazenda vira um cartão-postal enquadrado na casa, só com as moedas por cima,
    para as metas de hoje já aparecerem na primeira tela. Nível, nome do sítio e calendário saem; a horta fica só de enfeite. */
 @media (max-width: 767px) {
- .game-world { height: 190px; border-width: 4px; border-bottom-width: 8px; }
+ .game-world { height: 220px; border-width: 4px; border-bottom-width: 8px; }
  .game-world .world-header { display: none; }
- .game-world .world-scenery { pointer-events: none; }
+ /* Zoom na casa: o cenário (viewBox -80 -60 1360 630) desenhado em escala --zoom, com o centro da casa (x 545)
+    no meio do cartão e o chão (y 445) na borda de baixo */
+ .game-world .world-scenery { --zoom: .66; pointer-events: none; min-width: 0; width: calc(1360px * var(--zoom)); height: calc(630px * var(--zoom));
+  left: calc(50% - 625px * var(--zoom)); bottom: calc(-125px * var(--zoom)); transform: none; }
 
  /* Fundo extra para a semente (+) não cobrir o último painel ao rolar até o fim */
  .functional-panel { padding: 12px 10px 84px; gap: 12px; }

@@ -100,13 +100,13 @@
 @keyframes ribbon-in { from { transform: scaleX(0); transform-origin: left; } }
 
 /* --- Celular: barra inferior fixa, como em app (5 abas; o resto mora na Mochila) --- */
-:root { --tab-bar-height: 64px; }
+:root { --tab-bar-height: 80px; }
 .nav-more { display: none; }
 @media (max-width: 767px) {
  .navigation-toggle, .navigation-open .navigation-toggle { display: none; }
  .game-navigation, .navigation-open .game-navigation {
   top: auto; right: 0; width: 100%; height: calc(var(--tab-bar-height) + env(safe-area-inset-bottom, 0px));
-  padding: 6px max(4px, env(safe-area-inset-right, 0px)) calc(4px + env(safe-area-inset-bottom, 0px)) max(4px, env(safe-area-inset-left, 0px));
+  padding: 8px max(8px, env(safe-area-inset-right, 0px)) calc(8px + env(safe-area-inset-bottom, 0px)) max(8px, env(safe-area-inset-left, 0px));
   border-right: 0; border-top: 4px solid #3b2418;
   box-shadow: inset 0 3px #e7ad62, inset 0 7px #ad6b36, 0 -4px 0 #3b241866;
   transform: none; visibility: visible; transition: none;
@@ -115,20 +115,21 @@
  }
  .nav-vine, .nav-grass, .nav-nails, .nav-firefly, .nav-desktop-only { display: none; }
  .nav-more { display: block; }
+ /* Medidas de barra inferior comum (Material 3): 80px de altura, ícone 24px numa moldura 56×32, rótulo 12px */
  /* Ordem da barra: Casa · Metas · (Diário) · Missões · Loja · Mochila */
  .game-nav-list > li { order: 2; }
  .game-nav-list > .nav-lead { order: 0; }
  .game-nav-list > .nav-diary { order: 1; }
- .game-nav-list { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 2px; height: 100%; overflow: visible; }
+ .game-nav-list { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px; height: 100%; overflow: visible; }
  .game-nav-list > li, .navigation-open .game-nav-list > li { animation: none; }
- .game-nav-item { width: 100%; height: 100%; min-height: 48px; justify-content: center; gap: 3px; padding: 2px 0; }
- .game-nav-icon { display: flex; align-items: center; justify-content: center; width: 36px; height: 30px; border-width: 2px; }
- .game-nav-icon svg { width: 18px; height: 18px; }
- .game-nav-label { min-height: 0; font-size: 11px; line-height: 1.1; }
+ .game-nav-item { width: 100%; height: 100%; min-height: 56px; justify-content: center; gap: 4px; padding: 0; }
+ .game-nav-icon { display: flex; align-items: center; justify-content: center; width: 56px; max-width: 100%; height: 32px; border-width: 2px; }
+ .game-nav-icon svg { width: 24px; height: 24px; }
+ .game-nav-label { min-height: 0; font-size: 12px; line-height: 16px; }
  .game-nav-item:not(:disabled):hover .game-nav-icon { transform: none; }
  .game-nav-item:not(:disabled):hover .game-nav-icon svg { animation: none; }
  /* Aba ativa: régua dourada no topo da barra, acima do ícone aceso */
- .game-nav-item.is-selected::before { left: 50%; top: -6px; bottom: auto; width: 32px; height: 4px; margin-left: -16px; border: 0; background: #f2c453; box-shadow: none; animation: none; }
+ .game-nav-item.is-selected::before { left: 50%; top: -8px; bottom: auto; width: 32px; height: 4px; margin-left: -16px; border: 0; background: #f2c453; box-shadow: none; animation: none; }
  .application-content, .navigation-closed { padding-bottom: calc(var(--tab-bar-height) + env(safe-area-inset-bottom, 0px)); }
  .seed-fab, .navigation-open .seed-fab { bottom: calc(var(--tab-bar-height) + env(safe-area-inset-bottom, 0px) + 12px); }
  /* Sem o hambúrguer, os topos não precisam mais reservar o canto de cima */
