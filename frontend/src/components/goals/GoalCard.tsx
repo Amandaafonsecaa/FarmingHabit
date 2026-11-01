@@ -6,6 +6,7 @@ import { ProgressBar } from '../ProgressBar';
 import { PlantGrowth } from './PlantGrowth';
 import { HarvestBurst, type Burst } from './HarvestBurst';
 import { HARVEST_REWARD } from '../../lib/harvestRewards';
+import { isDiaryGoal } from '../../lib/diaryGoal';
 
 // Último número digitado para somar em cada meta de quantidade (fica só neste navegador)
 const LAST_AMOUNT_KEY = 'farminghabit.quantity-last.v1';
@@ -23,6 +24,8 @@ interface GoalCardProps {
   onEdit: () => void;
   /** Recaída numa meta de largar (zera o contador de dias sem) */
   onRelapse: () => void;
+  /** Meta do Diário: o botão vira "Escrever" e abre o Diário */
+  onWrite?: () => void;
 }
 
 /** Faixa seg–dom da semana atual: feito, falhou, hoje, agendado ou folga */
@@ -44,7 +47,7 @@ function WeekStrip({ goal, log, today }: { goal: TrackedGoal; log: GoalLog; toda
   </ol>;
 }
 
-export function GoalCard({ goal, log, today, onSetAmount, onRemove, onAnnounce, onEdit, onRelapse }: GoalCardProps) {
+export function GoalCard({ goal, log, today, onSetAmount, onRemove, onAnnounce, onEdit, onRelapse, onWrite }: GoalCardProps) {
   const quitting = isQuitGoal(goal);
   const cleanDays = quitting ? daysWithout(goal, today) : 0;
   // Clicar no card (fora dos botões) abre a edição
@@ -139,6 +142,11 @@ export function GoalCard({ goal, log, today, onSetAmount, onRemove, onAnnounce, 
         </label>
         <button type="button" className="pixel-button harvest-button" disabled={!scheduledToday} onClick={event=>changeAmount(1, event.currentTarget)} aria-label={`Somar ${addValue} ${quantity.unit}`}><PixelIcon name="plus" className="size-2.5"/>{validChosen ? chosen : ''} {quantity.unit}</button>
       </div>
+      : isDiaryGoal(goal) && onWrite
+        // Meta do Diário: cumpre-se escrevendo a página de hoje; depois de escrita não se desmarca
+        ? <button type="button" className="pixel-button harvest-button" disabled={doneToday} onClick={onWrite} aria-label={doneToday ? `${goal.title}: escrito hoje` : `Escrever no diário: ${goal.title}`}>
+          <span className="harvest-hint"><PixelIcon name={doneToday ? 'check' : 'book'} className="size-3"/></span>{doneToday ? 'Escrito hoje' : 'Escrever'}
+        </button>
       : <button type="button" className="pixel-button harvest-button" aria-pressed={doneToday} disabled={!scheduledToday} onClick={event=>toggleCheck(event.currentTarget)}>
         <span className="harvest-hint"><PixelIcon name={doneToday ? 'check' : 'coin'} className="size-3"/></span>
         {!scheduledToday ? 'Dia de descanso' : quitting ? (doneToday ? 'Evitado hoje' : 'Evitei hoje') : doneToday ? 'Colhido hoje' : weekly ? 'Marcar hoje' : 'Colher hoje'}

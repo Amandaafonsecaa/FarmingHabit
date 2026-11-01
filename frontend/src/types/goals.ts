@@ -19,8 +19,8 @@ export type GoalArea = 'saude' | 'estudos' | 'pessoal' | 'lazer' | 'nenhuma';
 /** build: criar um hábito (padrão); quit: largar um hábito (ex.: comer açúcar), com contador de dias sem */
 export type GoalMode = 'build' | 'quit';
 
-/** relapses: dias (AAAA-MM-DD) em que houve recaída numa meta de largar; zeram o contador de dias sem */
-export interface TrackedGoal { id: string; title: string; icon: GoalIcon; frequency: GoalFrequency; measure: GoalMeasure; area?: GoalArea; mode?: GoalMode; relapses?: string[]; createdOn: string }
+/** relapses: dias (AAAA-MM-DD) em que houve recaída numa meta de largar; zeram o contador de dias sem · paused: meta guardada, fora das telas (ex.: Diário desligado) */
+export interface TrackedGoal { id: string; title: string; icon: GoalIcon; frequency: GoalFrequency; measure: GoalMeasure; area?: GoalArea; mode?: GoalMode; relapses?: string[]; paused?: boolean; createdOn: string }
 export type NewTrackedGoal = Omit<TrackedGoal, 'id' | 'createdOn' | 'relapses'>;
 
 /** Registro diário: data (AAAA-MM-DD) → id da meta → quantidade feita no dia */

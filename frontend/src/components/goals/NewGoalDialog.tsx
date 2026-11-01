@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { GoalArea, GoalFrequency, GoalIcon, GoalMeasure, GoalMode, NewTrackedGoal, TrackedGoal, Weekday } from '../../types/goals';
 import { WEEKDAY_NAMES, WEEK_ORDER, fromKey } from '../../lib/goalLogic';
 import { GOAL_AREAS, areaOf } from '../../lib/goalAreas';
+import { isDiaryGoal } from '../../lib/diaryGoal';
 import { PixelIcon } from '../PixelIcon';
 import { ChoiceCards, GameDialog } from '../dialogs/GameDialog';
 
@@ -41,6 +42,8 @@ const plantedOn = new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: 'lon
  */
 export function NewGoalDialog({ goal, onSave, onClose }: { goal?: TrackedGoal; onSave: (goal: NewTrackedGoal) => void; onClose: () => void }) {
   const editing = Boolean(goal);
+  // A meta do Diário é cumprida pela página do dia: só nome, semente e área mudam
+  const diary = goal ? isDiaryGoal(goal) : false;
   const quantity = goal?.measure.kind === 'quantity' ? goal.measure : null;
   const [rhythm, setRhythm] = useState<GoalFrequency['kind']>(goal?.frequency.kind ?? 'daily');
   const [measureKind, setMeasureKind] = useState<GoalMeasure['kind']>(goal?.measure.kind ?? 'check');
@@ -74,6 +77,11 @@ export function NewGoalDialog({ goal, onSave, onClose }: { goal?: TrackedGoal; o
     const title = String(data.get('title') ?? '').trim();
     if (!title) return fail(quitting ? 'Diga o que você quer largar.' : 'Dê um nome para a sua plantação.');
 
+    if (diary) {
+      onSave({ title, icon: (data.get('icon') as GoalIcon) ?? 'book', frequency: { kind: 'daily' }, measure: { kind: 'check' }, area, mode: 'build' });
+      return true;
+    }
+
     // Largar um hábito: todo dia, com um check "evitei hoje"
     if (quitting) {
       onSave({ title, icon: (data.get('icon') as GoalIcon) ?? 'leaf', frequency: { kind: 'daily' }, measure: { kind: 'check' }, area, mode });
@@ -106,9 +114,9 @@ export function NewGoalDialog({ goal, onSave, onClose }: { goal?: TrackedGoal; o
   return <GameDialog title={editing ? 'Editar meta' : 'Plantar nova meta'} icon="leaf"
     intro={goal ? `Plantada em ${plantedOn.format(fromKey(goal.createdOn))}. O histórico de colheitas continua igual.` : 'Uma nova semente para o seu canteiro.'}
     submitLabel={editing ? 'Salvar alterações' : 'Plantar'} error={error} onSubmit={submit} onClose={onClose}>
-    <fieldset className="dialog-fieldset"><legend>Tipo de meta</legend>
+    {!diary && <fieldset className="dialog-fieldset"><legend>Tipo de meta</legend>
       <ChoiceCards name="mode" value={mode} options={MODES} onChange={setMode} compact/>
-    </fieldset>
+    </fieldset>}
 
     <label className="form-label" htmlFor="goal-title">{quitting ? 'O que você quer largar?' : 'Nome da meta'}<input id="goal-title" name="title" maxLength={60} autoFocus defaultValue={goal?.title} placeholder={quitting ? 'Ex.: Comer açúcar' : 'Ex.: Ler 20 páginas'}/></label>
     {quitting && <p className="text-xs text-muted">Todo dia você marca "Evitei hoje" e o contador de dias sem vai subindo. Se escorregar, é só registrar a recaída e recomeçar.</p>}
@@ -117,13 +125,13 @@ export function NewGoalDialog({ goal, onSave, onClose }: { goal?: TrackedGoal; o
       <div className="icon-picker">{ICONS.map((icon, index) => <label key={icon} className="icon-option"><input type="radio" name="icon" value={icon} defaultChecked={goal ? goal.icon === icon : index === 0}/><span><PixelIcon name={icon} className="size-5"/></span><span className="sr-only">{icon}</span></label>)}</div>
     </fieldset>
 
-    {!quitting && <fieldset className="dialog-fieldset"><legend>Ritmo</legend>
+    {!quitting && !diary && <fieldset className="dialog-fieldset"><legend>Ritmo</legend>
       <ChoiceCards name="rhythm" value={rhythm} options={RHYTHMS} onChange={setRhythm}/>
       {rhythm === 'weekly' && <label className="form-label mt-3" htmlFor="goal-times">Quantas vezes por semana?<input id="goal-times" name="times" type="number" min={1} max={7} step={1} defaultValue={goal?.frequency.kind === 'weekly' ? goal.frequency.timesPerWeek : 3}/></label>}
       {rhythm === 'weekdays' && <div className="day-picker" role="group" aria-label="Dias da semana">{WEEK_ORDER.map(day => <button key={day} type="button" className="day-toggle" aria-pressed={days.includes(day)} onClick={()=>toggleDay(day)}>{WEEKDAY_NAMES[day]}</button>)}</div>}
     </fieldset>}
 
-    {!quitting && rhythm !== 'weekly' && <fieldset className="dialog-fieldset"><legend>Como você vai marcar?</legend>
+    {!quitting && !diary && rhythm !== 'weekly' && <fieldset className="dialog-fieldset"><legend>Como você vai marcar?</legend>
       <ChoiceCards name="measure" value={measureKind} options={MEASURES} onChange={setMeasureKind} compact/>
       {/* Uma linha só: quanto por dia e a unidade */}
       {measureKind === 'quantity' && <div className="quantity-setup">

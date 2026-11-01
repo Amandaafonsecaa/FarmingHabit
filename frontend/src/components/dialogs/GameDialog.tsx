@@ -2,7 +2,7 @@ import { useEffect, useId, useRef, useState, type FormEvent, type ReactNode } fr
 import { PixelIcon, type PixelIconName } from '../PixelIcon';
 
 interface GameDialogProps {
-  title: string; icon: PixelIconName; intro: string; submitLabel: string;
+  title: string; icon: PixelIconName; intro?: string; submitLabel: string;
   destructive?: boolean;
   /** Texto do botão enquanto trabalha (padrão: "Salvando...") */
   busyLabel?: string;
@@ -47,7 +47,7 @@ export function GameDialog({ title, icon, intro, submitLabel, error, children, o
   return <dialog ref={dialogRef} className="pixel-dialog pixel-frame game-dialog" aria-labelledby={titleId} onCancel={event=>{ event.preventDefault(); if (!lockedRef.current) onClose(); }}>
     <header className="panel-heading"><h2 id={titleId}><PixelIcon name={icon}/>{title}</h2><button className="pixel-button" type="button" aria-label="Fechar formulário" disabled={saving} onClick={onClose}><PixelIcon name="close" className="size-3"/></button></header>
     <form className="space-y-4 p-5" onSubmit={submit} noValidate>
-      <p className="text-sm">{intro}</p>
+      {intro && <p className="text-sm">{intro}</p>}
       <fieldset disabled={saving} className="min-w-0 space-y-4">{children}</fieldset>
       {error && <p role="alert" className="text-sm font-bold text-[#8c3027]">{error}</p>}
       <div className="flex justify-end gap-3 border-t border-line pt-3">

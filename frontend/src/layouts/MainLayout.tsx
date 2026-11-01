@@ -4,6 +4,8 @@ import { CoinFlightLayer } from '../components/CoinFlightLayer';
 import { Toaster } from '../components/Toaster';
 import type { AppPage } from '../types/navigation';
 import { useHoverOpen } from '../hooks/useHoverOpen';
+import { PHONE_QUERY, useMediaQuery } from '../hooks/useMediaQuery';
+import { useDiaryEnabled } from '../hooks/useDiaryEnabled';
 export function MainLayout({ page, onNavigate, world, children }: { page: AppPage; onNavigate: (page: AppPage) => void; world: ReactNode; children: ReactNode }) {
   // A gaveta desliza por cima do cenário (não empurra a fazenda) e começa fechada para manter a imersão
   const [navigationOpen, setNavigationOpen] = useState(false);
@@ -11,6 +13,9 @@ export function MainLayout({ page, onNavigate, world, children }: { page: AppPag
   const toggleRef = useRef<HTMLButtonElement>(null);
   // Passar o mouse no botão abre a gaveta; sair do botão e da gaveta fecha
   const hover = useHoverOpen(navigationOpen, setNavigationOpen);
+  // No celular a navegação é a barra inferior, sempre visível (o hambúrguer some pelo CSS)
+  const phone = useMediaQuery(PHONE_QUERY);
+  const diaryEnabled = useDiaryEnabled();
 
   // Fecha com Esc ou clicando fora da gaveta
   useEffect(() => {
@@ -32,7 +37,7 @@ export function MainLayout({ page, onNavigate, world, children }: { page: AppPag
         <button ref={toggleRef} type="button" className="navigation-toggle pixel-button" aria-label={navigationOpen ? 'Fechar navegação' : 'Abrir navegação'} aria-expanded={navigationOpen} aria-controls="game-navigation" onClick={hover.toggleByClick} onPointerEnter={hover.onPointerEnter} onPointerLeave={hover.onPointerLeave}>
           <span className="toggle-bars" aria-hidden="true"><span/><span/><span/></span>
         </button>
-        <GameNavigation navRef={navigationRef} open={navigationOpen} page={page} onNavigate={onNavigate} onPointerEnter={hover.onPointerEnter} onPointerLeave={hover.onPointerLeave}/>
+        <GameNavigation navRef={navigationRef} open={navigationOpen || phone} page={page} diaryEnabled={diaryEnabled} onNavigate={onNavigate} onPointerEnter={hover.onPointerEnter} onPointerLeave={hover.onPointerLeave}/>
         {world}
       </div>
       {children}

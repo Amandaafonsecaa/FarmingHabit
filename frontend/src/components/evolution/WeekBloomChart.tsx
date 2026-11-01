@@ -7,6 +7,7 @@ import { GOAL_AREAS } from '../../lib/goalAreas';
 import { areasThisWeek, weekEarnings, type AreaWeek, type Earnings } from '../../lib/weekMetrics';
 import { PixelIcon, type PixelIconName } from '../PixelIcon';
 import { useSettings } from '../../hooks/useSettings';
+import { PanelHeading, useCollapsible } from '../PanelHeading';
 
 /** Ícone e cor de cada área (paleta do site) */
 const AREA_STYLE: Record<GoalArea, { icon: PixelIconName; color: string }> = {
@@ -168,10 +169,11 @@ export function WeekBloomChart({ goals, log, today, missions, claims }: { goals:
   const lowest = bottom && ranked.length > 1 && bottom.percent! < top.percent! && !tiedAt(bottom.percent!) ? bottom.value : null;
   const { now, before } = weekEarnings(today, claims, missions);
   const [settings] = useSettings();
+  const card = useCollapsible();
 
   return <div className="week-bloom">
-    <section className="world-panel pixel-frame bloom-chart" aria-labelledby="bloom-heading">
-      <header className="panel-heading"><h2 id="bloom-heading"><PixelIcon name="growth" className="size-5"/>Áreas da sua vida</h2><span className="panel-tag">ranking da semana</span></header>
+    <section className={`world-panel pixel-frame bloom-chart ${card.collapsedClass}`} aria-labelledby="bloom-heading">
+      <PanelHeading id="bloom-heading" icon="growth" title="Áreas da sua vida" open={card.open} onToggle={card.toggle}><span className="panel-tag">ranking da semana</span></PanelHeading>
       <div className="bloom-body">
         {!ranked.some(row => row.week!.done) && <p className="bloom-empty">Ainda não há dados suficientes nesta semana.</p>}
         <ol className="bloom-rows">{rows.map(({ value, label, week, percent }, index) => {

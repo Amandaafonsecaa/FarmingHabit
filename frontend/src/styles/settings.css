@@ -62,10 +62,6 @@ html.no-critters .butterfly, html.no-critters .sky-birds, html.no-critters .fish
 .settings-kbd { padding: 0 6px; font: inherit; font-weight: 900; background: #fff1c7; border: 2px solid #8a5838; box-shadow: 1px 1px #8a5838; }
 
 /* Barra de salvar (só ativa quando há mudanças) */
-.settings-save-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 10px; margin-top: 14px; padding-top: 12px; border-top: 2px solid #e0c79a; }
-.settings-dirty { margin-right: auto; font-size: 11px; font-weight: bold; color: #a86d1c; }
-.settings-dirty::before { content: '● '; color: #e7b84b; }
-.saved-stamp { margin-right: auto; padding: 3px 10px; font-size: 14px; font-weight: 900; letter-spacing: 2px; color: #3f6b35; border: 3px solid #3f6b35; transform: rotate(-8deg); animation: stamp-pop .4s cubic-bezier(.2, 1.6, .5, 1) backwards; }
 
 .server-status { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 900; }
 .server-status::before { content: ''; width: 8px; height: 8px; background: currentColor; }
@@ -118,7 +114,6 @@ html.no-critters .butterfly, html.no-critters .sky-birds, html.no-critters .fish
 @keyframes dust-float { 0%, 100% { transform: translate(0, 0); opacity: .2; } 50% { transform: translate(12px, -18px); opacity: .9; } }
 @keyframes chicken-walk { 0% { transform: translateX(-60px); } 45%, 100% { transform: translateX(1080px); } }
 @keyframes section-in { from { opacity: 0; transform: translateY(8px); } }
-@keyframes stamp-pop { from { transform: rotate(-8deg) scale(2.2); opacity: 0; } }
 
 /* --- Responsivo --- */
 @media (max-width: 767px) {
@@ -136,4 +131,11 @@ html.no-critters .butterfly, html.no-critters .sky-birds, html.no-critters .fish
  .settings-row-control { width: 100%; }
  .settings-row-control .settings-input { width: 100%; }
  .settings-row-control:has(.pixel-switch) { width: auto; }
+}
+
+/* Placa reduzida ao título; no celular, o banner fica livre de sobreposições. */
+.settings-sign h1 { margin: 0; }
+@media (max-width: 767px) {
+ .settings-hero-top { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+ .settings-hero { padding: 0; }
 }

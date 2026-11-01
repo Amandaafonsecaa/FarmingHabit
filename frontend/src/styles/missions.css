@@ -33,6 +33,18 @@
 }
 .quest-board-note { padding: 24px 12px; text-align: center; font-weight: bold; color: #3b2418; background: #fff1c7cc; border: 2px dashed #8a5838; }
 .quest-board-note.is-error { color: #8c3027; }
+
+/* Carregando o quadro: o Capitão marcha pela trilha (anda, vira na volta e dá passinhos com balanço) */
+.march-loading { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.march-track { position: relative; width: min(320px, 100%); height: 78px; border-bottom: 4px solid #8a5838; box-shadow: 0 2px #d9a05a; }
+.march-walker { position: absolute; bottom: 0; left: 0; width: 60px; height: 66px; animation: march-walk 6s linear infinite; }
+.march-face, .march-step { display: block; width: 100%; height: 100%; }
+.march-face { animation: march-face 6s steps(1) infinite; }
+.march-step { transform-origin: 50% 100%; animation: march-step .5s steps(1) infinite; }
+.march-loading p { font-size: 13px; color: #765337; }
+@keyframes march-walk { 0%, 100% { left: 0; } 50% { left: calc(100% - 60px); } }
+@keyframes march-face { 0% { transform: none; } 50% { transform: scaleX(-1); } }
+@keyframes march-step { 0% { transform: translateY(0) rotate(-3deg); } 50% { transform: translateY(-3px) rotate(3deg); } }
 /* Divisor entre a fazer e cumpridas: só uma linha tracejada com um rótulo pequeno */
 .quest-divider { display: flex; align-items: center; gap: 10px; margin: 26px 2px 22px; font-size: 11px; font-weight: 900; letter-spacing: 1px; text-transform: uppercase; color: #fff1c7; text-shadow: 1px 1px #57311f; }
 .quest-divider::before, .quest-divider::after { content: ''; flex: 1; border-top: 2px dashed #fff1c799; }
@@ -106,7 +118,6 @@
 .missions-sign.is-minimal { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px; padding: 12px 16px; max-width: none; width: fit-content; }
 .missions-sign.is-minimal h1 { margin: 0; }
 
-.missions-hero .hero-coin-hud { position: static; }
 
 /* Celular: placa em cima e o mapa embaixo, rolando de lado */
 
@@ -144,7 +155,6 @@
 /* --- Navio do Capitão: vista de lado, ondas batendo e a proa arfando (2,4s por batida) --- */
 .missions-hero.is-sea { display: flex; flex-direction: column; aspect-ratio: 1350 / 430; min-height: 400px; padding: 18px; }
 .missions-hero.is-sea .missions-hero-top { align-items: center; }
-.missions-hero .hero-coin-hud { position: static; }
 .sailing-scene { position: absolute; inset: 0; z-index: -1; overflow: hidden; }
 .sea-back { position: absolute; inset: 0; width: 100%; height: 100%; }
 .sea-clouds { animation: sea-clouds 60s linear infinite; }
@@ -242,9 +252,19 @@
 }
 
 @media (max-width: 767px) {
- .missions-hero.is-sea { aspect-ratio: auto; min-height: 380px; padding: 70px 12px 12px; }
+ .missions-hero.is-sea { aspect-ratio: auto; min-height: 270px; padding: 12px; }
  .missions-hero.is-sea .missions-hero-top { justify-content: space-between; }
  .sea-front { height: 16%; }
- .ship-rig { width: 280px; margin-left: -140px; bottom: 9%; }
+ .ship-rig { width: 210px; margin-left: -105px; bottom: 9%; }
+ /* Caderno vira botão flutuante fixo (como o do WhatsApp), acima da barra; a página fica só com o quadro */
+ .notebook-slot { position: fixed; right: 14px; bottom: calc(var(--tab-bar-height) + env(safe-area-inset-bottom, 0px) + 14px); z-index: 45; order: 0; }
+ .notebook-closed { width: 54px; filter: drop-shadow(3px 4px 0 #3b241888); }
+ .notebook-closed:hover { transform: none; }
+ .notebook-closed:active { transform: translateY(2px); filter: drop-shadow(1px 2px 0 #3b241888); }
+ .notebook-closed .notebook-label { display: none; }
+ .missions-layout { padding-bottom: 96px; }
+ .quest-paper .quest-actions .pixel-button { min-height: 44px; }
 }
 
+
+.missions-sign.is-minimal { justify-content: center; text-align: center; }

@@ -1,5 +1,5 @@
 import type { GoalLog, TrackedGoal } from '../../types/goals';
-import { harvestsBetween, streakFor } from '../../lib/goalLogic';
+import { harvestsBetween, playerStreak } from '../../lib/goalLogic';
 
 /** Chama pixelada: acesa (laranja) quando você já colheu hoje; cinza quando ainda falta. Sempre tremulando */
 function StreakFlame({ lit }: { lit: boolean }) {
@@ -12,7 +12,7 @@ function StreakFlame({ lit }: { lit: boolean }) {
 
 /** Dias de sequência no topo da Evolução (no lugar das moedas): foguinho animado + número */
 export function StreakHud({ goals, log, today, className = '' }: { goals: TrackedGoal[]; log: GoalLog; today: Date; className?: string }) {
-  const streak = goals.reduce((best, goal) => Math.max(best, goal.frequency.kind === 'weekly' ? 0 : streakFor(goal, log, today)), 0);
+  const streak = playerStreak(goals, log, today);
   const lit = harvestsBetween(goals, log, today, today) > 0;
   return <div className={`streak-hud pixel-frame ${lit ? 'is-lit' : ''} ${className}`} role="status"
     aria-label={`${streak} ${streak === 1 ? 'dia' : 'dias'} de sequência${lit ? '' : ', colha uma meta hoje para manter a chama acesa'}`}

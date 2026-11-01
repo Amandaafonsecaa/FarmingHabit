@@ -8,6 +8,7 @@ import { SettingsPage } from './pages/SettingsPage';
 import { ShopPage } from './pages/ShopPage';
 import { WelcomeWizard } from './components/profile/WelcomeWizard';
 import { useProfile } from './hooks/useProfile';
+import { useDiaryEnabled } from './hooks/useDiaryEnabled';
 import type { AppPage } from './types/navigation';
 
 // Navegação simples por hash (#metas, #missoes); outros hashes (ex.: o link "Pular para o conteúdo") não trocam de página
@@ -17,11 +18,19 @@ const pageFromHash = (): AppPage => (Object.keys(HASHES) as AppPage[]).find(page
 export default function App() {
   const [page, setPage] = useState(pageFromHash);
   const [profile] = useProfile();
+  const diaryOn = useDiaryEnabled();
   useEffect(() => {
     const onPop = () => { if (Object.values(HASHES).includes(window.location.hash)) setPage(pageFromHash()); };
     window.addEventListener('popstate', onPop);
     return () => window.removeEventListener('popstate', onPop);
   }, []);
+
+  // Diário desligado: #diario (link salvo, voltar do navegador) cai na Casa sem empilhar histórico
+  useEffect(() => {
+    if (page !== 'diary' || diaryOn) return;
+    window.history.replaceState(null, '', window.location.pathname + window.location.search);
+    setPage('home');
+  }, [page, diaryOn]);
 
   function navigate(next: AppPage) {
     window.history.pushState(null, '', HASHES[next] || window.location.pathname + window.location.search);

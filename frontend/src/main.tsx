@@ -8,6 +8,7 @@ import { supabase } from './lib/supabase';
 import { SETTINGS_KEY, applySettings, readSettings } from './lib/settings';
 import { hasLocalSnapshot, startCloudSync } from './lib/cloudSync';
 import { syncCheckins } from './lib/checkins';
+import { adoptWrittenDiary } from './lib/diaryGoal';
 import './styles/global.css';
 import './styles/goals.css';
 import './styles/home.css';
@@ -43,8 +44,9 @@ async function boot() {
     return;
   }
   const firstOpen = !hasLocalSnapshot();
-  // O histórico das metas vem depois do blob: ele pode trazer histórico antigo para subir ao servidor
-  const sync = startCloudSync().then(syncCheckins);
+  // O histórico das metas vem depois do blob: ele pode trazer histórico antigo para subir ao servidor.
+  // A adoção do Diário só mexe no blob depois de a conta responder, para a cópia velha deste navegador não vencer.
+  const sync = startCloudSync().then(pulled => { if (pulled) adoptWrittenDiary(); }).then(syncCheckins);
   if (firstOpen) {
     root.render(<StrictMode><BootSplash/></StrictMode>);
     await sync;

@@ -217,3 +217,17 @@ body { background: #55351f; }
  .location-sign { bottom: 12px; left: 12px; padding: 12px; }
  .world-panel { min-height: 0; }
 }
+
+/* ===== Cards que recolhem (fora da Casa): a faixa do topo inteira é o botão; recolhido sobra só o título ===== */
+.panel-heading.is-collapsible { position: relative; cursor: pointer; transition: background .15s steps(2); }
+.panel-toggle { display: inline-flex; align-items: center; gap: 8px; min-height: 32px; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.panel-toggle::after { content: ''; position: absolute; inset: 0; }
+.panel-toggle:focus-visible { outline: none; }
+.panel-heading.is-collapsible:has(.panel-toggle:focus-visible) { outline: 3px solid #3f6b35; outline-offset: -3px; }
+.panel-heading.is-collapsible:hover { background: #f2bd6c; }
+/* Botões e abas do topo ficam por cima da faixa e mantêm a própria ação; etiquetas deixam o clique passar */
+.panel-heading.is-collapsible > :not(h2) { position: relative; z-index: 1; }
+.panel-heading.is-collapsible > .panel-tag { pointer-events: none; }
+.panel-heading.is-collapsible > h2 + * { margin-left: auto; }
+.world-panel.is-collapsed > :not(.panel-heading), .world-panel.is-collapsed > .panel-heading > :not(h2) { display: none !important; }
+.world-panel.is-collapsed { width: 100%; height: auto; min-height: 0; align-self: start; contain: none; }

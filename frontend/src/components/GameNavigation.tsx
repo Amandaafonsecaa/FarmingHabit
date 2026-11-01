@@ -1,6 +1,7 @@
 import type { CSSProperties, PointerEventHandler, Ref } from 'react';
 import { SettingsNavigationItem } from './SettingsNavigationItem';
 import { NavigationItem } from './NavigationItem';
+import { MoreNavigationItem } from './MoreNavigationItem';
 import type { AppPage } from '../types/navigation';
 
 // Vaga-lumes: posição (% da gaveta), atraso e duração próprios para não piscarem juntos
@@ -30,20 +31,22 @@ function NavGrass() {
   </svg>;
 }
 
-export function GameNavigation({ open, page, onNavigate, navRef, onPointerEnter, onPointerLeave }: {
-  open: boolean; page: AppPage; onNavigate: (page: AppPage) => void; navRef?: Ref<HTMLElement>; onPointerEnter?: PointerEventHandler; onPointerLeave?: PointerEventHandler;
+export function GameNavigation({ open, page, diaryEnabled, onNavigate, navRef, onPointerEnter, onPointerLeave }: {
+  open: boolean; page: AppPage; diaryEnabled: boolean; onNavigate: (page: AppPage) => void; navRef?: Ref<HTMLElement>; onPointerEnter?: PointerEventHandler; onPointerLeave?: PointerEventHandler;
 }) {
   return <nav ref={navRef} id="game-navigation" inert={!open} className="game-navigation" aria-label="Navegação principal" onPointerEnter={onPointerEnter} onPointerLeave={onPointerLeave}>
     <span className="nav-nails" aria-hidden="true"/>
     {FIREFLIES.map(([left, top, delay, duration], index) => <span key={index} className="nav-firefly" aria-hidden="true" style={{ left: `${left}%`, top: `${top}%`, animationDelay: `${delay}s, ${delay / 2}s`, '--firefly-duration': `${duration}s` } as CSSProperties}/>)}
     <NavVine/>
     <ul className="game-nav-list">
-      <NavigationItem index={0} label="Casa" icon="home" selected={page === 'home'} onSelect={()=>onNavigate('home')}/>
-      <NavigationItem index={1} label="Metas" icon="target" selected={page === 'goals'} onSelect={()=>onNavigate('goals')}/>
+      {/* Ordem do desktop; no celular o CSS sobe o Diário para depois de Metas, e a Loja vai para a Mochila quando ele está ligado */}
+      <NavigationItem index={0} label="Casa" icon="home" className="nav-lead" selected={page === 'home'} onSelect={()=>onNavigate('home')}/>
+      <NavigationItem index={1} label="Metas" icon="target" className="nav-lead" selected={page === 'goals'} onSelect={()=>onNavigate('goals')}/>
       <NavigationItem index={2} label="Missões" icon="mission" selected={page === 'missions'} onSelect={()=>onNavigate('missions')}/>
-      <NavigationItem index={3} label="Loja" icon="coin" selected={page === 'shop'} onSelect={()=>onNavigate('shop')}/>
-      <NavigationItem index={4} label="Diário" icon="book" selected={page === 'diary'} onSelect={()=>onNavigate('diary')}/>
-      <NavigationItem index={5} label="Evolução" icon="growth" selected={page === 'evolution'} onSelect={()=>onNavigate('evolution')}/>
+      <NavigationItem index={3} label="Loja" icon="coin" desktopOnly={diaryEnabled} selected={page === 'shop'} onSelect={()=>onNavigate('shop')}/>
+      {diaryEnabled && <NavigationItem index={4} label="Diário" icon="book" className="nav-diary" selected={page === 'diary'} onSelect={()=>onNavigate('diary')}/>}
+      <NavigationItem index={5} label="Evolução" icon="growth" desktopOnly selected={page === 'evolution'} onSelect={()=>onNavigate('evolution')}/>
+      <MoreNavigationItem page={page} onNavigate={onNavigate} diaryEnabled={diaryEnabled}/>
       <SettingsNavigationItem visible={open} selected={page === 'settings'} onSelect={()=>onNavigate('settings')}/>
     </ul>
     <NavGrass/>

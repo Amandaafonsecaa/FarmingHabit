@@ -146,7 +146,6 @@ export function DiaryHero({ todayMood, dateLabel, written, streak, monthMood }: 
       <div className="diary-sign pixel-frame">
         <p className="eyebrow">{dateLabel}</p>
         <h1 id="diary-title">Meu Diário</h1>
-        <p className="missions-motto">Um cantinho só seu para guardar os dias.</p>
       </div>
       <dl className="goals-stats">
         <div className="hero-stat pixel-frame"><dt>Dias escritos</dt><dd>{written}</dd></div>

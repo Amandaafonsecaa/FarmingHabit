@@ -4,7 +4,6 @@ import { SkyLayer } from '../home/SkyLayer';
 import { PetalRain } from '../home/SeasonParticles';
 import type { GoalLog, TrackedGoal } from '../../types/goals';
 import { goalsDueToday, isDoneOn, streakFor } from '../../lib/goalLogic';
-import { PixelIcon } from '../PixelIcon';
 import { useEffect, useState } from 'react';
 import { GoalStand } from './GoalStand';
 import { VendorDialog } from './VendorDialog';
@@ -12,7 +11,7 @@ import { loadPlayer } from '../../services/api';
 import { CoinHud } from '../home/CoinHud';
 
 /** Topo da aba: placa de madeira plantada no chão e a vendinha com as metas de hoje em caixotes */
-export function GoalsHero({ goals, log, today, coins, celebrating, onPlant, onHarvest }: { goals: TrackedGoal[]; log: GoalLog; today: Date; coins: number | null; celebrating: boolean; onPlant: () => void; onHarvest: (goal: TrackedGoal, origin: Element) => void }) {
+export function GoalsHero({ goals, log, today, coins, celebrating, onHarvest }: { goals: TrackedGoal[]; log: GoalLog; today: Date; coins: number | null; celebrating: boolean; onHarvest: (goal: TrackedGoal, origin: Element) => void }) {
   const phase = useDayPhase();
   const [talking, setTalking] = useState(false);
   const [playerName, setPlayerName] = useState('fazendeira');
@@ -31,12 +30,11 @@ export function GoalsHero({ goals, log, today, coins, celebrating, onPlant, onHa
       <div className="planted-sign">
       <div className="goals-sign pixel-frame">
         <h1 id="goals-title">Canteiro de Metas</h1>
-        <button type="button" className="pixel-button primary-button plant-button" onClick={onPlant}><PixelIcon name="plus" className="size-2.5"/>Plantar meta</button>
       </div>
       <span className="planted-sign-posts" aria-hidden="true"><span className="post-mound"/><span className="post-mound is-right"/></span>
       </div>
     </div>
-    <CoinHud coins={coins} className="hero-coin-hud"/>
+    <CoinHud coins={coins}/>
     <GoalStand goals={dueGoals} log={log} today={today} onHarvest={onHarvest} onTalk={openTalk}/>
     {/* Para teclado e leitores de tela: aparece só quando recebe foco */}
     <button type="button" className="talk-sr-button sr-only focus:not-sr-only" onClick={openTalk}>Conversar com o Seu Zé</button>

@@ -16,7 +16,7 @@ export function SettingsNavigationItem({ selected, visible, onSelect }: { select
     document.addEventListener('pointerdown', outside);
     return () => document.removeEventListener('pointerdown', outside);
   }, [open]);
-  return <li ref={root} className="nav-item-bottom nav-account" style={{ '--i': 6 } as CSSProperties}
+  return <li ref={root} className="nav-item-bottom nav-account nav-desktop-only" style={{ '--i': 6 } as CSSProperties}
     onPointerEnter={hover.onPointerEnter} onPointerLeave={hover.onPointerLeave}
     onBlur={event=>{ if (!event.currentTarget.contains(event.relatedTarget as Node)) setOpen(false); }}
     onKeyDown={event=>{ if (event.key === 'Escape' && open) { event.preventDefault(); event.stopPropagation(); trigger.current?.focus(); setOpen(false); } }}>

@@ -6,6 +6,9 @@ import { GoalCard } from '../components/goals/GoalCard';
 import { ConsistencyCalendar } from '../components/goals/ConsistencyCalendar';
 import { NewGoalDialog } from '../components/goals/NewGoalDialog';
 import { PixelIcon } from '../components/PixelIcon';
+import { PanelHeading, useCollapsible } from '../components/PanelHeading';
+import { AddFab } from '../components/AddFab';
+import { DIARY_GOAL_ID, isDiaryGoal } from '../lib/diaryGoal';
 import { useGoalTracker, useToday } from '../hooks/useGoalTracker';
 import { useFlipList } from '../hooks/useFlipList';
 import { amountOn, dailyTarget, isScheduled, sortByPending, toKey } from '../lib/goalLogic';
@@ -27,9 +30,8 @@ function GoalsVine({ progress }: { progress: number }) {
 }
 
 export function GoalsPage({ onNavigate }: { onNavigate: (page: AppPage) => void }) {
-  const { goals, log, setAmount, addGoal, updateGoal, relapse, removeGoal } = useGoalTracker();
+  const { goals, log, setAmount, addGoal, updateGoal, relapse, removeGoal, setDiaryEnabled } = useGoalTracker();
   const today = useToday();
-  const [view, setView] = useState<'today' | 'all'>('today');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const editing = goals.find(goal => goal.id === editingId);
@@ -44,12 +46,13 @@ export function GoalsPage({ onNavigate }: { onNavigate: (page: AppPage) => void 
   const coins = usePlayerCoins();
   const { celebrating } = usePerfectDay(goals, log, today);
   // Pendentes em cima, colhidas descem para o fim da lista
-  const shown = sortByPending(view === 'today' ? goals.filter(goal => isScheduled(goal, today)) : goals, log, today);
+  const shown = sortByPending(goals, log, today);
   const plotsRef = useFlipList<HTMLUListElement>(shown.map(goal => goal.id).join());
 
   // Cumprir a meta no dia paga moedas e XP (uma vez por dia); o crédito vai para o servidor em segundo plano
   // Colher pelo caixote da vendinha: check único conclui o dia, quantidade soma um passo
   function harvestFromStand(goal: TrackedGoal, origin: Element) {
+    if (isDiaryGoal(goal)) { onNavigate('diary'); return; }
     const amount = amountOn(goal, log, toKey(today));
     if (!isScheduled(goal, today)) { setAnnouncement(`${goal.title}: hoje é dia de descanso.`); return; }
     if (amount >= dailyTarget(goal)) { setAnnouncement(`${goal.title}: já colhida hoje 🌻`); return; }
@@ -66,7 +69,6 @@ export function GoalsPage({ onNavigate }: { onNavigate: (page: AppPage) => void 
   function plant(goal: NewTrackedGoal) {
     addGoal(goal);
     setDialogOpen(false);
-    setView('all');
     setAnnouncement(`${goal.title}: semente plantada!`);
   }
 
@@ -78,33 +80,30 @@ export function GoalsPage({ onNavigate }: { onNavigate: (page: AppPage) => void 
   }
 
   function uproot(goalId: string, title: string) {
+    // A meta do Diário nunca é apagada: arrancar pausa (histórico e páginas ficam guardados)
+    if (goalId === DIARY_GOAL_ID) { setDiaryEnabled(false); setAnnouncement(`${title}: diário pausado. Religue em Configurações.`); return; }
     if (!window.confirm(`Arrancar a meta "${title}"? O histórico dela também será apagado.`)) return;
     removeGoal(goalId).catch(error => setAnnouncement(`${title}: ${error instanceof Error ? error.message : 'não foi possível apagar o histórico.'}`));
     setAnnouncement(`${title}: meta arrancada do canteiro.`);
   }
 
-  return <MainLayout page="goals" onNavigate={onNavigate} world={<GoalsHero goals={goals} log={log} today={today} coins={coins} celebrating={celebrating} onPlant={()=>setDialogOpen(true)} onHarvest={harvestFromStand}/>}>
+  const boardCard = useCollapsible();
+  return <MainLayout page="goals" onNavigate={onNavigate} world={<GoalsHero goals={goals} log={log} today={today} coins={coins} celebrating={celebrating} onHarvest={harvestFromStand}/>}>
     <div className="goals-layout">
-      <section className="world-panel pixel-frame goals-board-panel" aria-labelledby="plots-heading">
-        <header className="panel-heading">
-          <h2 id="plots-heading"><PixelIcon name="target" className="size-5"/>Metas</h2>
-          <div className="view-tabs" role="group" aria-label="Filtrar metas">
-            <button type="button" className="view-tab" aria-pressed={view === 'today'} onClick={()=>setView('today')}>Hoje</button>
-            <button type="button" className="view-tab" aria-pressed={view === 'all'} onClick={()=>setView('all')}>Todas ({goals.length})</button>
-          </div>
-        </header>
+      <section className={`world-panel pixel-frame goals-board-panel ${boardCard.collapsedClass}`} aria-labelledby="plots-heading">
+        <PanelHeading id="plots-heading" icon="target" title="Metas" open={boardCard.open} onToggle={boardCard.toggle}/>
         <div className="panel-content goals-board" onScroll={onBoardScroll}>
           <GoalsVine progress={vineProgress}/>
           {shown.length === 0
             ? <div className="goals-empty"><p className="item-title">{goals.length ? 'Nenhuma meta cobra hoje. Dia de descanso no sítio!' : 'Nenhuma meta ainda.'}</p>
                 {!goals.length && <button type="button" className="pixel-button primary-button mt-3" onClick={()=>setDialogOpen(true)}><PixelIcon name="plus" className="size-2.5"/>Criar a primeira meta</button>}</div>
             : <ul ref={plotsRef} className="goal-plots">{shown.map(goal => <GoalCard key={goal.id} goal={goal} log={log} today={today}
-                onSetAmount={(amount, origin)=>updateAmount(goal, amount, origin)} onRemove={()=>uproot(goal.id, goal.title)} onAnnounce={setAnnouncement} onEdit={()=>setEditingId(goal.id)} onRelapse={()=>registerRelapse(goal.id, goal.title)}/>)}</ul>}
+                onSetAmount={(amount, origin)=>updateAmount(goal, amount, origin)} onRemove={()=>uproot(goal.id, goal.title)} onAnnounce={setAnnouncement} onEdit={()=>setEditingId(goal.id)} onRelapse={()=>registerRelapse(goal.id, goal.title)} onWrite={()=>onNavigate('diary')}/>)}</ul>}
         </div>
       </section>
       <div className="goals-side"><ConsistencyCalendar goals={goals} log={log} today={today}/></div>
     </div>
-    <p role="status" className="world-status">{'Toda semente precisa de tempo. Volte amanhã para regar.'}</p>
+    <AddFab label="Plantar meta" onClick={()=>setDialogOpen(true)}/>
     {dialogOpen && <NewGoalDialog onSave={plant} onClose={()=>setDialogOpen(false)}/>}
     {editing && <NewGoalDialog key={editing.id} goal={editing} onClose={()=>setEditingId(null)}
       onSave={changes=>{ updateGoal(editing.id, changes); setEditingId(null); setAnnouncement(`${changes.title}: meta atualizada!`); }}/>}

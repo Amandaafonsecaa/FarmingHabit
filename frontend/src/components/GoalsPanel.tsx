@@ -4,9 +4,10 @@ import { useFlipList } from '../hooks/useFlipList';
 import { GamePanel } from './GamePanel';
 import { PixelIcon } from './PixelIcon';
 import { ProgressBar } from './ProgressBar';
+import { isDiaryGoal } from '../lib/diaryGoal';
 
 /** Metas da Casa: todas as pendentes de hoje, com rolagem na lista */
-export function GoalsPanel({ goals, log, today, onCheck, onOpen, onEdit }: { goals: TrackedGoal[]; log: GoalLog; today: Date; onCheck: (goal: TrackedGoal, element: Element) => void; onOpen: () => void; onEdit: (goal: TrackedGoal) => void }) {
+export function GoalsPanel({ goals, log, today, onCheck, onOpen, onEdit, onWrite }: { goals: TrackedGoal[]; log: GoalLog; today: Date; onCheck: (goal: TrackedGoal, element: Element) => void; onOpen: () => void; onEdit: (goal: TrackedGoal) => void; onWrite: () => void }) {
   const pending = goals.filter(goal => isScheduled(goal, today) && !isHarvested(goal, log, today));
   const listRef = useFlipList<HTMLUListElement>(pending.map(goal => goal.id).join());
   return <GamePanel id="goals" title="Metas" icon="leaf" onOpen={onOpen}>
@@ -22,7 +23,9 @@ export function GoalsPanel({ goals, log, today, onCheck, onOpen, onEdit }: { goa
           <p className="item-description">{isQuitGoal(goal) ? `${daysWithout(goal, today)} ${daysWithout(goal, today) === 1 ? 'dia sem' : 'dias sem'}` : frequencyLabel(goal)}{quantity && ` · ${amountOn(goal, log, toKey(today))}/${dailyTarget(goal)} ${quantity.unit}`}</p>
           <ProgressBar value={progress} label={`Progresso: ${goal.title}`} className="mt-2 h-2.5"/>
         </div>
-        <button type="button" className="pixel-button mt-1 shrink-0" onClick={event=>onCheck(goal, event.currentTarget)} aria-label={`${quantity ? `Somar ${quantity.step} ${quantity.unit}` : isQuitGoal(goal) ? 'Evitei hoje' : 'Colher'}: ${goal.title}`}>{quantity ? `+${quantity.step}` : isQuitGoal(goal) ? 'Evitei' : 'Colher'}</button>
+        {isDiaryGoal(goal)
+          ? <button type="button" className="pixel-button mt-1 shrink-0" onClick={onWrite} aria-label={`Escrever no diário: ${goal.title}`}>Escrever</button>
+          : <button type="button" className="pixel-button mt-1 shrink-0" onClick={event=>onCheck(goal, event.currentTarget)} aria-label={`${quantity ? `Somar ${quantity.step} ${quantity.unit}` : isQuitGoal(goal) ? 'Evitei hoje' : 'Colher'}: ${goal.title}`}>{quantity ? `+${quantity.step}` : isQuitGoal(goal) ? 'Evitei' : 'Colher'}</button>}
       </div></li>;
     })}</ul>
   </GamePanel>;

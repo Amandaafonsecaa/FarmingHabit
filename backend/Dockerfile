@@ -10,7 +10,11 @@ RUN npm ci
 
 COPY . .
 # Gera o cliente, compila para dist/ e tira as dependências de desenvolvimento (o cliente gerado fica)
-RUN npx prisma generate && npm run build && npm prune --omit=dev
+# Geração/compilação não precisam de conexão real. A CLI carrega prisma.config.ts,
+# que exige estas variáveis mesmo sem consultar o banco. Credenciais reais só no runtime.
+RUN DATABASE_URL="postgresql://build:build@localhost:5432/build" \
+    DIRECT_URL="postgresql://build:build@localhost:5432/build" \
+    npx prisma generate && npm run build && npm prune --omit=dev
 
 # --- Estágio 2: só o necessário para rodar a API ---
 FROM node:24-alpine AS runner

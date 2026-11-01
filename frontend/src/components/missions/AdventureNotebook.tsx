@@ -83,7 +83,7 @@ export function AdventureNotebook() {
   const [open, setOpen] = useState(false);
   const closedRef = useRef<HTMLButtonElement>(null);
   return <aside className="notebook-slot" aria-label="Caderno de dúvidas">
-    <button ref={closedRef} type="button" className={`notebook-closed ${open ? 'is-away' : ''}`} onClick={()=>setOpen(true)} aria-haspopup="dialog">
+    <button ref={closedRef} type="button" className={`notebook-closed ${open ? 'is-away' : ''}`} onClick={()=>setOpen(true)} aria-haspopup="dialog" aria-label="Diário do Aventureiro">
       <NotebookCover/>
       <span className="notebook-label">Diário do<br/>Aventureiro</span>
     </button>
