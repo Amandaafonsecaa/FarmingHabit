@@ -55,7 +55,7 @@ async function bootstrap() {
   }
 
   const port = process.env.PORT ?? 3000;
-  await app.listen(port);
+  await app.listen(port, '0.0.0.0');
   console.log(`🎮 Backend rodando em: http://localhost:${port}`);
   if (process.env.NODE_ENV !== 'production')
     console.log(`📚 Swagger disponível em: http://localhost:${port}/api`);
