@@ -59,9 +59,6 @@
 .coin-hud-icon { display: inline-flex; color: #a86d1c; animation: coin-spin 2.4s steps(6) infinite; }
 .coin-hud.is-bumped { animation: hud-bump .4s cubic-bezier(.34, 1.56, .64, 1); }
 .coin-hud.is-bumped .coin-hud-icon { animation: coin-spin .4s steps(4) 2; }
-.world-coin-hud { position: absolute; top: 18px; left: 74px; z-index: 11; animation: hud-in .6s cubic-bezier(.34, 1.56, .64, 1) .2s backwards; }
-.hero-coin-hud { position: absolute; left: 18px; bottom: 120px; z-index: 3; }
-.hero-coin-hud.is-map { bottom: 56px; }
 .coin-flight-layer { position: fixed; inset: 0; z-index: 9999; pointer-events: none; }
 .flying-coin { position: absolute; left: 0; top: 0; width: 18px; height: 18px; filter: drop-shadow(1px 2px 0 #57311f66); }
 
@@ -141,12 +138,9 @@
 
 /* --- Responsivo --- */
 @media (max-width: 767px) {
- .world-coin-hud { top: 20px; left: 70px; }
  .coin-hud { font-size: 15px; padding: 4px 10px 4px 6px; }
  .seed-fab { right: 14px; bottom: 16px; }
  .navigation-open .seed-fab { bottom: calc(var(--game-navigation-height) + 16px); }
- .hero-coin-hud { bottom: 104px; left: 12px; }
- .hero-coin-hud.is-map { bottom: 54px; }
 }
 
 /* Celular, Casa: a fazenda vira um cartão-postal (cenário inteiro, sem cortar) só com as moedas por cima,
@@ -154,7 +148,6 @@
 @media (max-width: 767px) {
  .game-world { height: 190px; border-width: 4px; border-bottom-width: 8px; }
  .game-world .world-header { display: none; }
- .world-coin-hud { top: 8px; left: auto; right: 8px; }
  .game-world .world-scenery { pointer-events: none; }
 
  /* Fundo extra para a semente (+) não cobrir o último painel ao rolar até o fim */
@@ -233,3 +226,14 @@
 .guide-speech { position: relative; max-width: 240px; padding: 10px 14px; border: 3px solid #3b2418; background: #fff1c7; box-shadow: inset 0 -3px #e5c88f, 4px 4px 0 #3b241840; text-align: center; font-size: 14px; font-weight: bold; line-height: 1.4; color: #3b2418; }
 .guide-speech-tail { position: absolute; top: 100%; left: 50%; width: 21px; height: 12px; margin-left: -10.5px; }
 .panel-guide-warrior { display: block; width: 96px; height: 106px; transform-origin: 50% 100%; animation: guide-breathe 2.6s ease-in-out infinite; }
+
+/* HUD comum: mesma referência e afastamento em todos os banners que têm moedas. */
+.scene-coin-hud { position: absolute; top: 18px; right: 18px; bottom: auto; left: auto; z-index: 11; }
+.scene-coin-hud.coin-hud--top-left { right: auto; left: 74px; }
+.world-coin-hud { animation: hud-in .6s cubic-bezier(.34, 1.56, .64, 1) .2s backwards; }
+.world-coin-hud.is-bumped { animation: hud-bump .4s cubic-bezier(.34, 1.56, .64, 1); }
+@media (max-width: 767px) {
+ .scene-coin-hud, .scene-coin-hud.coin-hud--top-left { top: 8px; right: 8px; bottom: auto; left: auto; }
+ /* A placa ARMAZÉM ocupa o alto da cena da Loja no recorte do celular. */
+ .scene-coin-hud.coin-hud--mobile-bottom-right { top: auto; bottom: 8px; }
+}

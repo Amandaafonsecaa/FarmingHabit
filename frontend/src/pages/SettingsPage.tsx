@@ -103,7 +103,7 @@ export function SettingsPage({ onNavigate }: { onNavigate: (page: AppPage) => vo
 
   const current = SECTIONS.find(item => item.id === section)!;
 
-  return <MainLayout page="settings" onNavigate={onNavigate} world={<SettingsHero playerName={player?.name ?? '…'} farmName={settings.farmName}/>}>
+  return <MainLayout page="settings" onNavigate={onNavigate} world={<SettingsHero/>}>
     <div className="settings-shell">
       {/* Menu de seções (vira abas no celular) */}
       <nav className="settings-nav pixel-frame" aria-label="Seções das configurações">

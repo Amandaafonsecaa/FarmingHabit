@@ -34,7 +34,7 @@ export function GoalsHero({ goals, log, today, coins, celebrating, onHarvest }: 
       <span className="planted-sign-posts" aria-hidden="true"><span className="post-mound"/><span className="post-mound is-right"/></span>
       </div>
     </div>
-    <CoinHud coins={coins} className="hero-coin-hud"/>
+    <CoinHud coins={coins}/>
     <GoalStand goals={dueGoals} log={log} today={today} onHarvest={onHarvest} onTalk={openTalk}/>
     {/* Para teclado e leitores de tela: aparece só quando recebe foco */}
     <button type="button" className="talk-sr-button sr-only focus:not-sr-only" onClick={openTalk}>Conversar com o Seu Zé</button>

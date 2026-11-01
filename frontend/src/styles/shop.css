@@ -14,7 +14,6 @@
 .register-drawer { animation: drawer-pop 6s steps(1) infinite; }
 .coin-glint { animation: sparkle-blink 1.6s steps(1) infinite; }
 .counter-bell { transform-box: fill-box; transform-origin: 50% 100%; animation: bell-ding 7s steps(1) infinite; }
-.shop-coin-hud { position: relative; z-index: 3; }
 .shop-hero-top { position: relative; display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 12px; padding-left: 56px; }
 .shop-sign-board { padding: 14px 18px 16px; transform: rotate(-1deg); max-width: 340px; }
 .shop-sign-board .eyebrow { color: #7a4a26; font-size: 10px; }
@@ -271,7 +270,6 @@
  .shop-sign-board .eyebrow, .shop-sign-board .missions-motto { display: none; }
  .shop-sign-board h1 { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
  .shop-hero-top { position: static; }
- .shop-hero-top .shop-coin-hud { position: absolute; right: 12px; bottom: 12px; }
 }
 
 /* Celular: banner mais baixo com o balcão (x 380–680 da cena) inteiro e no centro; a escala segue a altura,

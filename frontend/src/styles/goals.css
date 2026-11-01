@@ -331,7 +331,6 @@
 .planted-sign-posts::before { left: 0; } .planted-sign-posts::after { right: 0; }
 .post-mound { position: absolute; bottom: -5px; left: -8px; width: 28px; height: 8px; background: #6a3f22; border: 2px solid #4d2e1c; box-shadow: -4px -4px 0 -2px #72ad32, 18px -5px 0 -2px #53922d; }
 .post-mound.is-right { left: auto; right: -8px; }
-.goals-hero .hero-coin-hud { top: 18px; right: 18px; left: auto; bottom: auto; }
 
 /* ===== Coluna da direita: calendário compacto + sequência ===== */
 .goals-side { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
@@ -364,8 +363,15 @@
  .goals-hero-top { display: none; }
  .goal-stand { position: relative; inset: auto; z-index: 0; width: 160%; max-width: none; height: auto; aspect-ratio: 1000 / 330; margin-left: -36%; }
  .goal-stand-front { position: absolute; top: 0; left: -36%; z-index: 1; margin: 0; }
- .goals-hero .hero-coin-hud { top: 8px; right: 8px; }
 }
 
 /* Folga no fim para o "+" flutuante não cobrir o último card */
 .goals-layout { padding-bottom: 96px; }
+
+/* Placa baixa: base no chão e proporção próxima à altura do Seu Zé. */
+@media (min-width: 768px) {
+ .planted-sign { position: absolute; left: 18px; bottom: min(3.8cqw, 43.8px); width: min(240px, 24cqw); height: clamp(90px, 10.5cqw, 118px); }
+ .planted-sign .goals-sign { display: grid; place-items: center; padding: 12px 10px; text-align: center; }
+ .planted-sign .goals-sign h1 { margin: 0; font-size: clamp(16px, 1.8cqw, 21px); line-height: 1.2; letter-spacing: -.6px; }
+ .planted-sign-posts { margin: -3px 26px 0; min-height: 18px; }
+}

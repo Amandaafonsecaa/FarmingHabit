@@ -6,7 +6,6 @@
 .gym-scene { position: absolute; inset: 0; z-index: -1; width: 100%; height: 100%; }
 .evolution-hero-top { position: relative; display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 12px; padding-left: 56px; pointer-events: none; }
 .evolution-hero-top > * { pointer-events: auto; }
-.evolution-hero .hero-coin-hud { position: static; }
 .evolution-sign { padding: 14px 18px 14px; transform: rotate(-1deg); width: min(300px, 100%); }
 .evolution-sign .eyebrow { color: #7a4a26; font-size: 10px; }
 .evolution-sign h1 { margin: 6px 0 4px; font-size: clamp(22px, 2.6vw, 32px); font-weight: 900; letter-spacing: -1.5px; line-height: 1.1; color: #3b2418; text-shadow: 2px 2px #ffd98d; }
