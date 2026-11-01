@@ -193,13 +193,10 @@
 .notebook-closed { container-type: inline-size; }
 .notebook-label { position: absolute; left: 21.3%; top: 27.4%; width: 56.7%; height: 15%; display: flex; align-items: center; justify-content: center; text-align: center; font-size: clamp(10px, 6cqw, 22px); font-weight: 900; line-height: 1.15; color: #3b2418; }
 @media (min-width: 1100px) { .notebook-slot { align-self: stretch; } }
-@media (max-width: 1099px) {
- /* Celular e tablet: caderninho acima do quadro */
- .notebook-slot { order: -1; }
- .notebook-closed { width: 140px; }
-}
 
-.notebook-dialog { position: fixed; inset: 0; margin: auto; width: min(900px, calc(100vw - 24px), calc((100dvh - 40px) * 600 / 424)); height: fit-content; max-width: none; max-height: calc(100dvh - 24px); padding: 0; border: 0; background: transparent; overflow: visible; color: #3b2418; }
+/* Centralizado por top/left/transform (não por "inset:0;margin:auto"): mais confiável entre navegadores
+   quando o conteúdo tem tamanho intrínseco (aspect-ratio), que é exatamente o caso aqui */
+.notebook-dialog { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: min(900px, calc(100vw - 24px), calc((100dvh - 40px) * 600 / 424)); height: fit-content; max-width: none; max-height: calc(100dvh - 24px); padding: 0; border: 0; background: transparent; overflow: visible; color: #3b2418; }
 .notebook-dialog::backdrop { background: #1d120bcc; }
 /* Cada página tem a própria borda de couro: com a da esquerda escondida, sobra só o caderno fechado */
 .notebook-open { position: relative; }
@@ -256,14 +253,29 @@
  .missions-hero.is-sea .missions-hero-top { justify-content: space-between; }
  .sea-front { height: 16%; }
  .ship-rig { width: 210px; margin-left: -105px; bottom: 9%; }
- /* Caderno vira botão flutuante fixo (como o do WhatsApp), acima da barra; a página fica só com o quadro */
- .notebook-slot { position: fixed; right: 14px; bottom: calc(var(--tab-bar-height) + env(safe-area-inset-bottom, 0px) + 14px); z-index: 45; order: 0; }
+ .quest-paper .quest-actions .pixel-button { min-height: 44px; }
+}
+
+/* Tablet (ex.: iPad): nem a faixa larguíssima do desktop nem o corte do celular — o navio continua enquadrado */
+@media (min-width: 768px) and (max-width: 1099px) {
+ .missions-hero.is-sea { aspect-ratio: auto; min-height: 320px; padding: 16px; }
+ .sea-front { height: 18%; }
+ .ship-rig { width: clamp(240px, 32%, 320px); margin-left: calc(clamp(240px, 32%, 320px) / -2); }
+}
+
+/* Celular e tablet: caderno vira botão flutuante fixo (como o do WhatsApp); a página fica só com o quadro.
+   No celular fica acima da barra de abas; no tablet (sem barra de abas) fica só acima da borda da tela. */
+@media (max-width: 1099px) {
+ .notebook-slot { position: fixed; right: 14px; bottom: calc(env(safe-area-inset-bottom, 0px) + 14px); z-index: 45; order: 0; }
  .notebook-closed { width: 54px; filter: drop-shadow(3px 4px 0 #3b241888); }
  .notebook-closed:hover { transform: none; }
  .notebook-closed:active { transform: translateY(2px); filter: drop-shadow(1px 2px 0 #3b241888); }
  .notebook-closed .notebook-label { display: none; }
+ .missions-layout { padding-bottom: 84px; }
+}
+@media (max-width: 767px) {
+ .notebook-slot { bottom: calc(var(--tab-bar-height) + env(safe-area-inset-bottom, 0px) + 14px); }
  .missions-layout { padding-bottom: 96px; }
- .quest-paper .quest-actions .pixel-button { min-height: 44px; }
 }
 
 
