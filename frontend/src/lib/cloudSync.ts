@@ -18,7 +18,9 @@ export const SYNC_KEYS = new Set([
 // Quando cada chave foi alterada (ms) — fora do prefixo "farminghabit." para não ser sincronizada
 const META_KEY = 'farminghabit-sync-meta';
 const PUSH_DELAY_MS = 700;
-const PULL_TIMEOUT_MS = 3000;
+// Serviço gratuito (ex.: Render free) dorme e pode levar dezenas de segundos para acordar no primeiro pedido;
+// 3s era menos que esse tempo e fazia o primeiro acesso cair nos dados locais (vazios) em vez de esperar a conta.
+const PULL_TIMEOUT_MS = 20000;
 
 const nativeSet = Storage.prototype.setItem;
 const nativeRemove = Storage.prototype.removeItem;
