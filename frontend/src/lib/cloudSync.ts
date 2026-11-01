@@ -17,6 +17,11 @@ export const SYNC_KEYS = new Set([
 
 // Quando cada chave foi alterada (ms) — fora do prefixo "farminghabit." para não ser sincronizada
 const META_KEY = 'farminghabit-sync-meta';
+// Último "updatedAt" da conta que este navegador já confirmou (por um pull aceito ou um push bem-sucedido) —
+// nunca gravado por uma escrita comum, só pela própria reconciliação. Sem isso, um navegador que nunca
+// chegou a sincronizar de verdade (ex.: um pull que sempre falhou) podia "vencer" a conta só porque a
+// última escrita local (de um valor de exemplo, nunca confirmado) parecia mais recente.
+const BASELINE_KEY = 'farminghabit-sync-baseline';
 const PUSH_DELAY_MS = 700;
 // Serviço gratuito (ex.: Render free) dorme e pode levar dezenas de segundos para acordar no primeiro pedido;
 // 3s era menos que esse tempo e fazia o primeiro acesso cair nos dados locais (vazios) em vez de esperar a conta.
@@ -35,14 +40,25 @@ function readMeta(): Record<string, number> {
 function writeMeta(key: string, time: number) {
   try { nativeSet.call(localStorage, META_KEY, JSON.stringify({ ...readMeta(), [key]: time })); } catch { /* ignora */ }
 }
+function readBaseline(): Record<string, number> {
+  try { return JSON.parse(localStorage.getItem(BASELINE_KEY) ?? '{}'); } catch { return {}; }
+}
+function writeBaseline(key: string, time: number) {
+  try { nativeSet.call(localStorage, BASELINE_KEY, JSON.stringify({ ...readBaseline(), [key]: time })); } catch { /* ignora */ }
+}
 
 async function push(key: string) {
   timers.delete(key);
   if (!ready) { waiting.add(key); return; }
   const value = localStorage.getItem(key);
   try {
-    if (value === null) await deleteUserData(key);
-    else writeMeta(key, Date.parse((await saveUserData(key, value)).updatedAt));
+    if (value === null) { await deleteUserData(key); writeBaseline(key, Date.now()); }
+    else {
+      const time = Date.parse((await saveUserData(key, value)).updatedAt);
+      writeMeta(key, time);
+      // Confirmado pela conta: a partir de agora, só uma mudança local depois deste ponto pode vencer um pull
+      writeBaseline(key, time);
+    }
   } catch { waiting.add(key); /* sem servidor: tenta de novo na próxima abertura ou alteração */ }
 }
 
@@ -97,11 +113,20 @@ export async function startCloudSync(): Promise<boolean> {
   // Chaves que o navegador ainda não tinha ao abrir: se a tela gravar um valor padrão nelas antes de a
   // conta responder (ex.: metas de exemplo), vale o que está na conta
   const absentAtBoot = new Set([...SYNC_KEYS].filter(key => localStorage.getItem(key) === null));
+  // Congelado antes de vigiar as gravações: uma escrita de corrida (ex.: a tela planta um valor de exemplo
+  // enquanto a conta ainda não respondeu) não pode contar como "histórico de antes desta abertura".
+  const metaAtBoot = readMeta();
   watchLocalStorage();
   try {
     const remote = await withTimeout(listUserData());
     ready = true;
     const meta = readMeta();
+    const baseline = readBaseline();
+    // Navegador que já usava a sincronização antes desta checagem existir: mantém o comportamento de antes
+    // (compara os horários) só para quem já tinha essa chave gravada ANTES desta abertura. Uma chave sem
+    // nenhum histórico anterior (nem desta abertura) nunca ganha um ponto de partida por aqui — ela só o
+    // ganha depois de uma reconciliação de verdade, mais abaixo.
+    for (const key of Object.keys(metaAtBoot)) if (!(key in baseline)) { baseline[key] = metaAtBoot[key] - 1; writeBaseline(key, metaAtBoot[key] - 1); }
     const onServer = new Set<string>();
     const changed: { key: string; oldValue: string | null; newValue: string }[] = [];
     for (const item of remote) {
@@ -109,10 +134,18 @@ export async function startCloudSync(): Promise<boolean> {
       onServer.add(item.key);
       const remoteTime = Date.parse(item.updatedAt);
       const local = localStorage.getItem(item.key);
-      if (local === null || absentAtBoot.has(item.key) || remoteTime > (meta[item.key] ?? 0)) {
+      // Local só vence se este navegador já confirmou esta chave com a conta alguma vez (baseline existe),
+      // mudou de verdade depois dessa confirmação, e essa mudança é mais recente que o valor da conta.
+      // Sem uma confirmação anterior, não há como saber se a escrita local é uma edição de verdade ou só
+      // um valor de exemplo nunca sincronizado — e esse valor nunca pode vencer o que já está na conta.
+      const confirmedBefore = baseline[item.key];
+      const changedSinceConfirmed = confirmedBefore !== undefined && (meta[item.key] ?? 0) > confirmedBefore;
+      const localWins = local !== null && !absentAtBoot.has(item.key) && changedSinceConfirmed && (meta[item.key] ?? 0) > remoteTime;
+      if (!localWins) {
         if (local !== item.value) changed.push({ key: item.key, oldValue: local, newValue: item.value });
         nativeSet.call(localStorage, item.key, item.value);
         writeMeta(item.key, remoteTime);
+        writeBaseline(item.key, remoteTime);
         // O valor da conta venceu: o que estava esperando para subir (ex.: um padrão gravado ao abrir) não sobe mais
         window.clearTimeout(timers.get(item.key));
         timers.delete(item.key);
