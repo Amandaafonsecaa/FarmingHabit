@@ -7,6 +7,7 @@ import { EditMissionDialog } from '../components/dialogs/EditMissionDialog';
 import { MissionDialog } from '../components/dialogs/MissionDialog';
 import { AdventureNotebook } from '../components/missions/AdventureNotebook';
 import { PixelIcon } from '../components/PixelIcon';
+import { PanelHeading, useCollapsible } from '../components/PanelHeading';
 import { useAcceptedMissions, useMissionBoard } from '../hooks/useMissionBoard';
 import type { Mission, NewItem } from '../types/world';
 import { recordAdventure } from '../lib/diary';
@@ -70,12 +71,13 @@ export function MissionsPage({ onNavigate }: { onNavigate: (page: AppPage) => vo
     }
   }
 
+  const boardCard = useCollapsible();
   return <MainLayout page="missions" onNavigate={onNavigate}
     world={<MissionsHero completed={completedCount} openCount={stillOpen.length} coins={board.player?.coins ?? null}
       traveling={stillOpen.filter(mission => accepted.includes(mission.id)).length}/>}>
     <div className="missions-layout">
-      <section className="world-panel pixel-frame quest-board-panel" aria-labelledby="board-heading">
-        <header className="panel-heading"><h2 id="board-heading"><PixelIcon name="mission" className="size-5"/>Quadro de aventuras</h2><button type="button" className="pixel-button primary-button" onClick={()=>setDialogOpen(true)}><PixelIcon name="plus" className="size-2.5"/>Nova missão</button></header>
+      <section className={`world-panel pixel-frame quest-board-panel ${boardCard.collapsedClass}`} aria-labelledby="board-heading">
+        <PanelHeading id="board-heading" icon="mission" title="Quadro de aventuras" open={boardCard.open} onToggle={boardCard.toggle}><button type="button" className="pixel-button primary-button" onClick={()=>setDialogOpen(true)}><PixelIcon name="plus" className="size-2.5"/>Nova missão</button></PanelHeading>
         <div className="quest-board">
           {board.loading && <p className="quest-board-note">Desenrolando os pergaminhos…</p>}
           {board.error && <p role="alert" className="quest-board-note is-error">Não foi possível carregar as missões: {board.error}</p>}

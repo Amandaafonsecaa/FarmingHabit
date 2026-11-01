@@ -1,7 +1,7 @@
 import type { Purchase } from '../../lib/shop';
 import { fromKey } from '../../lib/goalLogic';
 import { itemKindFor } from '../../lib/shop';
-import { PixelIcon } from '../PixelIcon';
+import { PanelHeading, useCollapsible } from '../PanelHeading';
 import { ItemIcon } from './ItemIcon';
 
 const shortDate = new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: 'short' });
@@ -9,8 +9,9 @@ const shortDate = new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: 'sho
 /** Minhas compras: histórico do que foi comprado na loja, cada item pode ser marcado como aproveitado */
 export function ChestPanel({ purchases, freshId, onToggle, pendingIds = [] }: { purchases: Purchase[]; freshId: string | null; onToggle: (id: string) => void; pendingIds?: string[] }) {
   const pending = purchases.filter(item => !item.used).length;
-  return <section className="world-panel pixel-frame chest-panel" aria-labelledby="chest-heading">
-    <header className="panel-heading"><h2 id="chest-heading"><PixelIcon name="coin" className="size-5"/>Minhas compras</h2><span className="panel-tag">{pending} para aproveitar</span></header>
+  const card = useCollapsible();
+  return <section className={`world-panel pixel-frame chest-panel ${card.collapsedClass}`} aria-labelledby="chest-heading">
+    <PanelHeading id="chest-heading" icon="coin" title="Minhas compras" open={card.open} onToggle={card.toggle}><span className="panel-tag">{pending} para aproveitar</span></PanelHeading>
     <div className="chest-body">
       {/* A sacola só aparece enquanto não há compras; depois a lista ocupa o card */}
       {purchases.length === 0 ? <>

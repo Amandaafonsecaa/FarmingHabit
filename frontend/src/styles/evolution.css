@@ -283,3 +283,8 @@
  .week-table tbody th { min-width: 96px; }
  .week-dot { width: 14px; height: 14px; }
 }
+
+/* Celular: só as áreas da vida e a semana; o pergaminho de recompensas e o caderninho saem */
+@media (max-width: 767px) {
+ .week-bloom > .rewards-scroll, .evolution-layout > .notebook { display: none; }
+}

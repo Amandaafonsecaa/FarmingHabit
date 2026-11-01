@@ -242,9 +242,17 @@
 }
 
 @media (max-width: 767px) {
- .missions-hero.is-sea { aspect-ratio: auto; min-height: 380px; padding: 70px 12px 12px; }
+ .missions-hero.is-sea { aspect-ratio: auto; min-height: 270px; padding: 12px; }
  .missions-hero.is-sea .missions-hero-top { justify-content: space-between; }
  .sea-front { height: 16%; }
- .ship-rig { width: 280px; margin-left: -140px; bottom: 9%; }
+ .ship-rig { width: 210px; margin-left: -105px; bottom: 9%; }
+ /* Caderno vira botão flutuante fixo (como o do WhatsApp), acima da barra; a página fica só com o quadro */
+ .notebook-slot { position: fixed; right: 14px; bottom: calc(var(--tab-bar-height) + env(safe-area-inset-bottom, 0px) + 14px); z-index: 45; order: 0; }
+ .notebook-closed { width: 54px; filter: drop-shadow(3px 4px 0 #3b241888); }
+ .notebook-closed:hover { transform: none; }
+ .notebook-closed:active { transform: translateY(2px); filter: drop-shadow(1px 2px 0 #3b241888); }
+ .notebook-closed .notebook-label { display: none; }
+ .missions-layout { padding-bottom: 96px; }
+ .quest-paper .quest-actions .pixel-button { min-height: 44px; }
 }
 

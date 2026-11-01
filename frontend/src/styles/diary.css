@@ -153,3 +153,12 @@
  .mood-picker { grid-template-columns: repeat(5, minmax(0, 1fr)); }
  .mood-option span { display: none; }
 }
+
+/* Celular: sem a placa "Meu Diário" e sem o cantinho da motivação. A cena fica mais baixa e enquadrada
+   na esquerda do quarto (a escala segue a altura) para a gatinha dormindo aparecer. */
+@media (max-width: 767px) {
+ .diary-hero { min-height: 260px; }
+ .diary-sign { display: none; }
+ .diary-room { inset: 0 auto 0 max(calc(100% - 775px), -93px); width: auto; height: 100%; aspect-ratio: 1000 / 320; }
+ .diary-main > .motivation-window { display: none; }
+}

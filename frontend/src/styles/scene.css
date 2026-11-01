@@ -147,6 +147,28 @@
  .hero-coin-hud.is-map { bottom: 54px; }
 }
 
+/* Celular, Casa: a fazenda vira um cartão-postal (cenário inteiro, sem cortar) só com as moedas por cima,
+   para as metas de hoje já aparecerem na primeira tela. Nível, nome do sítio e calendário saem; a horta fica só de enfeite. */
+@media (max-width: 767px) {
+ .game-world { height: 190px; border-width: 4px; border-bottom-width: 8px; }
+ .game-world .world-header { display: none; }
+ .world-coin-hud { top: 8px; left: auto; right: 8px; }
+ .game-world .world-scenery { pointer-events: none; }
+
+ /* Fundo extra para a semente (+) não cobrir o último painel ao rolar até o fim */
+ .functional-panel { padding: 12px 10px 84px; gap: 12px; }
+ /* Sem rolagem dentro de rolagem: a lista cresce e a página rola */
+ .functional-panel .panel-list { max-height: none; overflow: visible; }
+ .functional-panel .panel-heading { min-height: 52px; }
+ .functional-panel .goal-row > div { align-items: center; }
+ .functional-panel .item-title { font-size: 15px; }
+ .functional-panel .item-description { font-size: 13px; }
+ .functional-panel .goal-edit-trigger { padding: 6px 0; text-align: left; }
+ /* Ações no tamanho do polegar */
+ .functional-panel .goal-row .pixel-button, .home-shop-list .buy-button { min-width: 76px; min-height: 48px; margin-top: 0; padding-inline: 12px; font-size: 14px; }
+ .home-shop-list li { min-height: 64px; }
+}
+
 /* ===== Toast: plaquinha de aviso pendurada no canto (vale para o site todo) ===== */
 .toaster { position: fixed; top: 16px; right: 16px; z-index: 10000; display: flex; flex-direction: column; align-items: flex-end; gap: 10px; width: min(380px, calc(100vw - 32px)); pointer-events: none; }
 .toast { position: relative; display: flex; width: 100%; align-items: center; gap: 10px; overflow: hidden; padding: 12px 12px 14px; pointer-events: auto; transform-origin: 50% 0; animation: toast-hang .55s cubic-bezier(.34, 1.56, .64, 1) backwards; }

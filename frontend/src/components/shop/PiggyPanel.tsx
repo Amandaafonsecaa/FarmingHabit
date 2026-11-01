@@ -1,15 +1,16 @@
 import { useRollingNumber } from '../../hooks/useRollingNumber';
 import type { Reward } from '../../types/world';
 import { itemKindFor } from '../../lib/shop';
-import { PixelIcon } from '../PixelIcon';
+import { PanelHeading, useCollapsible } from '../PanelHeading';
 import { ProgressBar } from '../ProgressBar';
 import { ItemIcon } from './ItemIcon';
 
 /** Cofrinho: saldo, porquinho que chacoalha ao gastar e os itens que você está juntando moedas para comprar */
 export function PiggyPanel({ coins, wishes, shakeKey }: { coins: number; wishes: Reward[]; shakeKey: number }) {
   const shown = useRollingNumber(coins);
-  return <section className="world-panel pixel-frame piggy-panel" aria-labelledby="piggy-heading">
-    <header className="panel-heading"><h2 id="piggy-heading"><PixelIcon name="coin" className="size-5"/>Cofrinho</h2></header>
+  const card = useCollapsible();
+  return <section className={`world-panel pixel-frame piggy-panel ${card.collapsedClass}`} aria-labelledby="piggy-heading">
+    <PanelHeading id="piggy-heading" icon="coin" title="Cofrinho" open={card.open} onToggle={card.toggle}/>
     <div className="piggy-body">
       <div className="piggy-row">
         <svg key={shakeKey} className="piggy" viewBox="0 0 32 26" shapeRendering="crispEdges" aria-hidden="true">

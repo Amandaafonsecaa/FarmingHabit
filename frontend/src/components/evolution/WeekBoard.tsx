@@ -2,7 +2,7 @@ import type { CSSProperties } from 'react';
 import type { GoalLog, TrackedGoal } from '../../types/goals';
 import { WEEKDAY_NAMES, WEEK_ORDER, addDays, amountOn, dailyTarget, isDoneOn, isScheduled, startOfWeek, toKey, weekChecks, weekTarget } from '../../lib/goalLogic';
 import { goalColor } from '../../lib/goalColors';
-import { PixelIcon } from '../PixelIcon';
+import { PanelHeading, useCollapsible } from '../PanelHeading';
 
 const shortDate = new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: '2-digit' });
 
@@ -32,9 +32,11 @@ export function WeekBoard({ goals, log, today }: { goals: TrackedGoal[]; log: Go
   const done = goals.reduce((sum, goal) => sum + weekChecks(goal, log, today), 0);
   const target = goals.reduce((sum, goal) => sum + weekTarget(goal), 0);
 
-  return <section className="world-panel pixel-frame week-board" aria-labelledby="week-heading">
-    <header className="panel-heading"><h2 id="week-heading"><PixelIcon name="sun" className="size-5"/>Sua semana</h2>
-      <span className="panel-tag">{shortDate.format(days[0])} a {shortDate.format(days[6])} · {done}/{target}</span></header>
+  const card = useCollapsible();
+
+  return <section className={`world-panel pixel-frame week-board ${card.collapsedClass}`} aria-labelledby="week-heading">
+    <PanelHeading id="week-heading" icon="sun" title="Sua semana" open={card.open} onToggle={card.toggle}>
+      <span className="panel-tag">{shortDate.format(days[0])} a {shortDate.format(days[6])} · {done}/{target}</span></PanelHeading>
     <div className="week-board-body">
       {goals.length === 0 ? <p className="panel-empty">Nenhuma meta ainda. Plante uma nas Metas para ver a semana aqui.</p> : <table className="week-table">
         <thead><tr><th scope="col"><span className="sr-only">Meta</span></th>

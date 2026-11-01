@@ -1,6 +1,7 @@
 import type { CSSProperties, PointerEventHandler, Ref } from 'react';
 import { SettingsNavigationItem } from './SettingsNavigationItem';
 import { NavigationItem } from './NavigationItem';
+import { MoreNavigationItem } from './MoreNavigationItem';
 import type { AppPage } from '../types/navigation';
 
 // Vaga-lumes: posição (% da gaveta), atraso e duração próprios para não piscarem juntos
@@ -42,8 +43,9 @@ export function GameNavigation({ open, page, onNavigate, navRef, onPointerEnter,
       <NavigationItem index={1} label="Metas" icon="target" selected={page === 'goals'} onSelect={()=>onNavigate('goals')}/>
       <NavigationItem index={2} label="Missões" icon="mission" selected={page === 'missions'} onSelect={()=>onNavigate('missions')}/>
       <NavigationItem index={3} label="Loja" icon="coin" selected={page === 'shop'} onSelect={()=>onNavigate('shop')}/>
-      <NavigationItem index={4} label="Diário" icon="book" selected={page === 'diary'} onSelect={()=>onNavigate('diary')}/>
-      <NavigationItem index={5} label="Evolução" icon="growth" selected={page === 'evolution'} onSelect={()=>onNavigate('evolution')}/>
+      <NavigationItem index={4} label="Diário" icon="book" desktopOnly selected={page === 'diary'} onSelect={()=>onNavigate('diary')}/>
+      <NavigationItem index={5} label="Evolução" icon="growth" desktopOnly selected={page === 'evolution'} onSelect={()=>onNavigate('evolution')}/>
+      <MoreNavigationItem page={page} onNavigate={onNavigate}/>
       <SettingsNavigationItem visible={open} selected={page === 'settings'} onSelect={()=>onNavigate('settings')}/>
     </ul>
     <NavGrass/>
