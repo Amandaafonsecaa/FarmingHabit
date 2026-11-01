@@ -4,10 +4,6 @@ import { DiaryHero } from '../components/diary/DiaryHero';
 import { DiaryBook } from '../components/diary/DiaryBook';
 import { MoodCalendar } from '../components/diary/MoodCalendar';
 import { MemoryNotes } from '../components/diary/MemoryNotes';
-import { MotivationCorner } from '../components/evolution/MotivationCorner';
-import { useMotivation } from '../hooks/useMotivation';
-import { loadPlayer } from '../services/api';
-import { toast } from '../lib/toast';
 import { useDiary } from '../hooks/useDiary';
 import { useGoalTracker, useToday } from '../hooks/useGoalTracker';
 import { addDays, amountOn, isDoneOn, toKey } from '../lib/goalLogic';
@@ -26,11 +22,6 @@ export function DiaryPage({ onNavigate }: { onNavigate: (page: AppPage) => void 
   const todayKey = toKey(today);
   const selectedKey = toKey(selected);
   const entry = diary.entryFor(selectedKey);
-  // O cantinho da motivação precisa do jogador (a frase fica no servidor)
-  const [playerReady, setPlayerReady] = useState(false);
-  useEffect(() => { let active = true; loadPlayer().then(() => { if (active) setPlayerReady(true); }).catch(() => {}); return () => { active = false; }; }, []);
-  const motivation = useMotivation(playerReady);
-
   // Escrever hoje cumpre a meta do Diário: um check-in por dia, só pela página de hoje (dias passados não pagam)
   const wroteToday = hasContent(diary.entryFor(todayKey));
   const sentFor = useRef<string | null>(null);
@@ -63,12 +54,9 @@ export function DiaryPage({ onNavigate }: { onNavigate: (page: AppPage) => void 
     world={<DiaryHero todayMood={diary.entryFor(todayKey).mood} dateLabel={new Intl.DateTimeFormat('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' }).format(today)}
       written={diary.written.length} streak={diary.streak(today)} monthMood={monthMood}/>}>
     <div className="diary-layout">
-      {/* Livro e, embaixo, o cantinho da motivação: juntos têm a altura da coluna de humor + memórias */}
       <div className="diary-main">
         <DiaryBook dateKey={selectedKey} date={selected} entry={entry} turn={turn} canNext={selectedKey < todayKey} harvests={harvests} adventures={adventures}
           onChange={patch=>diary.update(selectedKey, patch)} onPrev={()=>open(addDays(selected, -1))} onNext={()=>open(addDays(selected, 1))}/>
-        <MotivationCorner motivation={motivation.motivation} disabled={!playerReady}
-          onSave={async changes=>{ await motivation.save(changes); toast('Motivação salva! Ela vai estar no quadro todos os dias.'); }}/>
       </div>
       <div className="diary-aside">
         <MoodCalendar month={month} entries={diary.entries} selectedKey={selectedKey} todayKey={todayKey} onSelect={open}

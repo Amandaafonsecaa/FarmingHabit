@@ -163,10 +163,12 @@
 .ship-rig { position: absolute; left: 50%; bottom: 8%; --ship-width: min(clamp(400px, 46cqw, 640px), 104cqh); width: var(--ship-width); aspect-ratio: 360 / 300; margin-left: calc(var(--ship-width) / -2); transform-origin: 58% 82%; animation: ship-pitch 2.4s steps(12) infinite; }
 .ship-art { position: absolute; inset: 0; width: 100%; height: 100%; }
 .bow-splash { position: absolute; right: -6%; bottom: 8%; width: 22%; opacity: 0; transform-origin: 50% 100%; animation: bow-splash 2.4s steps(4) infinite; }
-/* Capitão no convés: o clique abre a conversa; no hover/foco o contorno e o brilho seguem o corpo dele */
+/* Mesmo indicador dos demais NPCs, no corpo do Capitão e em qualquer viewport. */
+.captain-figure { animation: npc-glint 4s steps(1) infinite; }
 .ship-captain { position: absolute; padding: 0; border: 0; background: transparent; cursor: pointer; }
 .ship-captain:focus-visible { outline: none; }
 .ship-rig:has(.ship-captain:hover) .captain-figure, .ship-rig:has(.ship-captain:focus-visible) .captain-figure {
+ animation: none;
  filter: drop-shadow(1px 0 0 #fff1c7) drop-shadow(-1px 0 0 #fff1c7) drop-shadow(0 1px 0 #fff1c7) drop-shadow(0 -1px 0 #fff1c7) drop-shadow(0 0 4px #f3d27d);
 }
 .ship-rig:has(.ship-captain:focus-visible) .captain-figure { filter: drop-shadow(1px 0 0 #e7b84b) drop-shadow(-1px 0 0 #e7b84b) drop-shadow(0 1px 0 #e7b84b) drop-shadow(0 -1px 0 #e7b84b) drop-shadow(0 0 4px #f3d27d); }
@@ -276,9 +278,11 @@
 
 .missions-sign.is-minimal { justify-content: center; text-align: center; }
 
-/* O alvo cresce junto com o Capitão; o balão sinaliza a conversa também no toque. */
+/* Área de toque mínima, sem acrescentar indicadores ao Capitão. */
 .ship-captain { min-width: 44px; min-height: 44px; }
-.ship-captain-hint { position: absolute; top: -19px; right: -7px; width: 22px; height: 18px; pointer-events: none; animation: captain-hint-float 2.4s ease-in-out infinite; transition: transform .2s ease; }
-.ship-captain-hint svg { display: block; width: 100%; height: 100%; }
-.ship-captain:hover .ship-captain-hint, .ship-captain:focus-visible .ship-captain-hint { animation: none; transform: translateY(-3px) scale(1.1); }
-@keyframes captain-hint-float { 50% { transform: translateY(-3px); } }
+
+/* iPads maiores em retrato: aproxima o Capitão sem cortar o mastro. */
+@media (min-width: 1000px) and (max-width: 1099px) and (orientation: portrait) {
+ .missions-hero.is-sea { min-height: 520px; }
+ .ship-rig { --ship-width: min(560px, 58cqw, 104cqh); }
+}

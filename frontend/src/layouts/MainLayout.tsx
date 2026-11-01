@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 import { GameNavigation } from '../components/GameNavigation';
 import { CoinFlightLayer } from '../components/CoinFlightLayer';
 import { Toaster } from '../components/Toaster';
@@ -30,6 +31,8 @@ export function MainLayout({ page, onNavigate, world, children }: { page: AppPag
     return () => { document.removeEventListener('keydown', onKey); document.removeEventListener('pointerdown', onPointer); };
   }, [navigationOpen]);
 
+  const navigation = <GameNavigation navRef={navigationRef} open={navigationOpen || mobileBar} page={page} diaryEnabled={diaryEnabled} onNavigate={onNavigate} onPointerEnter={hover.onPointerEnter} onPointerLeave={hover.onPointerLeave}/>;
+
   return <>
     <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:bg-paper focus:p-3">Pular para o conteúdo</a>
     <main id="main" tabIndex={-1} className={`application-content min-h-screen bg-cream ${navigationOpen ? 'navigation-open' : 'navigation-closed'}`}>
@@ -37,11 +40,13 @@ export function MainLayout({ page, onNavigate, world, children }: { page: AppPag
         <button ref={toggleRef} type="button" className="navigation-toggle pixel-button" aria-label={navigationOpen ? 'Fechar navegação' : 'Abrir navegação'} aria-expanded={navigationOpen} aria-controls="game-navigation" onClick={hover.toggleByClick} onPointerEnter={hover.onPointerEnter} onPointerLeave={hover.onPointerLeave}>
           <span className="toggle-bars" aria-hidden="true"><span/><span/><span/></span>
         </button>
-        <GameNavigation navRef={navigationRef} open={navigationOpen || mobileBar} page={page} diaryEnabled={diaryEnabled} onNavigate={onNavigate} onPointerEnter={hover.onPointerEnter} onPointerLeave={hover.onPointerLeave}/>
+        {!mobileBar && navigation}
         {world}
       </div>
       {children}
     </main>
+    {/* A barra inferior pertence à janela, independente do tamanho e das camadas do cenário. */}
+    {mobileBar && createPortal(navigation, document.body)}
     <CoinFlightLayer/>
     <Toaster/>
   </>;

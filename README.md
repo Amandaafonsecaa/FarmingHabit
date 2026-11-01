@@ -57,4 +57,6 @@ Abra http://localhost:8080. Alguns cuidados:
 
 ## Documentação para agentes
 
+O arquivo [AGENTS.md](AGENTS.md) reúne as instruções para trabalhar no projeto e uma seção de mecânica do jogo, com regras e exemplos de metas, missões, moedas, XP e níveis.
+
 O arquivo [CLAUDE.md](CLAUDE.md) tem os comandos, a arquitetura e as diretrizes de design (pixel art, sistema visual e critérios de UX) usados no desenvolvimento.
