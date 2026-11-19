@@ -1,4 +1,4 @@
-export type PixelIconName = 'leaf' | 'mission' | 'coin' | 'book' | 'coffee' | 'plus' | 'check' | 'close' | 'sun' | 'home' | 'target' | 'growth' | 'settings' | 'water' | 'flame' | 'minus' | 'backpack';
+export type PixelIconName = 'leaf' | 'mission' | 'coin' | 'book' | 'coffee' | 'plus' | 'check' | 'close' | 'sun' | 'home' | 'target' | 'growth' | 'settings' | 'water' | 'flame' | 'minus' | 'backpack' | 'pencil';
 const paths: Record<PixelIconName, string> = {
   home: 'M0 7H2V5H4V3H6V1H10V3H12V5H14V7H16V9H14V15H10V10H6V15H2V9H0ZM4 8V13H5V8ZM11 8V13H12V8Z',
   target: 'M4 0H12V2H14V4H16V12H14V14H12V16H4V14H2V12H0V4H2V2H4ZM4 3V5H2V11H4V13H12V11H14V5H12V3ZM6 5H10V6H11V10H10V11H6V10H5V6H6ZM7 7V9H9V7Z',
@@ -17,6 +17,7 @@ const paths: Record<PixelIconName, string> = {
   minus: 'M1 6H15V10H1Z',
   backpack: 'M5 1H11V3H13V5H14V15H2V5H3V3H5ZM6 2V3H10V2ZM4 7H12V8H4ZM6 10H10V12H6Z',
   sun: 'M6 4H10V6H12V10H10V12H6V10H4V6H6ZM7 0H9V2H7ZM7 14H9V16H7ZM0 7H2V9H0ZM14 7H16V9H14ZM2 2H4V4H2ZM12 2H14V4H12ZM2 12H4V14H2ZM12 12H14V14H12Z',
+  pencil: 'M12 1H14V2H12ZM11 2H15V3H11ZM10 3H11V4H10ZM12 3H15V4H12ZM9 4H12V5H9ZM13 4H14V5H13ZM8 5H12V6H8ZM7 6H11V7H7ZM6 7H10V8H6ZM5 8H9V9H5ZM4 9H8V10H4ZM3 10H7V11H3ZM2 11H3V12H2ZM4 11H6V12H4ZM1 12H4V13H1ZM1 13H3V14H1ZM1 14H2V15H1Z',
 };
 export function PixelIcon({ name, className = 'size-4' }: { name: PixelIconName; className?: string }) {
   return <svg viewBox="0 0 16 16" shapeRendering="crispEdges" fill="currentColor" fillRule="evenodd" aria-hidden="true" className={className}><path d={paths[name]}/></svg>;

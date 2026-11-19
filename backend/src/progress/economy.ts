@@ -27,6 +27,17 @@ export function isPlayerToday(day: string, now = new Date()): boolean {
   return day >= earliest && day <= latest;
 }
 
+/**
+ * O dia é "hoje" ou "ontem" para o jogador em algum fuso? É a janela que paga a colheita:
+ * quem esqueceu de abrir o app ontem ainda marca e recebe; dias mais antigos ficam só no histórico.
+ */
+export function isPayableDay(day: string, now = new Date()): boolean {
+  if (!DAY_PATTERN.test(day)) return false;
+  const earliest = utcKey(new Date(now.getTime() - 36 * 3600_000));
+  const latest = utcKey(new Date(now.getTime() + 14 * 3600_000));
+  return day >= earliest && day <= latest;
+}
+
 /** O dia é válido e não está no futuro de ninguém (até o "hoje" mais adiantado, UTC+14)? */
 export function isUpToPlayerToday(day: string, now = new Date()): boolean {
   if (!DAY_PATTERN.test(day)) return false;

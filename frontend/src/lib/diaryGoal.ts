@@ -1,10 +1,14 @@
-import type { TrackedGoal } from '../types/goals';
-import { toKey } from './goalLogic';
+import type { GoalLog, TrackedGoal } from '../types/goals';
+import { amountOn, dailyTarget, toKey } from './goalLogic';
 import { hasContent, readDiary } from './diary';
+import { readSettings, saveSettings } from './settings';
 
 /**
- * Diário opcional: ele existe enquanto houver a meta de id fixo "diario" sem pausa.
- * A ligação é sempre pelo id (o título é livre); desligar pausa a meta e guarda o histórico.
+ * Diário em duas partes independentes:
+ * - a aba (página do diário virtual) é uma preferência, `diaryPage` nas configurações;
+ * - a meta de id fixo "diario" é uma meta comum, com histórico próprio e que pode ser apagada. Escrever no
+ *   diário de hoje a cumpre sozinho (o check-in é o de sempre, quem paga é o servidor); desmarcar na mão vale.
+ * Ligar a aba planta a meta (ou tira a pausa dela); desligar a aba não mexe na meta (quem escreve no papel a mantém).
  */
 export const DIARY_GOAL_ID = 'diario';
 /** Disparado sempre que o blob de metas muda nesta aba (o evento "storage" só chega das outras abas) */
@@ -17,40 +21,55 @@ export function createDiaryGoal(today: Date): TrackedGoal {
   return { id: DIARY_GOAL_ID, title: 'Escrever no diário', icon: 'book', frequency: { kind: 'daily' }, measure: { kind: 'check' }, area: 'pessoal', createdOn: toKey(today) };
 }
 
-export const isDiaryOn = (goals: TrackedGoal[]) => goals.some(goal => isDiaryGoal(goal) && !goal.paused);
-
-/** Liga (tira a pausa ou planta a meta) ou desliga (pausa); sem mudança devolve o mesmo array */
-export function withDiary(goals: TrackedGoal[], on: boolean, today: Date): TrackedGoal[] {
-  const current = goals.find(isDiaryGoal);
-  if (on) {
-    if (!current) return [...goals, createDiaryGoal(today)];
-    if (!current.paused) return goals;
-    return goals.map(goal => {
-      if (!isDiaryGoal(goal)) return goal;
-      const { paused: _paused, ...active } = goal;
-      return active;
-    });
-  }
-  if (!current || current.paused) return goals;
-  return goals.map(goal => isDiaryGoal(goal) ? { ...goal, paused: true } : goal);
+/**
+ * Meta do Diário que escrever no diário de hoje cumpre: existe, está ativa, já foi plantada e o dia ainda não
+ * tem o check dela. Sem nada pendente (ou sem meta), devolve undefined e a escrita não marca nada.
+ */
+export function diaryGoalToHarvest(goals: TrackedGoal[], log: GoalLog, day: string): TrackedGoal | undefined {
+  const goal = goals.find(goal => isDiaryGoal(goal) && !goal.paused);
+  if (!goal || goal.createdOn > day || amountOn(goal, log, day) >= dailyTarget(goal)) return undefined;
+  return goal;
 }
 
-/** Contas antigas com páginas escritas e sem a meta (nem pausada) ganham o Diário ligado; nas demais nada muda */
-export function adoptDiaryIfWritten(goals: TrackedGoal[], hasPages: boolean, today: Date): TrackedGoal[] {
-  return hasPages && !goals.some(isDiaryGoal) ? [...goals, createDiaryGoal(today)] : goals;
+/** Contas de antes da separação: a aba seguia a meta (ligada e sem pausa) ou páginas já escritas sem meta nenhuma */
+function legacyDiaryPage(goals: TrackedGoal[]) {
+  return goals.some(goal => isDiaryGoal(goal) && !goal.paused) || (!goals.some(isDiaryGoal) && Object.values(readDiary()).some(hasContent));
+}
+
+function readGoals(): TrackedGoal[] {
+  try {
+    const goals: unknown = JSON.parse(localStorage.getItem(GOALS_KEY) ?? 'null')?.goals;
+    return Array.isArray(goals) ? goals as TrackedGoal[] : [];
+  } catch { return []; }
+}
+
+/** A aba do Diário está ligada? Sem escolha gravada ainda, deduz do jeito antigo */
+export function readDiaryPage() {
+  return readSettings().diaryPage ?? legacyDiaryPage(readGoals());
+}
+
+/** Planta a meta do Diário ou tira a pausa dela; se já está ativa devolve o mesmo array */
+export function withDiaryGoal(goals: TrackedGoal[], today: Date): TrackedGoal[] {
+  const current = goals.find(isDiaryGoal);
+  if (!current) return [...goals, createDiaryGoal(today)];
+  if (!current.paused) return goals;
+  return goals.map(goal => {
+    if (!isDiaryGoal(goal)) return goal;
+    const { paused: _paused, ...active } = goal;
+    return active;
+  });
+}
+
+/** Grava a escolha da aba (a meta, quem planta é o useGoalTracker) */
+export function saveDiaryPage(on: boolean) {
+  saveSettings({ ...readSettings(), diaryPage: on });
 }
 
 /**
- * Roda uma vez por abertura, só depois de o pull da conta dar certo: antes disso, gravar o blob marcaria a cópia
- * deste navegador como a mais nova e ela venceria as metas da conta. Grava (e avisa as telas) só se mudou.
+ * Grava a escolha deduzida das contas antigas, para a aba não sumir quando a meta for apagada.
+ * No boot roda só depois de o pull da conta dar certo (antes disso a dedução usaria a cópia velha deste navegador).
  */
-export function adoptWrittenDiary() {
-  try {
-    const parsed = JSON.parse(localStorage.getItem(GOALS_KEY) ?? 'null');
-    if (!parsed || !Array.isArray(parsed.goals)) return;
-    const goals = adoptDiaryIfWritten(parsed.goals, Object.values(readDiary()).some(hasContent), new Date());
-    if (goals === parsed.goals) return;
-    localStorage.setItem(GOALS_KEY, JSON.stringify({ ...parsed, goals }));
-    window.dispatchEvent(new Event(GOALS_EVENT));
-  } catch { /* modo privado: fica para a próxima abertura */ }
+export function settleDiaryPage() {
+  if (readSettings().diaryPage !== undefined) return;
+  saveSettings({ ...readSettings(), diaryPage: legacyDiaryPage(readGoals()) });
 }

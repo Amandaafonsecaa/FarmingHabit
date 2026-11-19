@@ -122,7 +122,7 @@ export function AuthScreen() {
         <div className="auth-emblem"><SproutEmblem/></div>
 
         <header className="auth-heading">
-          <h1 id="auth-title">Sítio FarmingHabit</h1>
+          <h1 id="auth-title">Sítio Farming Habits</h1>
         </header>
 
         <div className="auth-body">

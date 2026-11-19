@@ -1,4 +1,4 @@
-import { NetworkError, deleteGoalCheckins, importCheckins, listCheckins, saveCheckin, type CheckinResult } from '../services/api';
+import { isTransient, deleteGoalCheckins, importCheckins, listCheckins, saveCheckin, type CheckinResult } from '../services/api';
 import type { GoalLog } from '../types/goals';
 import { flushIfPending } from './cloudSync';
 import { PLAYER_EVENT } from './harvestRewards';
@@ -86,7 +86,8 @@ export function sendCheckin(goalId: string, day: string, amount: number): Promis
       announcePaid(result);
       return result;
     } catch (error) {
-      if (!(error instanceof NetworkError)) throw error;
+      // Sem internet ou servidor/Supabase fora do ar: guarda e reenvia depois (a cópia local continua marcada)
+      if (!isTransient(error)) throw error;
       enqueue(goalId, day, amount);
       return null;
     }
@@ -101,7 +102,7 @@ export async function removeGoalCheckins(goalId: string) {
     return [day, rest];
   }).filter(([, entries]) => Object.keys(entries).length)));
   for (const key of Object.keys(readJson<Pending>(PENDING_KEY, {}))) if (splitPending(key).goalId === goalId) dequeue(key);
-  try { await inOrder(() => deleteGoalCheckins(goalId)); } catch (error) { if (!(error instanceof NetworkError)) throw error; }
+  try { await inOrder(() => deleteGoalCheckins(goalId)); } catch (error) { if (!isTransient(error)) throw error; }
 }
 
 /** Histórico que ainda mora no blob das metas (antes dos check-ins no servidor): sobe sem pagar e sai do blob */
@@ -112,7 +113,7 @@ async function importLegacyLog() {
   writeJson(GOALS_KEY, { goals: stored.goals ?? [] });
 }
 
-/** Reenvia a fila; para no primeiro erro de conexão. Marcações recusadas pelo servidor (ex.: dia inválido) saem da fila */
+/** Reenvia a fila; para na primeira falha passageira (fica para depois). Só sai da fila o que o servidor recusou de vez (ex.: dia inválido) */
 async function flushPending() {
   for (const [key, amount] of Object.entries(readJson<Pending>(PENDING_KEY, {}))) {
     const { goalId, day } = splitPending(key);
@@ -120,7 +121,7 @@ async function flushPending() {
       announcePaid(await inOrder(() => saveCheckin(goalId, day, amount)));
       dequeue(key);
     } catch (error) {
-      if (error instanceof NetworkError) return;
+      if (isTransient(error)) return;
       dequeue(key);
     }
   }
@@ -138,7 +139,32 @@ async function pull() {
       log = withAmount(log, goalId, day, amount);
     }
     writeLog(log);
-  } catch { /* sem servidor: a tela segue com a cópia local */ }
+    setStatus('ready');
+  } catch {
+    // Sem servidor: se o histórico desta abertura já tinha chegado, a tela segue com ele; senão as metas esperam
+    if (status !== 'ready') { setStatus('error'); retryLater(); }
+  }
+}
+
+/**
+ * Situação do histórico nesta abertura: as telas só deixam marcar metas depois de ele chegar do servidor,
+ * para nunca marcar em cima de uma cópia velha deste navegador.
+ */
+export type CheckinsStatus = 'loading' | 'ready' | 'error';
+export const CHECKINS_STATUS_EVENT = 'farminghabit:checkins-status';
+let status: CheckinsStatus = 'loading';
+export const checkinsStatus = () => status;
+function setStatus(next: CheckinsStatus) {
+  if (next === status) return;
+  status = next;
+  window.dispatchEvent(new Event(CHECKINS_STATUS_EVENT));
+}
+
+// Enquanto o servidor não responde, tenta de novo sozinho de tempos em tempos
+let retryTimer: number | undefined;
+function retryLater() {
+  window.clearTimeout(retryTimer);
+  retryTimer = window.setTimeout(() => { void syncCheckins(); }, 15000);
 }
 
 let syncing: Promise<void> | null = null;
@@ -146,6 +172,12 @@ let syncing: Promise<void> | null = null;
 export function syncCheckins(): Promise<void> {
   syncing ??= pull().finally(() => { syncing = null; });
   return syncing;
+}
+
+/** "Tentar de novo" da tela: mostra o carregando de novo enquanto pergunta ao servidor */
+export function retryCheckins() {
+  if (status === 'error') setStatus('loading');
+  return syncCheckins();
 }
 window.addEventListener('online', () => { void syncCheckins(); });
 

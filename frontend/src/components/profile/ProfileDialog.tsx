@@ -24,7 +24,7 @@ export function ProfileDialog({ initial, nameLocked, onSave, onClose }: {
     catch (reason) { setError(`Não foi possível salvar: ${reason instanceof Error ? reason.message : 'erro desconhecido'}`); return false; }
   }
 
-  return <GameDialog title="Editar carta" icon="leaf" submitLabel="Salvar" error={error} onClose={onClose} onSubmit={submit}>
+  return <GameDialog title="Editar carta" icon="pencil" submitLabel="Salvar" error={error} onClose={onClose} onSubmit={submit}>
     <CharacterCreator value={avatar} onChange={setAvatar}/>
     <label className="form-label">Seu nome
       <input name="name" defaultValue={initial.name} maxLength={40} disabled={nameLocked} placeholder="Como o sítio te chama?" required/>

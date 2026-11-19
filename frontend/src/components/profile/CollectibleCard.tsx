@@ -84,7 +84,7 @@ function CardArt({ data, svgRef }: { data: CardData; svgRef: Ref<SVGSVGElement> 
     </g>
 
     {/* Rodapé: desde quando joga e a raridade */}
-    <text x="20" y="335" fontSize="8" fill="#765337">{since ? `no sítio desde ${since}` : 'FarmingHabit'}</text>
+    <text x="20" y="335" fontSize="8" fill="#765337">{since ? `no sítio desde ${since}` : 'Farming Habits'}</text>
     <text x="232" y="336" fontSize="11" fill="#b8862f" textAnchor="end">{rarity(level)}</text>
   </svg>;
 }
@@ -152,7 +152,7 @@ export function CollectibleCard({ data, onEdit }: { data: CardData; onEdit: () =
       </div>
     </button>
     <div className="holo-actions">
-      <button type="button" className="pixel-button primary-button" onClick={onEdit}><PixelIcon name="leaf" className="size-3"/>Editar</button>
+      <button type="button" className="pixel-button primary-button" onClick={onEdit}><PixelIcon name="pencil" className="size-3"/>Editar</button>
       <button type="button" className="pixel-button" onClick={download} disabled={saving} aria-busy={saving}>{saving ? 'Gerando...' : 'Baixar carta'}</button>
     </div>
   </div>;

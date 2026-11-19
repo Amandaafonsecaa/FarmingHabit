@@ -1,6 +1,6 @@
 import { useId, useRef, useState, type AnimationEvent, type CSSProperties } from 'react';
 import type { DayStatus, GoalLog, TrackedGoal } from '../../types/goals';
-import { WEEKDAY_NAMES, WEEK_ORDER, summarizeDay, toKey, type DaySummary } from '../../lib/goalLogic';
+import { WEEKDAY_NAMES, WEEK_ORDER, addDays, summarizeDay, toKey, type DaySummary } from '../../lib/goalLogic';
 import { useInView } from '../../hooks/useScrollGrowth';
 import { PixelIcon } from '../PixelIcon';
 import { prefersCalm } from '../../hooks/useRollingNumber';
@@ -47,7 +47,13 @@ function DayTooltip({ id, date, summary }: { id: string; date: Date; summary: Da
 const FLIP_KEY = 'farminghabit.calendar-flipped.v1';
 function readFlipped() { try { return localStorage.getItem(FLIP_KEY) === '1'; } catch { return false; } }
 
-export function ConsistencyCalendar({ goals, log, today }: { goals: TrackedGoal[]; log: GoalLog; today: Date }) {
+/**
+ * `selectedKey`/`onSelectDay`: hoje e ontem são clicáveis e trocam o dia do quadro de metas (ontem ainda dá para marcar).
+ * Os outros dias seguem só com a dica do que foi feito.
+ */
+export function ConsistencyCalendar({ goals, log, today, selectedKey, onSelectDay }: {
+  goals: TrackedGoal[]; log: GoalLog; today: Date; selectedKey?: string; onSelectDay?: (date: Date) => void;
+}) {
   const [month, setMonth] = useState(() => new Date(today.getFullYear(), today.getMonth(), 1));
   const [filter, setFilter] = useState('all');
   const [gridRef, inView] = useInView<HTMLDivElement>(0.15);
@@ -68,6 +74,7 @@ export function ConsistencyCalendar({ goals, log, today }: { goals: TrackedGoal[
   };
   const baseId = useId();
   const todayKey = toKey(today);
+  const yesterdayKey = toKey(addDays(today, -1));
   const visibleGoals = filter === 'all' ? goals : goals.filter(goal => goal.id === filter);
   const isCurrentMonth = month.getFullYear() === today.getFullYear() && month.getMonth() === today.getMonth();
   const daysInMonth = new Date(month.getFullYear(), month.getMonth() + 1, 0).getDate();
@@ -85,7 +92,7 @@ export function ConsistencyCalendar({ goals, log, today }: { goals: TrackedGoal[
     <div className="calendar-rings" aria-hidden="true">{Array.from({ length: 12 }, (_, index) => <span key={index}/>)}</div>
     {/* Frente com os dias; verso só de papelão listrado. Clicar no calendário vira (menos nas setas e no filtro) */}
     <div className={`calendar-flipper ${flipped ? 'is-flipped' : ''}`}>
-    <div className="calendar-sheet calendar-front" inert={flipped} onClick={event=>{ if (!(event.target as Element).closest('.calendar-flip, .calendar-filter')) flip(true); }}>
+    <div className="calendar-sheet calendar-front" inert={flipped} onClick={event=>{ if (!(event.target as Element).closest('.calendar-flip, .calendar-filter, .is-pickable')) flip(true); }}>
       {/* Para teclado e leitores de tela: aparece só quando recebe foco */}
       <button type="button" className="sr-only focus:not-sr-only" onClick={()=>flip(true)}>Virar o calendário</button>
       <header className="calendar-band">
@@ -111,9 +118,13 @@ export function ConsistencyCalendar({ goals, log, today }: { goals: TrackedGoal[
         {days.map(({ date, key, summary }, index) => {
           const column = (offset + index) % 7;
           const tooltipId = `${baseId}-${key}`;
+          const pickable = Boolean(onSelectDay) && (key === todayKey || key === yesterdayKey);
           return <button key={key} type="button"
-            className={`harvest-day is-${summary.status} ${key === todayKey ? 'is-today' : ''} ${column < 2 ? 'tip-start' : column > 4 ? 'tip-end' : ''}`}
-            style={{ '--i': index } as CSSProperties} aria-describedby={tooltipId} aria-label={`Dia ${date.getDate()}`}>
+            className={`harvest-day is-${summary.status} ${key === todayKey ? 'is-today' : ''} ${pickable ? 'is-pickable' : ''} ${pickable && key === selectedKey ? 'is-selected' : ''} ${column < 2 ? 'tip-start' : column > 4 ? 'tip-end' : ''}`}
+            style={{ '--i': index } as CSSProperties} aria-describedby={tooltipId}
+            aria-label={pickable ? `Dia ${date.getDate()}: ver as metas de ${key === todayKey ? 'hoje' : 'ontem'}` : `Dia ${date.getDate()}`}
+            aria-pressed={pickable ? key === selectedKey : undefined}
+            onClick={pickable ? ()=>onSelectDay?.(date) : undefined}>
             <span className="day-number" aria-hidden="true">{date.getDate()}</span>
             <SeedSprite status={summary.status}/>
             <DayTooltip id={tooltipId} date={date} summary={summary}/>

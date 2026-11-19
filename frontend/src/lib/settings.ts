@@ -2,7 +2,11 @@ import { farmName as DEFAULT_FARM_NAME } from '../data/world';
 import { readLog } from './checkins';
 
 /** Preferências do jogo, guardadas neste navegador e aplicadas como classes no <html> */
-export interface Settings { farmName: string; calmMode: boolean; celebrations: boolean; critters: boolean }
+export interface Settings {
+  farmName: string; calmMode: boolean; celebrations: boolean; critters: boolean;
+  /** Aba do diário virtual; ausente nas contas de antes da escolha existir (ver readDiaryPage) */
+  diaryPage?: boolean;
+}
 
 const KEY = 'farminghabit.settings.v1';
 const EVENT = 'farminghabit:settings';
@@ -41,7 +45,7 @@ export function exportBackup() {
 /** Restaura um backup gerado por exportBackup; recusa arquivos de outra origem */
 export function importBackup(text: string) {
   const parsed = JSON.parse(text);
-  if (parsed?.app !== 'FarmingHabit' || typeof parsed.data !== 'object') throw new Error('Este arquivo não é um backup do FarmingHabit.');
+  if (parsed?.app !== 'FarmingHabit' || typeof parsed.data !== 'object') throw new Error('Este arquivo não é um backup do Farming Habits.');
   for (const key of LOCAL_KEYS) {
     const value = parsed.data[key];
     if (value === null || value === undefined) localStorage.removeItem(key); else localStorage.setItem(key, JSON.stringify(value));

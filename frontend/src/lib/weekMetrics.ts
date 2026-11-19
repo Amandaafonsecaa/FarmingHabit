@@ -9,10 +9,10 @@ import { areaOf } from './goalAreas';
 export interface AreaWeek { area: GoalArea; done: number; expected: number; pending: number; rate: number }
 
 /** Junta as metas por área com os números da semana (a mesma conta do Coach: hoje só conta se já foi feito) */
-export function areasThisWeek(goals: TrackedGoal[], log: GoalLog, today: Date): AreaWeek[] {
+export function areasThisWeek(goals: TrackedGoal[], log: GoalLog, today: Date, weekOver = false): AreaWeek[] {
   const byArea = new Map<GoalArea, { done: number; expected: number }>();
   for (const goal of goals) {
-    const week = goalWeek(goal, log, today);
+    const week = goalWeek(goal, log, today, weekOver);
     const area = areaOf(goal.area);
     const current = byArea.get(area) ?? { done: 0, expected: 0 };
     byArea.set(area, { done: current.done + week.done, expected: current.expected + week.expected });
@@ -20,6 +20,11 @@ export function areasThisWeek(goals: TrackedGoal[], log: GoalLog, today: Date): 
   return [...byArea].map(([area, { done, expected }]) => ({
     area, done, expected, pending: Math.max(0, expected - done), rate: expected ? Math.min(1, done / expected) : 1,
   }));
+}
+
+/** A semana passada inteira (segunda a domingo), já fechada */
+export function areasLastWeek(goals: TrackedGoal[], log: GoalLog, today: Date): AreaWeek[] {
+  return areasThisWeek(goals, log, addDays(startOfWeek(today), -1), true);
 }
 
 /** Área com mais atividades concluídas na semana (null quando nada foi feito ainda) */

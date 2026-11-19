@@ -41,11 +41,14 @@ export function EvolutionPage({ onNavigate }: { onNavigate: (page: AppPage) => v
   return <MainLayout page="evolution" onNavigate={onNavigate}
     world={<GymHero level={player?.level ?? 1} xpInLevel={(player?.xp ?? 0) % XP_PER_LEVEL} xpPerLevel={XP_PER_LEVEL} goals={goals} log={log} coach={coach}/>}>
     {offline && <p role="alert" className="world-status">Servidor indisponível: o nível aparece quando o backend voltar.</p>}
-    <WeekBloomChart goals={goals} log={log} today={today} missions={missions} claims={claims}/>
-    {/* Caderninho de notas à esquerda; "Sua semana" continua como o principal */}
-    <div className="evolution-layout">
-      <SketchbookInsights goals={goals} log={log} today={today}/>
-      <WeekBoard goals={goals} log={log} today={today}/>
+    {/* Tablet: áreas e semana em cima, caderninho e pergaminho lado a lado no fim (ver .evolution-stack no CSS) */}
+    <div className="evolution-stack">
+      <WeekBloomChart goals={goals} log={log} today={today} missions={missions} claims={claims}/>
+      {/* Caderninho de notas à esquerda; "Sua semana" continua como o principal */}
+      <div className="evolution-layout">
+        <SketchbookInsights goals={goals} log={log} today={today}/>
+        <WeekBoard goals={goals} log={log} today={today}/>
+      </div>
     </div>
   </MainLayout>;
 }

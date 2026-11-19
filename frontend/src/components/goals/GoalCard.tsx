@@ -6,7 +6,6 @@ import { ProgressBar } from '../ProgressBar';
 import { PlantGrowth } from './PlantGrowth';
 import { HarvestBurst, type Burst } from './HarvestBurst';
 import { HARVEST_REWARD } from '../../lib/harvestRewards';
-import { isDiaryGoal } from '../../lib/diaryGoal';
 
 // Último número digitado para somar em cada meta de quantidade (fica só neste navegador)
 const LAST_AMOUNT_KEY = 'farminghabit.quantity-last.v1';
@@ -24,12 +23,12 @@ interface GoalCardProps {
   onEdit: () => void;
   /** Recaída numa meta de largar (zera o contador de dias sem) */
   onRelapse: () => void;
-  /** Meta do Diário: o botão vira "Escrever" e abre o Diário */
-  onWrite?: () => void;
+  /** O card mostra ontem (marcação atrasada): `today` é o dia de ontem, os textos dizem "ontem" e não há recaída */
+  past?: boolean;
 }
 
 /** Faixa seg–dom da semana atual: feito, falhou, hoje, agendado ou folga */
-function WeekStrip({ goal, log, today }: { goal: TrackedGoal; log: GoalLog; today: Date }) {
+function WeekStrip({ goal, log, today, when }: { goal: TrackedGoal; log: GoalLog; today: Date; when: string }) {
   const monday = startOfWeek(today);
   const todayKey = toKey(today);
   return <ol className="week-strip" aria-label="Esta semana">
@@ -39,7 +38,7 @@ function WeekStrip({ goal, log, today }: { goal: TrackedGoal; log: GoalLog; toda
       const done = isDoneOn(goal, log, date);
       const scheduled = goal.frequency.kind !== 'weekly' && isScheduled(goal, date);
       const state = done ? 'done' : key === todayKey ? 'today' : !scheduled ? 'off' : key < todayKey ? 'missed' : 'planned';
-      const stateLabel = { done: 'cultivado', today: 'hoje', off: 'livre', missed: 'não feito', planned: 'agendado' }[state];
+      const stateLabel = { done: 'cultivado', today: when, off: 'livre', missed: 'não feito', planned: 'agendado' }[state];
       return <li key={weekday} className={`week-cell is-${state}`} title={`${WEEKDAY_NAMES[weekday]}: ${stateLabel}`}>
         <span aria-hidden="true">{WEEKDAY_NAMES[weekday][0]}</span><span className="sr-only">{WEEKDAY_NAMES[weekday]}: {stateLabel}</span>
       </li>;
@@ -47,7 +46,8 @@ function WeekStrip({ goal, log, today }: { goal: TrackedGoal; log: GoalLog; toda
   </ol>;
 }
 
-export function GoalCard({ goal, log, today, onSetAmount, onRemove, onAnnounce, onEdit, onRelapse, onWrite }: GoalCardProps) {
+export function GoalCard({ goal, log, today, onSetAmount, onRemove, onAnnounce, onEdit, onRelapse, past = false }: GoalCardProps) {
+  const when = past ? 'ontem' : 'hoje';
   const quitting = isQuitGoal(goal);
   const cleanDays = quitting ? daysWithout(goal, today) : 0;
   // Clicar no card (fora dos botões) abre a edição
@@ -71,7 +71,7 @@ export function GoalCard({ goal, log, today, onSetAmount, onRemove, onAnnounce, 
 
   // Check único (diária, dias específicos ou um check da semanal): alterna o dia de hoje
   function toggleCheck(origin: Element) {
-    if (doneToday) { onSetAmount(0); onAnnounce(`${goal.title}: marcação de hoje desfeita.`); return; }
+    if (doneToday) { onSetAmount(0); onAnnounce(`${goal.title}: marcação de ${when} desfeita.`); return; }
     // As moedas ganhas aparecem no aviso quando o servidor confirma o pagamento
     onSetAmount(1, origin);
     if (!weekly) celebrate('big', quitting ? 'Evitado!' : 'Colhido!');
@@ -102,10 +102,10 @@ export function GoalCard({ goal, log, today, onSetAmount, onRemove, onAnnounce, 
   }
 
   const status = weekly ? `${Math.min(checks, weekly.timesPerWeek)}/${weekly.timesPerWeek} nesta semana`
-    : !scheduledToday ? `Descanso hoje · próxima: ${nextScheduledName(goal, today)}`
-    : quantity ? `${amount}/${target} ${quantity.unit} hoje`
-    : quitting ? (doneToday ? 'Evitado hoje' : 'Marque quando conseguir evitar hoje')
-    : doneToday ? 'Colhido hoje' : 'Esperando a colheita de hoje';
+    : !scheduledToday ? `Descanso ${when} · próxima: ${nextScheduledName(goal, today)}`
+    : quantity ? `${amount}/${target} ${quantity.unit} ${when}`
+    : quitting ? (doneToday ? `Evitado ${when}` : `Marque quando conseguir evitar ${when}`)
+    : doneToday ? `Colhido ${when}` : `Esperando a colheita de ${when}`;
 
   return <li data-flip-id={goal.id} className={`goal-plot ${doneToday || progress >= 100 ? 'is-harvested' : ''} ${!scheduledToday ? 'is-resting' : ''}`}>
     <header className="goal-plot-header is-editable" onClick={editFromCard}>
@@ -127,12 +127,12 @@ export function GoalCard({ goal, log, today, onSetAmount, onRemove, onAnnounce, 
         <ProgressBar value={progress} label={`Progresso: ${goal.title}`} className="h-3"/>
         {weekly
           ? <div className="week-pips" aria-hidden="true">{Array.from({ length: weekly.timesPerWeek }, (_, index) => <span key={index} className={index < checks ? 'is-filled' : ''}/>)}</div>
-          : <WeekStrip goal={goal} log={log} today={today}/>}
+          : <WeekStrip goal={goal} log={log} today={today} when={when}/>}
       </div>
     </div>
 
     <footer className="goal-plot-actions">
-      {scheduledToday && !doneToday && <span className="reward-chip" title="Recompensa por cumprir hoje">+{HARVEST_REWARD.coins} 🪙</span>}
+      {scheduledToday && !doneToday && <span className="reward-chip" title={`Recompensa por cumprir ${when}`}>+{HARVEST_REWARD.coins} 🪙</span>}
       {quantity ? <div className="quantity-stepper">
         <button type="button" className="pixel-button" disabled={!scheduledToday || amount === 0} onClick={event=>changeAmount(-1, event.currentTarget)} aria-label={`Tirar ${addValue} ${quantity.unit}`}><PixelIcon name="minus" className="size-2.5"/></button>
         {/* Quanto somar (ou tirar) a cada toque: a pessoa digita; fica lembrado neste navegador */}
@@ -142,16 +142,11 @@ export function GoalCard({ goal, log, today, onSetAmount, onRemove, onAnnounce, 
         </label>
         <button type="button" className="pixel-button harvest-button" disabled={!scheduledToday} onClick={event=>changeAmount(1, event.currentTarget)} aria-label={`Somar ${addValue} ${quantity.unit}`}><PixelIcon name="plus" className="size-2.5"/>{validChosen ? chosen : ''} {quantity.unit}</button>
       </div>
-      : isDiaryGoal(goal) && onWrite
-        // Meta do Diário: cumpre-se escrevendo a página de hoje; depois de escrita não se desmarca
-        ? <button type="button" className="pixel-button harvest-button" disabled={doneToday} onClick={onWrite} aria-label={doneToday ? `${goal.title}: escrito hoje` : `Escrever no diário: ${goal.title}`}>
-          <span className="harvest-hint"><PixelIcon name={doneToday ? 'check' : 'book'} className="size-3"/></span>{doneToday ? 'Escrito hoje' : 'Escrever'}
-        </button>
       : <button type="button" className="pixel-button harvest-button" aria-pressed={doneToday} disabled={!scheduledToday} onClick={event=>toggleCheck(event.currentTarget)}>
         <span className="harvest-hint"><PixelIcon name={doneToday ? 'check' : 'coin'} className="size-3"/></span>
-        {!scheduledToday ? 'Dia de descanso' : quitting ? (doneToday ? 'Evitado hoje' : 'Evitei hoje') : doneToday ? 'Colhido hoje' : weekly ? 'Marcar hoje' : 'Colher hoje'}
+        {!scheduledToday ? 'Dia de descanso' : quitting ? (doneToday ? `Evitado ${when}` : `Evitei ${when}`) : doneToday ? `Colhido ${when}` : weekly ? `Marcar ${when}` : `Colher ${when}`}
       </button>}
-      {quitting && <button type="button" className="relapse-button" onClick={onRelapse}>Tive uma recaída</button>}
+      {quitting && !past && <button type="button" className="relapse-button" onClick={onRelapse}>Tive uma recaída</button>}
     </footer>
 
     {burst && <HarvestBurst key={burst.id} burst={burst} onDone={clearBurst}/>}

@@ -1,4 +1,4 @@
-import { useState, type CSSProperties, type UIEvent } from 'react';
+import { useRef, useState, type CSSProperties, type UIEvent } from 'react';
 import { toast } from '../lib/toast';
 import { MainLayout } from '../layouts/MainLayout';
 import { GoalsHero } from '../components/goals/GoalsHero';
@@ -8,10 +8,13 @@ import { NewGoalDialog } from '../components/goals/NewGoalDialog';
 import { PixelIcon } from '../components/PixelIcon';
 import { PanelHeading, useCollapsible } from '../components/PanelHeading';
 import { AddFab } from '../components/AddFab';
-import { DIARY_GOAL_ID, isDiaryGoal } from '../lib/diaryGoal';
+import { DIARY_GOAL_ID, settleDiaryPage } from '../lib/diaryGoal';
 import { useGoalTracker, useToday } from '../hooks/useGoalTracker';
+import { useCheckinsStatus } from '../hooks/useCheckinsStatus';
+import { GoalsSyncState } from '../components/goals/GoalsSyncState';
 import { useFlipList } from '../hooks/useFlipList';
-import { amountOn, dailyTarget, isScheduled, sortByPending, toKey } from '../lib/goalLogic';
+import { addDays, amountOn, dailyTarget, isScheduled, sortByPending, toKey } from '../lib/goalLogic';
+import { prefersCalm } from '../hooks/useRollingNumber';
 import type { NewTrackedGoal, TrackedGoal } from '../types/goals';
 import { settleCheckin } from '../lib/harvestRewards';
 import { usePlayerCoins } from '../hooks/usePlayerCoins';
@@ -30,7 +33,8 @@ function GoalsVine({ progress }: { progress: number }) {
 }
 
 export function GoalsPage({ onNavigate }: { onNavigate: (page: AppPage) => void }) {
-  const { goals, log, setAmount, addGoal, updateGoal, relapse, removeGoal, setDiaryEnabled } = useGoalTracker();
+  const { goals, log, setAmount, addGoal, updateGoal, relapse, removeGoal } = useGoalTracker();
+  const checkins = useCheckinsStatus();
   const today = useToday();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -45,14 +49,26 @@ export function GoalsPage({ onNavigate }: { onNavigate: (page: AppPage) => void 
   }
   const coins = usePlayerCoins();
   const { celebrating } = usePerfectDay(goals, log, today);
-  // Pendentes em cima, colhidas descem para o fim da lista
-  const shown = sortByPending(goals, log, today);
+  // O quadro mostra hoje ou ontem (para marcar o que ficou sem registro; o servidor ainda paga ontem)
+  const [onYesterday, setOnYesterday] = useState(false);
+  const day = onYesterday ? addDays(today, -1) : today;
+  const dayKey = toKey(day);
+  // Ontem: só as metas que já existiam e que cobravam naquele dia. Pendentes em cima, colhidas descem para o fim
+  const dayGoals = onYesterday ? goals.filter(goal => goal.createdOn <= dayKey && isScheduled(goal, day)) : goals;
+  const shown = sortByPending(dayGoals, log, day);
+  const boardRef = useRef<HTMLElement>(null);
+  // Dia escolhido no calendário: no celular o quadro fica acima, então rola até ele
+  function pickDay(date: Date) {
+    setOnYesterday(toKey(date) !== toKey(today));
+    boardRef.current?.scrollIntoView({ behavior: prefersCalm() ? 'auto' : 'smooth', block: 'nearest' });
+  }
   const plotsRef = useFlipList<HTMLUListElement>(shown.map(goal => goal.id).join());
 
   // Cumprir a meta no dia paga moedas e XP (uma vez por dia); o crédito vai para o servidor em segundo plano
   // Colher pelo caixote da vendinha: check único conclui o dia, quantidade soma um passo
   function harvestFromStand(goal: TrackedGoal, origin: Element) {
-    if (isDiaryGoal(goal)) { onNavigate('diary'); return; }
+    // Histórico ainda não chegou do servidor: a vendinha espera, como a lista
+    if (checkins.status !== 'ready') return;
     const amount = amountOn(goal, log, toKey(today));
     if (!isScheduled(goal, today)) { setAnnouncement(`${goal.title}: hoje é dia de descanso.`); return; }
     if (amount >= dailyTarget(goal)) { setAnnouncement(`${goal.title}: já colhida hoje 🌻`); return; }
@@ -62,8 +78,8 @@ export function GoalsPage({ onNavigate }: { onNavigate: (page: AppPage) => void 
   }
 
   // Grava o dia; se ele acabou de ser cumprido, o servidor paga a colheita no mesmo pedido
-  function updateAmount(goal: TrackedGoal, amount: number, origin?: Element) {
-    settleCheckin(goal.title, setAmount(goal.id, toKey(today), amount), origin);
+  function updateAmount(goal: TrackedGoal, amount: number, origin?: Element, key = toKey(today)) {
+    settleCheckin(goal.title, setAmount(goal.id, key, amount), origin);
   }
 
   function plant(goal: NewTrackedGoal) {
@@ -80,9 +96,9 @@ export function GoalsPage({ onNavigate }: { onNavigate: (page: AppPage) => void 
   }
 
   function uproot(goalId: string, title: string) {
-    // A meta do Diário nunca é apagada: arrancar pausa (histórico e páginas ficam guardados)
-    if (goalId === DIARY_GOAL_ID) { setDiaryEnabled(false); setAnnouncement(`${title}: diário pausado. Religue em Configurações.`); return; }
     if (!window.confirm(`Arrancar a meta "${title}"? O histórico dela também será apagado.`)) return;
+    // Contas antigas: a aba do Diário seguia esta meta; grava a escolha antes, para a aba não sumir junto
+    if (goalId === DIARY_GOAL_ID) settleDiaryPage();
     removeGoal(goalId).catch(error => setAnnouncement(`${title}: ${error instanceof Error ? error.message : 'não foi possível apagar o histórico.'}`));
     setAnnouncement(`${title}: meta arrancada do canteiro.`);
   }
@@ -90,18 +106,25 @@ export function GoalsPage({ onNavigate }: { onNavigate: (page: AppPage) => void 
   const boardCard = useCollapsible();
   return <MainLayout page="goals" onNavigate={onNavigate} world={<GoalsHero goals={goals} log={log} today={today} coins={coins} celebrating={celebrating} onHarvest={harvestFromStand}/>}>
     <div className="goals-layout">
-      <section className={`world-panel pixel-frame goals-board-panel ${boardCard.collapsedClass}`} aria-labelledby="plots-heading">
-        <PanelHeading id="plots-heading" icon="target" title="Metas" open={boardCard.open} onToggle={boardCard.toggle}/>
+      <section ref={boardRef} className={`world-panel pixel-frame goals-board-panel ${boardCard.collapsedClass}`} aria-labelledby="plots-heading">
+        <PanelHeading id="plots-heading" icon="target" title="Metas" open={boardCard.open} onToggle={boardCard.toggle}>
+          <div className="view-tabs" role="group" aria-label="Dia das metas">
+            <button type="button" className="view-tab" aria-pressed={!onYesterday} onClick={()=>setOnYesterday(false)}>Hoje</button>
+            <button type="button" className="view-tab" aria-pressed={onYesterday} onClick={()=>setOnYesterday(true)}>Ontem</button>
+          </div>
+        </PanelHeading>
         <div className="panel-content goals-board" onScroll={onBoardScroll}>
           <GoalsVine progress={vineProgress}/>
-          {shown.length === 0
-            ? <div className="goals-empty"><p className="item-title">{goals.length ? 'Nenhuma meta cobra hoje. Dia de descanso no sítio!' : 'Nenhuma meta ainda.'}</p>
+          {checkins.status !== 'ready'
+            ? <GoalsSyncState status={checkins.status} onRetry={checkins.retry}/>
+            : shown.length === 0
+            ? <div className="goals-empty"><p className="item-title">{!goals.length ? 'Nenhuma meta ainda.' : onYesterday ? 'Nenhuma meta cobrava ontem.' : 'Nenhuma meta cobra hoje. Dia de descanso no sítio!'}</p>
                 {!goals.length && <button type="button" className="pixel-button primary-button mt-3" onClick={()=>setDialogOpen(true)}><PixelIcon name="plus" className="size-2.5"/>Criar a primeira meta</button>}</div>
-            : <ul ref={plotsRef} className="goal-plots">{shown.map(goal => <GoalCard key={goal.id} goal={goal} log={log} today={today}
-                onSetAmount={(amount, origin)=>updateAmount(goal, amount, origin)} onRemove={()=>uproot(goal.id, goal.title)} onAnnounce={setAnnouncement} onEdit={()=>setEditingId(goal.id)} onRelapse={()=>registerRelapse(goal.id, goal.title)} onWrite={()=>onNavigate('diary')}/>)}</ul>}
+            : <ul ref={plotsRef} className="goal-plots">{shown.map(goal => <GoalCard key={`${goal.id}-${dayKey}`} goal={goal} log={log} today={day} past={onYesterday}
+                onSetAmount={(amount, origin)=>updateAmount(goal, amount, origin, dayKey)} onRemove={()=>uproot(goal.id, goal.title)} onAnnounce={setAnnouncement} onEdit={()=>setEditingId(goal.id)} onRelapse={()=>registerRelapse(goal.id, goal.title)}/>)}</ul>}
         </div>
       </section>
-      <div className="goals-side"><ConsistencyCalendar goals={goals} log={log} today={today}/></div>
+      <div className="goals-side"><ConsistencyCalendar goals={goals} log={log} today={today} selectedKey={dayKey} onSelectDay={pickDay}/></div>
     </div>
     <AddFab label="Plantar meta" onClick={()=>setDialogOpen(true)}/>
     {dialogOpen && <NewGoalDialog onSave={plant} onClose={()=>setDialogOpen(false)}/>}

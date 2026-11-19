@@ -4,12 +4,18 @@ import { useFlipList } from '../hooks/useFlipList';
 import { GamePanel } from './GamePanel';
 import { PixelIcon } from './PixelIcon';
 import { ProgressBar } from './ProgressBar';
-import { isDiaryGoal } from '../lib/diaryGoal';
+import { GoalsSyncState } from './goals/GoalsSyncState';
+import type { CheckinsStatus } from '../lib/checkins';
 
 /** Metas da Casa: todas as pendentes de hoje, com rolagem na lista */
-export function GoalsPanel({ goals, log, today, onCheck, onOpen, onEdit, onWrite }: { goals: TrackedGoal[]; log: GoalLog; today: Date; onCheck: (goal: TrackedGoal, element: Element) => void; onOpen: () => void; onEdit: (goal: TrackedGoal) => void; onWrite: () => void }) {
+export function GoalsPanel({ goals, log, today, status, onRetry, onCheck, onOpen, onEdit }: {
+  goals: TrackedGoal[]; log: GoalLog; today: Date; status: CheckinsStatus; onRetry: () => void;
+  onCheck: (goal: TrackedGoal, element: Element) => void; onOpen: () => void; onEdit: (goal: TrackedGoal) => void;
+}) {
   const pending = goals.filter(goal => isScheduled(goal, today) && !isHarvested(goal, log, today));
   const listRef = useFlipList<HTMLUListElement>(pending.map(goal => goal.id).join());
+  // Só mostra (e deixa colher) depois de o histórico chegar do servidor: marcar em cima da cópia velha se perderia
+  if (status !== 'ready') return <GamePanel id="goals" title="Metas" icon="leaf" onOpen={onOpen}><GoalsSyncState status={status} onRetry={onRetry}/></GamePanel>;
   return <GamePanel id="goals" title="Metas" icon="leaf" onOpen={onOpen}>
     {goals.length === 0 && <p className="panel-empty">Nenhuma meta plantada ainda. Toque na semente <strong>+</strong> para plantar.</p>}
     {goals.length > 0 && pending.length === 0 && <p className="panel-empty is-happy">🌻 Tudo colhido por hoje!</p>}
@@ -23,9 +29,7 @@ export function GoalsPanel({ goals, log, today, onCheck, onOpen, onEdit, onWrite
           <p className="item-description">{isQuitGoal(goal) ? `${daysWithout(goal, today)} ${daysWithout(goal, today) === 1 ? 'dia sem' : 'dias sem'}` : frequencyLabel(goal)}{quantity && ` · ${amountOn(goal, log, toKey(today))}/${dailyTarget(goal)} ${quantity.unit}`}</p>
           <ProgressBar value={progress} label={`Progresso: ${goal.title}`} className="mt-2 h-2.5"/>
         </div>
-        {isDiaryGoal(goal)
-          ? <button type="button" className="pixel-button mt-1 shrink-0" onClick={onWrite} aria-label={`Escrever no diário: ${goal.title}`}>Escrever</button>
-          : <button type="button" className="pixel-button mt-1 shrink-0" onClick={event=>onCheck(goal, event.currentTarget)} aria-label={`${quantity ? `Somar ${quantity.step} ${quantity.unit}` : isQuitGoal(goal) ? 'Evitei hoje' : 'Colher'}: ${goal.title}`}>{quantity ? `+${quantity.step}` : isQuitGoal(goal) ? 'Evitei' : 'Colher'}</button>}
+        <button type="button" className="pixel-button mt-1 shrink-0" onClick={event=>onCheck(goal, event.currentTarget)} aria-label={`${quantity ? `Somar ${quantity.step} ${quantity.unit}` : isQuitGoal(goal) ? 'Evitei hoje' : 'Colher'}: ${goal.title}`}>{quantity ? `+${quantity.step}` : isQuitGoal(goal) ? 'Evitei' : 'Colher'}</button>
       </div></li>;
     })}</ul>
   </GamePanel>;

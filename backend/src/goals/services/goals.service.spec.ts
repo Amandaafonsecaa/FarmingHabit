@@ -5,6 +5,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 const day = (offset: number) =>
   new Date(Date.now() + offset * 86_400_000).toISOString().slice(0, 10);
 const TODAY = day(0);
+const YESTERDAY = day(-1);
 const PAST = day(-3);
 
 const blob = (goals: unknown[]) => JSON.stringify({ goals });
@@ -103,6 +104,27 @@ describe('GoalsService', () => {
       expect.stringMatching(/^week:\d{4}-\d{2}-\d{2}:leitura$/),
     ]);
     expect(result).toMatchObject({ coins: 20, xp: 15, weekBonus: true });
+  });
+
+  it('pays the harvest of yesterday', async () => {
+    const result = await service.setCheckin('p', 'leitura', YESTERDAY, 1);
+    expect(tx.rewardClaim.createMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: [
+          expect.objectContaining({ key: `harvest:${YESTERDAY}:leitura` }),
+        ],
+      }),
+    );
+    expect(result).toMatchObject({ coins: 5, xp: 5 });
+  });
+
+  it('does not pay a day before the goal was planted', async () => {
+    tx.userData.findUnique.mockResolvedValue({
+      value: blob([{ ...reading, createdOn: TODAY }]),
+    });
+    await service.setCheckin('p', 'leitura', YESTERDAY, 1);
+    expect(tx.goalCheckin.upsert).toHaveBeenCalledTimes(1);
+    expect(tx.rewardClaim.createMany).not.toHaveBeenCalled();
   });
 
   it('stores past days without paying', async () => {

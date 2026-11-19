@@ -124,6 +124,7 @@
 .harvest-day.is-dry { background: #d9b47a; border-color: #9a7243; background-image: repeating-linear-gradient(45deg, transparent 0 5px, #9a724333 5px 6px); }
 .harvest-day.is-future { opacity: .5; }
 .harvest-day.is-today { outline: 2px dashed #bf5837; outline-offset: 1px; }
+.harvest-day.is-selected { border-color: #3f6b35; box-shadow: 0 0 0 2px #3f6b35, inset 1px 1px #f6ffd6; }
 .harvest-day:hover, .harvest-day:focus { z-index: 4; border-color: #57311f; }
 .harvest-day:focus-visible { outline: 3px solid #3f6b35; outline-offset: 1px; }
 .seed-shine { animation: sparkle-blink 2.4s steps(1) infinite; animation-delay: calc(var(--i, 0) * 90ms); }

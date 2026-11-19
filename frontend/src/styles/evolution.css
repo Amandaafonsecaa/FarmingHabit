@@ -23,16 +23,6 @@
 .gym-second { transform-box: fill-box; transform-origin: 50% 100%; animation: gym-second 60s steps(60) infinite; }
 .gym-light { animation: gym-light 5s steps(2) infinite; }
 .coach-prompt-text { font-size: 8px; }
-/* Gatinha andando de um lado para o outro (vira nas pontas) com o balão de dica por cima */
-/* Visita única: entra pela esquerda, para com o balão e volta por onde veio (10s, uma vez) */
-.gym-cat-walk { animation: cat-visit 10s ease-in-out forwards; }
-.gym-cat-flip { transform-box: fill-box; transform-origin: 50% 50%; animation: cat-turn 10s linear forwards; }
-.gym-cat-legs { animation: cat-step .5s steps(1) infinite; }
-.gym-cat-legs.is-alt { animation-delay: -.25s; }
-.gym-cat-tail { transform-box: fill-box; transform-origin: 100% 100%; animation: tail-swish 1.2s ease-in-out infinite alternate; }
-.gym-cat-bubble { opacity: 0; transform-box: fill-box; transform-origin: 50% 100%; animation: cat-tip 10s linear forwards; }
-.cat-tip-text { font-family: 'Courier New', monospace; font-size: 10px; font-weight: 900; fill: #3b2418; }
-.cat-tip-text.is-small { font-size: 9px; font-weight: bold; fill: #765337; }
 .evolution-hero:has(.talk-sr-button:focus) .talk-prompt { opacity: 1; transform: none; }
 .vendor-portrait.coach-portrait { background: #cfe6ee; }
 .coach-portrait-art { display: block; width: 100%; height: 100%; }
@@ -256,10 +246,6 @@
 @keyframes bloom-grow { from { transform: scaleX(0); } }
 @keyframes scroll-wiggle { 25% { transform: rotate(-2deg); } 75% { transform: rotate(2deg); } }
 
-@keyframes cat-visit { 0% { transform: translateX(-420px); } 25%, 70% { transform: translateX(0); } 100% { transform: translateX(-420px); } }
-@keyframes cat-turn { 0%, 69.9% { transform: scaleX(1); } 70%, 100% { transform: scaleX(-1); } }
-@keyframes cat-tip { 0%, 26% { opacity: 0; transform: scale(.4); } 29% { opacity: 1; transform: scale(1.06); } 31%, 66% { opacity: 1; transform: scale(1); } 69%, 100% { opacity: 0; transform: scale(.8); } }
-@keyframes cat-step { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
 @keyframes moth-orbit { 0% { transform: translate(-22px, 2px); } 20% { transform: translate(-6px, -16px); } 40% { transform: translate(18px, -8px); } 55% { transform: translate(24px, 8px); } 70% { transform: translate(6px, 14px); } 85% { transform: translate(-14px, 12px); } 100% { transform: translate(-22px, 2px); } }
 @keyframes moth-flap { 50% { transform: scaleY(.3); } }
 @keyframes dust-float { 0% { opacity: 0; transform: translate(0, 0); } 25% { opacity: .8; } 75% { opacity: .5; } 100% { opacity: 0; transform: translate(10px, -40px); } }
@@ -271,6 +257,17 @@
    mais largo que o viewport). Sem razão fixa nessa faixa, a seção já fica do tamanho do contêiner. */
 @media (min-width: 768px) and (max-width: 1099px) {
  .evolution-hero { aspect-ratio: auto; min-height: 340px; }
+}
+/* Tablet (768–999px): "Áreas da sua vida" e "Sua semana" em cima, ocupando a largura;
+   no fim, o caderninho com o pergaminho de recompensas ao lado. Os dois blocos viram uma grade só
+   (display: contents) para os quatro itens trocarem de lugar sem mexer no HTML das outras larguras. */
+@media (min-width: 768px) and (max-width: 999px) {
+ .evolution-stack { display: grid; grid-template-columns: minmax(0, 1fr) 260px; gap: 16px 24px; align-items: start; max-width: 1600px; margin: auto; padding: 18px 16px 12px; }
+ .evolution-stack > .week-bloom, .evolution-stack > .evolution-layout { display: contents; }
+ .evolution-stack .bloom-chart { grid-column: 1 / -1; order: 1; }
+ .evolution-stack .week-board { grid-column: 1 / -1; order: 2; }
+ .evolution-stack .notebook { grid-column: 1; order: 3; }
+ .evolution-stack .rewards-scroll { grid-column: 2; order: 4; }
 }
 @media (max-width: 767px) {
  .evolution-hero { aspect-ratio: auto; min-height: 460px; padding: 70px 12px 12px; border-width: 4px; border-bottom-width: 8px; }

@@ -171,6 +171,7 @@ Fontes: `backend/src/rewards/catalog.ts`, `backend/src/rewards/services/`, `fron
 ### Diário, Evolução e personagens
 
 - Diário: registros por data, humor, notas e sequência de escrita; preserva as datas locais e os dados da conta.
+- Registrar algo no diário de hoje cumpre sozinho a meta "Escrever no diário", quando ela existe e está ativa (`diaryGoalToHarvest` em `frontend/src/lib/diaryGoal.ts`): o check-in é o de sempre, então o servidor confere e paga a colheita do dia. Páginas de dias passados não marcam a meta, e meta pausada/apagada não é recriada.
 - O clima emocional da janela do Diário é independente da fase do dia: chuva/tempestade/arco-íris podem coexistir com a paleta do horário.
 - Pipoca, a gata do Diário, libera a conversa após ser acordada 3 vezes em 1 minuto (`frontend/src/lib/diaryCat.ts`).
 - Seu Zé (Metas), Capitão (Missões), Bigode (Loja), Pipoca (Diário) e Coach Rocha (Evolução) usam diálogos contextuais. Conversar não concede ganhos por si só.

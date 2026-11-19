@@ -18,21 +18,24 @@ export interface GoalWeek {
   dueToday: boolean;
 }
 
-export function goalWeek(goal: TrackedGoal, log: GoalLog, today: Date): GoalWeek {
+/** `weekOver`: semana já fechada (ex.: a passada, com `today` no domingo dela); aí o último dia conta como os outros */
+export function goalWeek(goal: TrackedGoal, log: GoalLog, today: Date, weekOver = false): GoalWeek {
   const monday = startOfWeek(today);
+  // Semana fechada: nenhum dia é "hoje que ainda não acabou"
   const todayKey = toKey(today);
+  const openKey = weekOver ? '' : todayKey;
   const days = WEEK_ORDER.map((_, index) => addDays(monday, index)).filter(day => toKey(day) <= todayKey && toKey(day) >= goal.createdOn);
   const done = weekChecks(goal, log, today);
   const target = weekTarget(goal);
   const weekly = goal.frequency.kind === 'weekly';
   const scheduled = weekly ? [] : days.filter(day => isScheduled(goal, day));
   // O dia de hoje ainda não acabou: só conta como "devido" se já foi feito
-  const past = days.filter(day => toKey(day) !== todayKey);
-  const pastExpected = weekly ? Math.floor(target * past.length / 7) : scheduled.filter(day => toKey(day) !== todayKey).length;
+  const past = days.filter(day => toKey(day) !== openKey);
+  const pastExpected = weekly ? Math.floor(target * past.length / 7) : scheduled.filter(day => toKey(day) !== openKey).length;
   return {
     goal, done, target,
     expected: Math.max(done, pastExpected),
-    missed: scheduled.filter(day => toKey(day) !== todayKey && !isDoneOn(goal, log, day)).length,
+    missed: scheduled.filter(day => toKey(day) !== openKey && !isDoneOn(goal, log, day)).length,
     streak: streakFor(goal, log, today),
     best: longestStreak(goal, log, today),
     doneToday: isDoneOn(goal, log, today),

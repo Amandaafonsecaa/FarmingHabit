@@ -3,14 +3,14 @@ import { useStorageChange } from './useStorageChange';
 import { classifyDefaultGoals } from '../lib/goalAreas';
 import { toKey } from '../lib/goalLogic';
 import { CHECKINS_EVENT, readLog, removeGoalCheckins, sendCheckin, setLocalAmount } from '../lib/checkins';
-import { GOALS_EVENT, isDiaryOn, withDiary } from '../lib/diaryGoal';
+import { GOALS_EVENT, saveDiaryPage, withDiaryGoal } from '../lib/diaryGoal';
 import type { CheckinResult } from '../services/api';
 import type { GoalLog, NewTrackedGoal, TrackedGoal } from '../types/goals';
 
 // Definição das metas: blob sincronizado pelo cloudSync. Histórico de cada dia: servidor (ver lib/checkins).
 const STORAGE_KEY = 'farminghabit.goals.v1';
 
-/** Todas as metas do blob, inclusive as pausadas (a adoção do Diário em contas antigas é feita no boot, ver adoptWrittenDiary) */
+/** Todas as metas do blob, inclusive as pausadas */
 function load(): TrackedGoal[] | null {
   try {
     const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? 'null');
@@ -106,10 +106,11 @@ export function useGoalTracker() {
     return removeGoalCheckins(goalId);
   }
 
-  /** Liga o Diário (planta ou tira a pausa da meta "diario") ou desliga (pausa, guardando o histórico) */
+  /** Liga a aba do Diário (e planta a meta "Escrever no diário", ou tira a pausa dela) ou só desliga a aba; a meta fica */
   function setDiaryEnabled(on: boolean) {
-    setGoals(current => withDiary(current, on, new Date()));
+    saveDiaryPage(on);
+    if (on) setGoals(current => withDiaryGoal(current, new Date()));
   }
 
-  return { goals, log, setAmount, addGoal, updateGoal, relapse, removeGoal, diaryOn: isDiaryOn(allGoals), setDiaryEnabled };
+  return { goals, log, setAmount, addGoal, updateGoal, relapse, removeGoal, setDiaryEnabled };
 }

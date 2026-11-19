@@ -1,4 +1,9 @@
-import { isPlayerToday, isUpToPlayerToday, levelFor } from './economy';
+import {
+  isPayableDay,
+  isPlayerToday,
+  isUpToPlayerToday,
+  levelFor,
+} from './economy';
 import {
   dailyTarget,
   isWeeklyGoalMet,
@@ -24,6 +29,17 @@ describe('economy rules', () => {
     expect(isPlayerToday('2026-10-25', now)).toBe(false);
     expect(isPlayerToday('2026-10-29', now)).toBe(false);
     expect(isPlayerToday('27/10/2026', now)).toBe(false);
+  });
+  it('pays today and yesterday in some time zone, never older days', () => {
+    const now = new Date('2026-10-27T12:00:00Z');
+    expect(isPayableDay('2026-10-27', now)).toBe(true);
+    expect(isPayableDay('2026-10-26', now)).toBe(true); // ontem
+    expect(isPayableDay('2026-10-28', now)).toBe(true); // UTC+14 já é dia 28
+    expect(isPayableDay('2026-10-25', new Date('2026-10-27T13:00:00Z'))).toBe(
+      false,
+    ); // anteontem até em UTC−12
+    expect(isPayableDay('2026-10-29', now)).toBe(false);
+    expect(isPayableDay('26/10/2026', now)).toBe(false);
   });
   it('accepts past days and today, never the future', () => {
     const now = new Date('2026-10-31T12:00:00Z');

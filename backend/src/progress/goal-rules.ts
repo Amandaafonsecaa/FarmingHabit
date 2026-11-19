@@ -6,6 +6,8 @@ export const GOALS_KEY = 'farminghabit.goals.v1';
 
 export interface StoredGoal {
   id: string;
+  /** Dia em que a meta foi plantada (AAAA-MM-DD): antes dele não há colheita */
+  createdOn?: string;
   frequency?: { kind?: string; timesPerWeek?: number };
   measure?: { kind?: string; target?: number };
 }

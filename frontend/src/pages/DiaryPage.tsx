@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { MainLayout } from '../layouts/MainLayout';
 import { DiaryHero } from '../components/diary/DiaryHero';
 import { DiaryBook } from '../components/diary/DiaryBook';
@@ -6,15 +6,15 @@ import { MoodCalendar } from '../components/diary/MoodCalendar';
 import { MemoryNotes } from '../components/diary/MemoryNotes';
 import { useDiary } from '../hooks/useDiary';
 import { useGoalTracker, useToday } from '../hooks/useGoalTracker';
-import { addDays, amountOn, isDoneOn, toKey } from '../lib/goalLogic';
-import { hasContent, type Mood } from '../lib/diary';
-import { isDiaryGoal } from '../lib/diaryGoal';
+import { addDays, amountOn, dailyTarget, isDoneOn, toKey } from '../lib/goalLogic';
+import { hasContent, type DiaryEntry, type Mood } from '../lib/diary';
+import { diaryGoalToHarvest } from '../lib/diaryGoal';
 import { settleCheckin } from '../lib/harvestRewards';
 import type { AppPage } from '../types/navigation';
 
 export function DiaryPage({ onNavigate }: { onNavigate: (page: AppPage) => void }) {
   const diary = useDiary();
-  const { goals, log, setAmount, diaryOn } = useGoalTracker();
+  const { goals, log, setAmount } = useGoalTracker();
   const today = useToday();
   const [selected, setSelected] = useState(today);
   const [month, setMonth] = useState(() => new Date(today.getFullYear(), today.getMonth(), 1));
@@ -22,22 +22,23 @@ export function DiaryPage({ onNavigate }: { onNavigate: (page: AppPage) => void 
   const todayKey = toKey(today);
   const selectedKey = toKey(selected);
   const entry = diary.entryFor(selectedKey);
-  // Escrever hoje cumpre a meta do Diário: um check-in por dia, só pela página de hoje (dias passados não pagam)
-  const wroteToday = hasContent(diary.entryFor(todayKey));
-  const sentFor = useRef<string | null>(null);
-  useEffect(() => {
-    const goal = goals.find(isDiaryGoal);
-    if (!diaryOn || !wroteToday || !goal || sentFor.current === todayKey || amountOn(goal, log, todayKey) > 0) return;
-    sentFor.current = todayKey;
-    settleCheckin(goal.title, setAmount(goal.id, todayKey, 1));
-  }, [diaryOn, wroteToday, todayKey]); // eslint-disable-line react-hooks/exhaustive-deps
-
   function open(date: Date) {
     const key = toKey(date);
     if (key > todayKey || key === selectedKey) return;
     setTurn(key > selectedKey ? 'next' : 'prev');
     setSelected(date);
     setMonth(new Date(date.getFullYear(), date.getMonth(), 1));
+  }
+
+  /**
+   * Escreveu algo no diário de hoje: a meta "Escrever no diário", se existe e está ativa, é cumprida na hora,
+   * com o check-in de sempre (o servidor confere e paga a colheita). Páginas de outros dias não marcam a meta.
+   */
+  function change(patch: Partial<DiaryEntry>) {
+    diary.update(selectedKey, patch);
+    if (selectedKey !== todayKey || !hasContent({ ...entry, ...patch })) return;
+    const goal = diaryGoalToHarvest(goals, log, todayKey);
+    if (goal) settleCheckin(goal.title, setAmount(goal.id, todayKey, dailyTarget(goal)));
   }
 
   // Resumo do dia escolhido: metas cultivadas (do canteiro) e aventuras cumpridas (das missões)
@@ -56,7 +57,7 @@ export function DiaryPage({ onNavigate }: { onNavigate: (page: AppPage) => void 
     <div className="diary-layout">
       <div className="diary-main">
         <DiaryBook dateKey={selectedKey} date={selected} entry={entry} turn={turn} canNext={selectedKey < todayKey} harvests={harvests} adventures={adventures}
-          onChange={patch=>diary.update(selectedKey, patch)} onPrev={()=>open(addDays(selected, -1))} onNext={()=>open(addDays(selected, 1))}/>
+          onChange={change} onPrev={()=>open(addDays(selected, -1))} onNext={()=>open(addDays(selected, 1))}/>
       </div>
       <div className="diary-aside">
         <MoodCalendar month={month} entries={diary.entries} selectedKey={selectedKey} todayKey={todayKey} onSelect={open}

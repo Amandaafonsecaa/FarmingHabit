@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type KeyboardEvent, type MouseEvent, type 
 import type { GoalLog, TrackedGoal } from '../../types/goals';
 import { areaLabel } from '../../lib/goalAreas';
 import type { GoalArea } from '../../types/goals';
-import { areasThisWeek, bestArea, bestDayThisWeek, tipArea } from '../../lib/weekMetrics';
+import { areasLastWeek, areasThisWeek, bestArea, bestDayThisWeek, tipArea } from '../../lib/weekMetrics';
 
 const INK = '#3b2418';
 
@@ -82,9 +82,13 @@ const SeedlingPencil = () => <Sketch>
   <path d="M50 66l20-20 4 4-20 20-6 2Z" fill="#e7b84b" fillOpacity=".2"/><path d="M48 72l2-6 4 4Z" fill="#3b2418" fillOpacity=".5"/><path d="M68 48l4 4" strokeWidth=".8"/>
 </Sketch>;
 
-/** Frase com a área no jeito certo ("Sem categoria" vira "nas metas sem categoria") */
-const inArea = (area: GoalArea) => area === 'nenhuma' ? <>nas metas <mark>sem categoria</mark></> : <>em <mark>{areaLabel(area)}</mark></>;
-const ofArea = (area: GoalArea) => area === 'nenhuma' ? <>das metas <mark>sem categoria</mark></> : <>de <mark>{areaLabel(area)}</mark></>;
+/** Frases diretas com a área no jeito certo ("Sem categoria" não é área: vira "as metas sem categoria") */
+const bestIs = (when: string, area: GoalArea) => area === 'nenhuma'
+  ? <>{when}, fui melhor nas metas <mark>sem categoria</mark>.</>
+  : <>{when}, minha melhor área foi <mark>{areaLabel(area)}</mark>.</>;
+const focusOn = (area: GoalArea) => area === 'nenhuma'
+  ? <>Nesta semana, preciso focar nas metas <mark>sem categoria</mark>.</>
+  : <>Nesta semana, preciso focar em <mark>{areaLabel(area)}</mark>.</>;
 
 /** Nuvenzinha */
 const Cloud = () => <Sketch>
@@ -128,20 +132,29 @@ export function SketchbookInsights({ goals, log, today }: { goals: TrackedGoal[]
   const areas = areasThisWeek(goals, log, today);
   const strongest = bestArea(areas);
   const focus = tipArea(areas);
+  const lastWeek = areasLastWeek(goals, log, today);
+  const lastBest = bestArea(lastWeek);
+  const lastFocus = tipArea(lastWeek);
 
   const pages: Page[] = [
-    { text: day ? <>Meu melhor dia foi <mark>{day.name}</mark>.</> : <>Ainda estou escolhendo meu melhor dia.</>,
+    { text: day ? <>Meu melhor dia da semana foi <mark>{day.name}</mark>.</> : <>Ainda não concluí nada nesta semana.</>,
       doodles: [['tl', <Sun/>], ['br', <Coffee/>], ['bottom', <Seeds/>]] },
     { scene: <div className="nb-scene-row"><Sprout/><Flower/><WateringCan/></div>, doodles: [['tr', <Cloud/>], ['bl', <Leaves/>]] },
-    { text: strongest ? <>Nesta semana, eu avancei mais {inArea(strongest.area)}.</> : <>Tudo bem ir devagar no começo.</>,
+    { text: strongest ? bestIs('Nesta semana', strongest.area) : <>Nesta semana, ainda não tenho uma melhor área.</>,
       doodles: [['tr', <Flower/>], ['bl', <Basket/>], ['top', <Leaves/>]] },
-    { text: focus === null ? <>Quero plantar uma meta nova.</> : focus === 'ok' ? <>Esta semana eu consegui cuidar de tudo.</> : <>Posso cuidar um pouco mais {ofArea(focus.area)}.</>,
+    { text: focus === null ? <>Preciso plantar uma meta para começar.</> : focus === 'ok' ? <>Nesta semana, cuidei de todas as áreas.</> : focusOn(focus.area),
       doodles: [['tl', <WateringCan/>], ['br', <Sprout/>], ['bottom', <Seeds/>]] },
+    // Semana passada (só quando houve registro nela): melhor área e onde faltou
+    ...(lastBest ? [{ text: <>{bestIs('Na semana passada', lastBest.area)}{lastFocus && lastFocus !== 'ok' && lastFocus.area !== lastBest.area
+        && <> Faltou cuidar {lastFocus.area === 'nenhuma' ? <>das metas <mark>sem categoria</mark></> : <>de <mark>{areaLabel(lastFocus.area)}</mark></>}.</>}</>,
+      doodles: [['tl', <Cloud/>], ['br', <Basket/>]] as [Spot, ReactNode][] }] : []),
     { scene: <div className="nb-scene-row"><Basket/><Leaves/><Trowel/></div>, doodles: [['tl', <Sun/>], ['br', <Seeds/>]] },
     { text: <>Cada pequeno passo também é progresso.</>, doodles: [['tl', <Cloud/>], ['tr', <Sun/>], ['bl', <SeedlingPencil/>], ['br', <Leaves/>]] },
   ];
 
-  const [index, setIndex] = useState(0);
+  const [rawIndex, setIndex] = useState(0);
+  // A página da semana passada some ou aparece com os dados: o índice nunca passa do fim do caderno
+  const index = Math.min(rawIndex, pages.length - 1);
   // Folha em movimento: na próxima, a atual gira por cima; na anterior, a de trás volta por cima
   const [turning, setTurning] = useState<{ sheet: number; dir: 'next' | 'prev' } | null>(null);
   const timer = useRef<number | undefined>(undefined);
@@ -177,7 +190,7 @@ export function SketchbookInsights({ goals, log, today }: { goals: TrackedGoal[]
         <span className="nb-sheet is-base"><PageFace page={pages[index]}/></span>
         {/* Folha virando, com frente, verso e sombra */}
         {turning && <span className={`nb-turn is-${turning.dir}`} aria-hidden="true">
-          <span className="nb-sheet is-front"><PageFace page={pages[turning.sheet]}/></span>
+          <span className="nb-sheet is-front"><PageFace page={pages[Math.min(turning.sheet, pages.length - 1)]}/></span>
           <span className="nb-sheet is-back"/>
         </span>}
         {turning && <span className={`nb-turn-shadow is-${turning.dir}`} aria-hidden="true"/>}

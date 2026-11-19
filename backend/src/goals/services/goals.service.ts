@@ -5,7 +5,7 @@ import {
   DAY_PATTERN,
   HARVEST_REWARD,
   WEEK_BONUS,
-  isPlayerToday,
+  isPayableDay,
   isUpToPlayerToday,
 } from '../../progress/economy';
 import {
@@ -47,7 +47,7 @@ export class GoalsService {
     });
   }
 
-  /** Grava (ou apaga, com quantidade 0) o check-in e paga a colheita do dia na mesma transação */
+  /** Grava (ou apaga, com quantidade 0) o check-in e paga a colheita do dia (hoje ou ontem) na mesma transação */
   async setCheckin(
     userId: string,
     goalId: string,
@@ -70,14 +70,17 @@ export class GoalsService {
 
       const none = { coins: 0, xp: 0, weekBonus: false };
       const base = { goalId, day, amount };
-      if (amount === 0 || !isPlayerToday(day)) {
+      if (amount === 0 || !isPayableDay(day)) {
         return { ...base, ...none, user: await this.currentUser(tx, userId) };
       }
       const stored = await tx.userData.findUnique({
         where: { userId_key: { userId, key: GOALS_KEY } },
       });
       const goal = parseGoals(stored?.value)?.find((g) => g.id === goalId);
-      if (!goal || amount < dailyTarget(goal)) {
+      // Meta plantada depois do dia marcado (ex.: criada hoje, marcada ontem) não colhe esse dia
+      const plantedLater =
+        typeof goal?.createdOn === 'string' && day < goal.createdOn;
+      if (!goal || plantedLater || amount < dailyTarget(goal)) {
         return { ...base, ...none, user: await this.currentUser(tx, userId) };
       }
 

@@ -10,6 +10,7 @@ import { useProfile } from '../hooks/useProfile';
 import { CollectibleCard } from '../components/profile/CollectibleCard';
 import { ProfileDialog, type ProfileChanges } from '../components/profile/ProfileDialog';
 import { useGoalTracker, useToday } from '../hooks/useGoalTracker';
+import { useDiaryEnabled } from '../hooks/useDiaryEnabled';
 import { playerStreak } from '../lib/goalLogic';
 import { areasThisWeek, bestArea } from '../lib/weekMetrics';
 import { areaLabel } from '../lib/goalAreas';
@@ -67,7 +68,8 @@ export function SettingsPage({ onNavigate }: { onNavigate: (page: AppPage) => vo
   }, []);
 
   // A carta mostra a constância: sequência de dias e a área mais cuidada na semana
-  const { goals, log, diaryOn, setDiaryEnabled } = useGoalTracker();
+  const { goals, log, setDiaryEnabled } = useGoalTracker();
+  const diaryOn = useDiaryEnabled();
   const today = useToday();
   const topArea = bestArea(areasThisWeek(goals, log, today));
 
@@ -83,7 +85,7 @@ export function SettingsPage({ onNavigate }: { onNavigate: (page: AppPage) => vo
     const url = URL.createObjectURL(new Blob([exportBackup()], { type: 'application/json' }));
     const link = document.createElement('a');
     link.href = url;
-    link.download = `farminghabit-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    link.download = `farming-habits-backup-${new Date().toISOString().slice(0, 10)}.json`;
     link.click();
     URL.revokeObjectURL(url);
     setAnnouncement('Backup baixado! Guarde o arquivo num lugar seguro.');
@@ -127,8 +129,8 @@ export function SettingsPage({ onNavigate }: { onNavigate: (page: AppPage) => vo
               streak: playerStreak(goals, log, today), area: topArea && topArea.area !== 'nenhuma' ? areaLabel(topArea.area) : null, since: player?.createdAt ?? null,
             }}/>
             <SettingsGroup title="Diário">
-              <SettingsRow label="Escrever no diário">
-                <PixelSwitch label="Escrever no diário" checked={diaryOn} onChange={setDiaryEnabled}/>
+              <SettingsRow label="Página do diário">
+                <PixelSwitch label="Página do diário" checked={diaryOn} onChange={setDiaryEnabled}/>
               </SettingsRow>
             </SettingsGroup>
             <SettingsGroup title="Conta">

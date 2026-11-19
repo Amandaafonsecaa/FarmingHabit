@@ -16,6 +16,16 @@ export interface NewMission { title: string; description: string; xp: number; co
 
 /** O pedido nem chegou ao servidor (sem internet ou servidor fora do ar): dá para tentar de novo depois */
 export class NetworkError extends Error {}
+/** O servidor respondeu com erro; `status` diz se vale tentar de novo (ver isTransient) */
+export class HttpError extends Error {
+  constructor(message: string, readonly status: number) { super(message); }
+}
+/**
+ * Falha passageira: sem conexão, servidor ou banco (Supabase) fora do ar, sessão que não renovou a tempo.
+ * Quem guarda marcação para reenviar trata estas como "tenta depois", nunca como recusa.
+ */
+export const isTransient = (error: unknown) =>
+  error instanceof NetworkError || (error instanceof HttpError && (error.status >= 500 || [401, 408, 429].includes(error.status)));
 
 /** Todo pedido leva o token da sessão: o backend descobre o jogador por ele, nunca por um id na URL */
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
@@ -32,7 +42,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const body = await response.json().catch(() => null);
   if (!response.ok) {
     const message = Array.isArray(body?.message) ? body.message.join(' ') : body?.message;
-    throw new Error(message || `Erro ${response.status} ao acessar ${path}`);
+    throw new HttpError(message || `Erro ${response.status} ao acessar ${path}`, response.status);
   }
   return body as T;
 }

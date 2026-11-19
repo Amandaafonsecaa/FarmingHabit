@@ -10,7 +10,7 @@ import { useGoalTracker } from '../../hooks/useGoalTracker';
 
 const STEPS = ['Quem é você?', 'Seu personagem', 'Seu diário', 'Tudo pronto!'];
 const DIARY_CHOICES: { value: 'yes' | 'no'; label: string; hint: string }[] = [
-  { value: 'yes', label: 'Sim', hint: 'Ele aparece no menu e escrever conta como meta.' },
+  { value: 'yes', label: 'Sim', hint: 'Ganha uma aba para escrever e a meta de escrever todo dia.' },
   { value: 'no', label: 'Não', hint: 'Dá para ligar depois nas Configurações.' },
 ];
 
@@ -27,7 +27,7 @@ export function WelcomeWizard() {
   const [avatar, setAvatar] = useState(profile.avatar ?? DEFAULT_AVATAR);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
-  // Diário opcional: começa em "Não"; "Sim" planta a meta do Diário ao entrar no sítio
+  // Diário opcional: começa em "Não"; "Sim" liga a aba e planta a meta do Diário ao entrar no sítio
   const [diary, setDiary] = useState<'yes' | 'no'>('no');
   const { setDiaryEnabled } = useGoalTracker();
   // Fecha o wizard só depois que a meta do Diário foi gravada (o efeito de gravação do tracker roda antes deste)
@@ -73,7 +73,7 @@ export function WelcomeWizard() {
       </div>}
       {step === 1 && <CharacterCreator value={avatar} onChange={setAvatar}/>}
       {step === 2 && <div className="space-y-4">
-        <p className="text-sm font-bold">Quer escrever no diário todo dia?</p>
+        <p className="text-sm font-bold">Quer um diário aqui no app?</p>
         <ChoiceCards name="welcome-diary" value={diary} options={DIARY_CHOICES} onChange={setDiary}/>
       </div>}
       {step === 3 && <div className="welcome-done">

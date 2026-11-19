@@ -11,6 +11,7 @@ import { MissionDialog } from '../components/dialogs/MissionDialog';
 import { RewardDialog } from '../components/dialogs/RewardDialog';
 import { NewGoalDialog } from '../components/goals/NewGoalDialog';
 import { useGoalTracker, useToday } from '../hooks/useGoalTracker';
+import { useCheckinsStatus } from '../hooks/useCheckinsStatus';
 import { useAcceptedMissions } from '../hooks/useMissionBoard';
 import { amountOn, dailyTarget, goalsDueToday, isDoneOn, progressFor, toKey } from '../lib/goalLogic';
 import type { NewTrackedGoal, TrackedGoal } from '../types/goals';
@@ -30,6 +31,7 @@ export function HomePage({ onNavigate }: { onNavigate: (page: AppPage) => void }
   const [player, setPlayer] = useState<Player | null>(null);
   // Metas vêm do mesmo lugar que a aba Metas, para as duas telas mostrarem a mesma coisa
   const { goals, log, setAmount, addGoal, updateGoal } = useGoalTracker();
+  const checkins = useCheckinsStatus();
   const [editingGoalId, setEditingGoalId] = useState<string | null>(null);
   const editingGoal = goals.find(goal => goal.id === editingGoalId);
   const today = useToday();
@@ -87,6 +89,7 @@ export function HomePage({ onNavigate }: { onNavigate: (page: AppPage) => void }
 
   /** Colher (no painel ou na horta): check único conclui o dia, quantidade soma um passo */
   function harvest(goal: TrackedGoal, origin: Element) {
+    if (checkins.status !== 'ready') return false;
     const amount = amountOn(goal, log, todayKey);
     const target = dailyTarget(goal);
     if (amount >= target) { setAnnouncement(`${goal.title}: já colhida hoje 🌻`); return false; }
@@ -163,7 +166,7 @@ export function HomePage({ onNavigate }: { onNavigate: (page: AppPage) => void }
   return <MainLayout page="home" onNavigate={onNavigate} world={<GameWorld player={player} coins={player ? coins : null} today={today} plots={plots}
     onPlotTap={playWithPlot} poppedId={poppedId} perfectDay={perfectDay} celebrating={celebrating}/>}>
     <div className="functional-panel">
-      <GoalsPanel goals={goals} log={log} today={today} onCheck={(goal, origin)=>harvest(goal, origin)} onOpen={()=>onNavigate('goals')} onEdit={goal=>setEditingGoalId(goal.id)} onWrite={()=>onNavigate('diary')}/>
+      <GoalsPanel goals={goals} log={log} today={today} status={checkins.status} onRetry={checkins.retry} onCheck={(goal, origin)=>harvest(goal, origin)} onOpen={()=>onNavigate('goals')} onEdit={goal=>setEditingGoalId(goal.id)}/>
       <MissionsPanel missions={missions} accepted={accepted} loading={loading} error={loadError} pendingId={pendingId} onComplete={completeFromHome} onOpen={()=>onNavigate('missions')}/>
       <CoinsPanel coins={coins} rewards={catalog} loading={loading} wishIds={wishIds} buyingId={buyingRewardId} onBuy={buyReward} onOpen={()=>onNavigate('shop')}/>
     </div>
